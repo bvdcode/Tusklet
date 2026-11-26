@@ -1,6 +1,6 @@
 # Tusklet
 
-Tusklet is a self-hosted task manager in early development. The current preview includes a React page with a shared counter backed by an ASP.NET Core 11 API. The counter resets when the server restarts.
+Tusklet is a self-hosted task manager in early development. The current preview includes administrator setup, password and OpenID Connect sign-in, and a sample task list. A single ASP.NET Core 11 process hosts the API and React client.
 
 [![CI](https://github.com/bvdcode/Tusklet/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/bvdcode/Tusklet/actions/workflows/ci.yml)
 [![Release](https://badgen.net/github/release/bvdcode/Tusklet)](https://github.com/bvdcode/Tusklet/releases/latest)
@@ -11,16 +11,37 @@ Tusklet is a self-hosted task manager in early development. The current preview 
 
 The image serves the client and API together. Release images for Linux AMD64 and ARM64 are available on [Docker Hub](https://hub.docker.com/r/bvdcode/tusklet) and [GitHub Container Registry](https://github.com/bvdcode/Tusklet/pkgs/container/tusklet).
 
-```sh
-docker run --rm -p 127.0.0.1:8080:8080 bvdcode/tusklet:latest
-```
-
-Open [localhost:8080](http://localhost:8080) and click **Increment**. To build the image from a checkout, run these commands from the repository root.
+Create a PostgreSQL database and a dedicated login with permission to manage its schema. Set the PostgreSQL environment variables for the container. Tusklet applies its EF Core migrations at startup.
 
 ```sh
-docker build -f src/Tusklet.Server/Dockerfile -t tusklet:local src
-docker run --rm -p 127.0.0.1:8080:8080 tusklet:local
+export TUSKLET_PG_HOST='<postgres host>'
+export TUSKLET_PG_PORT=5432
+export TUSKLET_PG_DATABASE=tusklet
+export TUSKLET_PG_USERNAME=tusklet_client
+export TUSKLET_PG_PASSWORD='<password>'
+docker run -d --name tusklet -p 127.0.0.1:8080:8080 \
+  -e TUSKLET_PG_HOST -e TUSKLET_PG_PORT -e TUSKLET_PG_DATABASE \
+  -e TUSKLET_PG_USERNAME -e TUSKLET_PG_PASSWORD bvdcode/tusklet:latest
 ```
+
+`TUSKLET_PG_PORT` defaults to `5432`. Open [localhost:8080](http://localhost:8080) and create the administrator. Read the one-time code from the running container.
+
+```sh
+docker exec tusklet cat /tmp/tusklet/setup-code
+```
+
+PostgreSQL stores accounts, OpenID settings, and the keys that protect sessions and the OpenID client secret. Use HTTPS when publishing the application behind a reverse proxy.
+
+## OpenID Connect
+
+Configure one OpenID Connect provider per Tusklet instance.
+
+1. Sign in as the administrator and open **OpenID settings**. Copy the callback URL.
+2. In Pocket ID or another OpenID Connect provider, create a confidential client. Enter that callback URL and enable authorization code flow with PKCE.
+3. In Tusklet, enter the provider's HTTPS issuer URL, client ID, and client secret. Enable OpenID sign-in and save.
+4. Open **Profile**, choose **Link OpenID account**, and sign in with the provider. The next time you sign in to Tusklet you can choose **Sign in with OpenID**.
+
+The local password remains available for administration. OpenID sign-in is limited to accounts linked from a signed-in profile.
 
 ## Develop
 
@@ -33,7 +54,7 @@ Install the .NET 11 SDK and Node.js 26.
 | `src/tusklet.client` | React, TypeScript, and Vite client |
 | `src/Tusklet.Tests` | API integration tests |
 
-Start the API from the repository root.
+Point the `TUSKLET_PG_*` variables at a development PostgreSQL database and start the API from the repository root. Read the initial setup code from `src/Tusklet.Server/data/setup-code`.
 
 ```sh
 dotnet run --project src/Tusklet.Server
@@ -47,13 +68,21 @@ npm ci
 npm run dev
 ```
 
-Run `dotnet test src/Tusklet.slnx -c Release` from the repository root. Run `npm run lint`, `npm test`, and `npm run build` from `src/tusklet.client`. Use `dotnet publish src/Tusklet.Server -c Release` to publish the API and client together.
+Set `TUSKLET_TEST_POSTGRES` to a PostgreSQL server for integration tests. The test login needs permission to create isolated test databases. Run `dotnet test src/Tusklet.slnx -c Release` from the repository root. Run `npm run lint`, `npm test`, and `npm run build` from `src/tusklet.client`. Use `dotnet publish src/Tusklet.Server -c Release` to publish the API and client together.
+
+To generate a migration, use `dotnet-ef` 11 and the `Migrations` configuration, which includes the migration code generator.
+
+```sh
+dotnet ef migrations add MigrationName --project src/Tusklet.Server \
+  --configuration Migrations --output-dir Data/Migrations
+```
 
 ## API
 
+- `GET /api/auth/session` reads the setup status, current account and CSRF token.
+- `GET /health` checks server health.
 - `GET /api/counter` reads the current count.
 - `POST /api/counter` increments the count and returns the new value.
-- `GET /health` checks server health.
 
 ## Support
 

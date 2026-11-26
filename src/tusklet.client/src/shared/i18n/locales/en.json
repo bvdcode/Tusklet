@@ -1,11 +1,56 @@
 {
   "appName": "Tusklet",
-  "counter": {
-    "title": "Counter",
-    "value": "Current count",
-    "increment": "Increment",
+  "common": {
+    "loading": "Loading",
+    "close": "Close",
     "retry": "Retry",
-    "loadError": "Could not load the counter.",
-    "incrementError": "Could not increment the counter."
+    "save": "Save"
+  },
+  "auth": {
+    "setupTitle": "Create your admin account",
+    "loginTitle": "Sign in",
+    "username": "Username",
+    "password": "Password",
+    "setupCode": "Setup code",
+    "setupCodeHint": "Copy the one-time code from the server.",
+    "passwordHint": "Use at least 12 characters.",
+    "setupAction": "Create account",
+    "loginAction": "Sign in",
+    "setupError": "Could not create the account. Check the code, username and password.",
+    "loginError": "The username or password is incorrect.",
+    "rateLimited": "Too many attempts. Try again in a minute.",
+    "loadError": "Could not load your session.",
+    "profile": "Profile",
+    "logout": "Sign out",
+    "openIdLogin": "Sign in with OpenID",
+    "linkOpenId": "Link OpenID account",
+    "unlinkOpenId": "Unlink OpenID account",
+    "openIdError": "OpenID could not complete the request. Check the provider settings and linked account.",
+    "linked": "OpenID account linked.",
+    "notLinked": "No OpenID account linked.",
+    "openIdDisabled": "OpenID sign-in is disabled.",
+    "actionError": "Could not update your session. Try again."
+  },
+  "provider": {
+    "title": "OpenID settings",
+    "issuer": "Issuer URL",
+    "clientId": "Client ID",
+    "clientSecret": "Client secret",
+    "callbackUrl": "Callback URL",
+    "callbackHint": "Add this exact URL to the client in your OpenID provider.",
+    "secretStored": "Leave blank to keep the saved secret for this client.",
+    "enabled": "Enable OpenID sign-in",
+    "loadError": "Could not load provider settings.",
+    "saveError": "Could not save settings. Check the HTTPS issuer, callback URL and client secret."
+  },
+  "tasks": {
+    "today": "Today",
+    "preview": "Sample tasks",
+    "lists": "My lists",
+    "first": "Organize the inbox",
+    "second": "Plan the week",
+    "third": "Order groceries",
+    "completed": "Completed",
+    "important": "Important"
   }
 }
