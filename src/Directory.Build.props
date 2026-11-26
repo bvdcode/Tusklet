@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Authors>Vadim Belov</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/bvdcode/Tusklet</RepositoryUrl>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+    <PackageReference Include="EasyExtensions.Analyzers" Version="4.0.1" PrivateAssets="all" />
+  </ItemGroup>
+</Project>
