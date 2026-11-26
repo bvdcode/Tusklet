@@ -1,0 +1,15 @@
+**
+!.editorconfig
+!Directory.Build.props
+!Tusklet.Server/
+!Tusklet.Server/**
+!tusklet.client/
+!tusklet.client/**
+**/bin
+**/obj
+**/node_modules
+**/dist
+**/coverage
+**/.vs
+**/.env
+**/.env.*
