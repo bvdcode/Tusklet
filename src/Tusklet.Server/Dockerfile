@@ -26,6 +26,7 @@ LABEL org.opencontainers.image.title="Tusklet" \
       org.opencontainers.image.licenses="MIT"
 EXPOSE 8080
 ENV ASPNETCORE_HTTP_PORTS=8080
+ENV Tusklet__SetupCodeFile=/tmp/tusklet/setup-code
 COPY --from=build /app/publish/ ./
 USER $APP_UID
 ENTRYPOINT ["dotnet", "Tusklet.Server.dll"]

@@ -1,10 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Vadim Belov <https://belov.us>
 
-using Microsoft.AspNetCore.Mvc.Testing;
 using NUnit.Framework;
 using System.Net;
-using Tusklet.Server;
 
 namespace Tusklet.Tests
 {
@@ -13,7 +11,7 @@ namespace Tusklet.Tests
         [Test]
         public async Task HealthEndpoint_ReturnsHealthy()
         {
-            await using WebApplicationFactory<Program> factory = new();
+            await using TuskletFactory factory = new();
             using HttpClient client = factory.CreateClient();
             using HttpResponseMessage response = await client.GetAsync("/health");
 

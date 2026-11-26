@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Vadim Belov <https://belov.us>
 
+using Tusklet.Server.Features.Accounts;
 using Tusklet.Server.Features.Counter;
 
 namespace Tusklet.Server
@@ -10,14 +11,19 @@ namespace Tusklet.Server
         public static Task Main(string[] args)
         {
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-            builder.Services.AddControllers();
+            builder.Services.AddControllersWithViews();
             builder.Services.AddHealthChecks();
             builder.Services.AddMediator();
+            builder.Services.AddAccounts();
             builder.Services.AddSingleton<CounterState>();
 
             WebApplication app = builder.Build();
             app.UseDefaultFiles();
             app.UseStaticFiles();
+            app.UseRouting();
+            app.UseRateLimiter();
+            app.UseAuthentication();
+            app.UseAuthorization();
             app.MapControllers();
             app.MapHealthChecks("/health");
 

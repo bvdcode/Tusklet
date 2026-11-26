@@ -20,6 +20,9 @@ jobs:
     with:
       project: src/Tusklet.slnx
       dotnet-version: 11.0.x
+      run-tests: false
+      postgres-project: src/Tusklet.Tests/Tusklet.Tests.csproj
+      postgres-connection-variable: TUSKLET_TEST_POSTGRES
 
   client:
     uses: bvdcode/github-workflows/.github/workflows/node-checks.yml@v1
@@ -47,8 +50,18 @@ jobs:
       - name: Verify the application from the container
         shell: bash
         run: |
-          docker run --detach --name tusklet-smoke --publish 127.0.0.1::8080 tusklet:smoke
-          trap 'if (( $? != 0 )); then docker logs tusklet-smoke; fi; docker rm -f tusklet-smoke' EXIT
+          docker network create tusklet-smoke
+          trap 'if (( $? != 0 )); then docker logs tusklet-smoke; fi; docker rm -f tusklet-smoke tusklet-db; docker network rm tusklet-smoke' EXIT
+          docker run --detach --name tusklet-db --network tusklet-smoke \
+            --env POSTGRES_HOST_AUTH_METHOD=trust --env POSTGRES_DB=tusklet postgres:18
+          for attempt in {1..20}; do
+            if docker exec tusklet-db pg_isready -h 127.0.0.1 -U postgres -d tusklet; then break; fi
+            sleep 1
+          done
+          docker exec tusklet-db pg_isready -h 127.0.0.1 -U postgres -d tusklet
+          docker run --detach --name tusklet-smoke --network tusklet-smoke --publish 127.0.0.1::8080 \
+            --env TUSKLET_PG_HOST=tusklet-db --env TUSKLET_PG_DATABASE=tusklet \
+            --env TUSKLET_PG_USERNAME=postgres tusklet:smoke
           base_url="http://$(docker port tusklet-smoke 8080/tcp)"
           test "$(curl -fsS --retry 20 --retry-all-errors --retry-delay 1 --max-time 2 "$base_url/health")" = Healthy
           page="$(curl -fsS "$base_url/")"
@@ -56,6 +69,8 @@ jobs:
           asset="$(sed -n 's/.*src="\([^"]*\.js\)".*/\1/p' <<< "$page")"
           test -n "$asset"
           curl -fsS -o /dev/null "$base_url$asset"
+          curl -fsS "$base_url/api/auth/session" | jq -e '.setupRequired and (.user == null)'
+          docker exec tusklet-smoke test -s /tmp/tusklet/setup-code
           curl -fsS "$base_url/api/counter" | jq -e '.count == 0'
           curl -fsS -X POST "$base_url/api/counter" | jq -e '.count == 1'
           curl -fsS "$base_url/api/counter" | jq -e '.count == 1'

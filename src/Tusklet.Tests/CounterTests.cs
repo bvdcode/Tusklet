@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Vadim Belov <https://belov.us>
 
-using Microsoft.AspNetCore.Mvc.Testing;
 using NUnit.Framework;
 using System.Net;
 using System.Net.Http.Json;
-using Tusklet.Server;
 using Tusklet.Server.Features.Counter;
 
 namespace Tusklet.Tests
@@ -17,7 +15,7 @@ namespace Tusklet.Tests
         [Test]
         public async Task Counter_IsSharedAcrossClients()
         {
-            await using WebApplicationFactory<Program> factory = new();
+            await using TuskletFactory factory = new();
             using HttpClient firstClient = factory.CreateClient();
             using HttpClient secondClient = factory.CreateClient();
 
@@ -32,7 +30,7 @@ namespace Tusklet.Tests
         {
             const int increments = 20;
 
-            await using WebApplicationFactory<Program> factory = new();
+            await using TuskletFactory factory = new();
             using HttpClient client = factory.CreateClient();
 
             long[] counts = await Task.WhenAll(Enumerable.Range(0, increments).Select(_ => IncrementAsync(client)));
@@ -44,7 +42,7 @@ namespace Tusklet.Tests
         [Test]
         public async Task MissingApiRoute_ReturnsNotFound()
         {
-            await using WebApplicationFactory<Program> factory = new();
+            await using TuskletFactory factory = new();
             using HttpClient client = factory.CreateClient();
             using HttpResponseMessage response = await client.GetAsync("/api/missing");
 
