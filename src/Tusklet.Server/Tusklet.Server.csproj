@@ -4,9 +4,17 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="EasyExtensions.EntityFrameworkCore" Version="4.0.1" />
     <PackageReference Include="EasyExtensions.Mediator" Version="4.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="11.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="11.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="11.0.0" PrivateAssets="all" Condition="'$(Configuration)' == 'Migrations'" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="11.0.0" />
     <ProjectReference Include="../tusklet.client/tusklet.client.esproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup Condition="'$(Configuration)' != 'Migrations'">
+    <Compile Remove="Data/Design/**/*.cs" />
   </ItemGroup>
 </Project>
