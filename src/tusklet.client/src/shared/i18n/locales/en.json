@@ -1,0 +1,11 @@
+{
+  "appName": "Tusklet",
+  "counter": {
+    "title": "Counter",
+    "value": "Current count",
+    "increment": "Increment",
+    "retry": "Retry",
+    "loadError": "Could not load the counter.",
+    "incrementError": "Could not increment the counter."
+  }
+}
