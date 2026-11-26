@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="Tusklet.Server/Tusklet.Server.csproj" />
+  <Project Path="Tusklet.Tests/Tusklet.Tests.csproj" />
 </Solution>
