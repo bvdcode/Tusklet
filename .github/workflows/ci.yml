@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  server:
+    uses: bvdcode/github-workflows/.github/workflows/dotnet-checks.yml@v1
+    with:
+      project: src/Tusklet.slnx
+      dotnet-version: 11.0.x
+
+  client:
+    uses: bvdcode/github-workflows/.github/workflows/node-checks.yml@v1
+    with:
+      node-version: '26'
+      working-directory: src/tusklet.client
+
+  container:
+    name: Container smoke test
+    needs: [server, client]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@v4.4.1
+      - name: Build container
+        uses: docker/build-push-action@v7.4.0
+        with:
+          context: src
+          file: src/Tusklet.Server/Dockerfile
+          load: true
+          tags: tusklet:smoke
+          cache-from: type=gha,scope=docker-${{ github.ref_name }}
+      - name: Verify the application from the container
+        shell: bash
+        run: |
+          docker run --detach --name tusklet-smoke --publish 127.0.0.1::8080 tusklet:smoke
+          trap 'if (( $? != 0 )); then docker logs tusklet-smoke; fi; docker rm -f tusklet-smoke' EXIT
+          base_url="http://$(docker port tusklet-smoke 8080/tcp)"
+          test "$(curl -fsS --retry 20 --retry-all-errors --retry-delay 1 --max-time 2 "$base_url/health")" = Healthy
+          page="$(curl -fsS "$base_url/")"
+          grep -Fq '<title>Tusklet</title>' <<< "$page"
+          asset="$(sed -n 's/.*src="\([^"]*\.js\)".*/\1/p' <<< "$page")"
+          test -n "$asset"
+          curl -fsS -o /dev/null "$base_url$asset"
+          curl -fsS "$base_url/api/counter" | jq -e '.count == 0'
+          curl -fsS -X POST "$base_url/api/counter" | jq -e '.count == 1'
+          curl -fsS "$base_url/api/counter" | jq -e '.count == 1'
+          test "$(curl -sS -o /dev/null -w '%{http_code}' "$base_url/api/missing")" = 404
+
+  version:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: [container]
+    uses: bvdcode/github-workflows/.github/workflows/gitversion.yml@v1
+
+  publish:
+    needs: version
+    permissions:
+      contents: read
+      packages: write
+    uses: bvdcode/github-workflows/.github/workflows/docker-publish.yml@v1
+    with:
+      version: ${{ needs.version.outputs.version }}
+      dockerhub-image: bvdcode/tusklet
+      ghcr-image: ghcr.io/bvdcode/tusklet
+      publish: true
+      context: src
+      file: src/Tusklet.Server/Dockerfile
+      platforms: linux/amd64,linux/arm64
+      build-args: BUILD_VERSION=${{ needs.version.outputs.version }}
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release:
+    needs: [version, publish]
+    permissions:
+      contents: write
+    uses: bvdcode/github-workflows/.github/workflows/release.yml@v1
+    with:
+      version: ${{ needs.version.outputs.version }}
