@@ -84,10 +84,6 @@ export default function TaskGroup({
                 pl: { xs: 1.5, sm: 2.5 },
                 bgcolor:
                   selectedTaskId === task.id ? "action.selected" : undefined,
-                "@container (max-width: 280px)": {
-                  alignItems: "flex-start",
-                  pl: 0.5,
-                },
               }}
             >
               <ListItemIcon sx={{ minWidth: 0 }}>
@@ -97,7 +93,6 @@ export default function TaskGroup({
                   disabled={changing}
                   icon={<RadioButtonUnchecked fontSize="small" />}
                   checkedIcon={<CheckCircleOutlined fontSize="small" />}
-                  sx={{ "@container (max-width: 280px)": { p: 0.75 } }}
                   onChange={(_, checked) =>
                     onCompletionChange(task.id, checked)
                   }
@@ -126,36 +121,35 @@ export default function TaskGroup({
                   gap: 1,
                   pl: 1,
                   pr: { xs: 1.5, sm: 2.5 },
-                  "@container (max-width: 280px)": {
-                    flexDirection: "column",
-                    alignItems: "stretch",
-                    gap: 0,
-                    pl: 0.5,
-                    pr: 1,
-                  },
                 }}
               >
                 <ListItemText
                   primary={
-                    <>
-                      {task.title}
+                    <Stack
+                      component="span"
+                      direction="row"
+                      sx={{ alignItems: "center" }}
+                    >
+                      <Typography component="span" variant="inherit" noWrap>
+                        {task.title}
+                      </Typography>
                       {task.isImportant && (
                         <StarRounded
                           id={`${titleId}-important-${task.id}`}
                           titleAccess={t("tasks.important")}
                           color="action"
                           fontSize="inherit"
-                          sx={{ ml: 0.5, verticalAlign: "text-bottom" }}
+                          sx={{ ml: 0.5, flexShrink: 0 }}
                         />
                       )}
-                    </>
+                    </Stack>
                   }
                   secondary={
                     showListName
                       ? [task.listName, task.note].filter(Boolean).join(" · ")
                       : task.note
                   }
-                  sx={{ minWidth: 0, overflowWrap: "anywhere" }}
+                  sx={{ minWidth: 0, my: 0 }}
                   slotProps={{
                     primary: {
                       sx: {
@@ -164,14 +158,7 @@ export default function TaskGroup({
                           : undefined,
                       },
                     },
-                    secondary: {
-                      sx: {
-                        display: "-webkit-box",
-                        WebkitBoxOrient: "vertical",
-                        WebkitLineClamp: 2,
-                        overflow: "hidden",
-                      },
-                    },
+                    secondary: { noWrap: true },
                   }}
                 />
                 {task.dueDate && (
@@ -180,13 +167,11 @@ export default function TaskGroup({
                     dateTime={task.dueDate}
                     variant="body2"
                     color={dueDateColor(task.dueDate, today, task.isCompleted)}
+                    noWrap
                     sx={{
+                      maxWidth: "60%",
                       flexShrink: 0,
                       textAlign: "end",
-                      "@container (max-width: 280px)": {
-                        textAlign: "start",
-                        overflowWrap: "anywhere",
-                      },
                     }}
                   >
                     {date.format(new Date(task.dueDate))}

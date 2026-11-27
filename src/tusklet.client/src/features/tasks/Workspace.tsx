@@ -182,7 +182,7 @@ export default function Workspace(account: AccountPage) {
       >
         {t("tasks.title")}
       </Typography>
-      <Stack direction="row">
+      <Stack direction="row" sx={{ mx: { md: -3 } }}>
         <Stack
           ref={groupsRef}
           spacing={2}
@@ -190,9 +190,22 @@ export default function Workspace(account: AccountPage) {
             flex: 1,
             minWidth: 0,
             mx: "auto",
-            maxWidth: (theme) =>
-              `calc(${theme.breakpoints.values.md}px - ${theme.spacing(6)})`,
-            containerType: "inline-size",
+            maxWidth: (theme) => ({
+              xs: `calc(${theme.breakpoints.values.md}px - ${theme.spacing(6)})`,
+              md: detailsOpen
+                ? "100%"
+                : `calc(${theme.breakpoints.values.md}px - ${theme.spacing(6)})`,
+            }),
+            transition: (theme) =>
+              theme.transitions.create("max-width", {
+                duration: detailsOpen
+                  ? theme.transitions.duration.enteringScreen
+                  : theme.transitions.duration.leavingScreen,
+                easing: detailsOpen
+                  ? theme.transitions.easing.easeOut
+                  : theme.transitions.easing.sharp,
+              }),
+            "@media (prefers-reduced-motion: reduce)": { transition: "none" },
           }}
         >
           {loading && (

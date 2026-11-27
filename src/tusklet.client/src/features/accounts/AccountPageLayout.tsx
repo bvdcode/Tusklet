@@ -44,7 +44,7 @@ export default function AccountPageLayout({
       />
       <Container
         component="main"
-        maxWidth={expanded ? "lg" : "md"}
+        maxWidth={expanded ? false : "md"}
         sx={{ py: actions ? { xs: 1.5, md: 2 } : { xs: 3, md: 5 } }}
       >
         {notice}

@@ -1,6 +1,7 @@
 {
   "appName": "Tusklet",
   "common": {
+    "back": "Kembali",
     "loading": "Memuat",
     "close": "Tutup",
     "cancel": "Batal",

@@ -1,6 +1,7 @@
 {
   "appName": "Tusklet",
   "common": {
+    "back": "ফিরে যান",
     "loading": "লোড হচ্ছে",
     "close": "বন্ধ করুন",
     "cancel": "বাতিল করুন",

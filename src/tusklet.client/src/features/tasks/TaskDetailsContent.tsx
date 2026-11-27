@@ -1,3 +1,4 @@
+import ArrowBackRounded from "@mui/icons-material/ArrowBackRounded";
 import CloseRounded from "@mui/icons-material/CloseRounded";
 import {
   Box,
@@ -36,10 +37,12 @@ export default function TaskDetailsContent({
   task,
   titleId,
   onClose,
+  compact,
 }: {
   task: TaskRow;
   titleId: string;
   onClose: () => void;
+  compact: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.resolvedLanguage;
@@ -135,22 +138,43 @@ export default function TaskDetailsContent({
           flexShrink: 0,
         }}
       >
+        {compact && (
+          <IconButton
+            onClick={onClose}
+            aria-label={t("common.back")}
+            sx={{ flexShrink: 0 }}
+          >
+            <ArrowBackRounded
+              sx={{
+                transform: (theme) =>
+                  theme.direction === "rtl" ? "scaleX(-1)" : undefined,
+              }}
+            />
+          </IconButton>
+        )}
         <Typography
           id={titleId}
           component="h2"
           variant="h6"
-          sx={{ overflowWrap: "anywhere", minWidth: 0 }}
+          sx={{
+            overflowWrap: "anywhere",
+            minWidth: 0,
+            flex: 1,
+            alignSelf: "center",
+          }}
         >
           {task.title}
         </Typography>
-        <IconButton
-          onClick={onClose}
-          aria-label={t("common.close")}
-          size="small"
-          sx={{ flexShrink: 0 }}
-        >
-          <CloseRounded />
-        </IconButton>
+        {!compact && (
+          <IconButton
+            onClick={onClose}
+            aria-label={t("common.close")}
+            size="small"
+            sx={{ flexShrink: 0 }}
+          >
+            <CloseRounded />
+          </IconButton>
+        )}
       </Stack>
       <Box sx={{ px: 2, pb: 2, flex: 1, minHeight: 0, overflowY: "auto" }}>
         <List
