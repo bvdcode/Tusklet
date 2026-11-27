@@ -70,7 +70,7 @@ To generate a migration, use `dotnet-ef` 11 and the `Migrations` configuration, 
 
 ```sh
 dotnet ef migrations add MigrationName --project src/Tusklet.Server \
-  --configuration Migrations --output-dir Data/Migrations
+  --configuration Migrations --output-dir Migrations
 ```
 
 ## API

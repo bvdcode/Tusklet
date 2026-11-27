@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using System.Globalization;
 using Tusklet.Server;
-using Tusklet.Server.Data;
+using Tusklet.Server.Database;
 
 namespace Tusklet.Tests
 {

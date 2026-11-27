@@ -4,7 +4,7 @@
 using NUnit.Framework;
 using System.Net;
 using System.Net.Http.Json;
-using Tusklet.Server.Features.Counter;
+using Tusklet.Server.Models.Dto;
 
 namespace Tusklet.Tests
 {

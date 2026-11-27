@@ -4,6 +4,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <Using Include="Tusklet.Server.Database" />
     <PackageReference Include="EasyExtensions.EntityFrameworkCore" Version="4.0.1" />
     <PackageReference Include="EasyExtensions.Mediator" Version="4.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="11.0.0" />
@@ -15,6 +16,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup Condition="'$(Configuration)' != 'Migrations'">
-    <Compile Remove="Data/Design/**/*.cs" />
+    <Compile Remove="Database/Design/**/*.cs" />
   </ItemGroup>
 </Project>

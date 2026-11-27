@@ -9,7 +9,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Tusklet.Server;
-using Tusklet.Server.Data;
+using Tusklet.Server.Database;
 
 namespace Tusklet.Tests
 {
@@ -46,7 +46,7 @@ namespace Tusklet.Tests
 
             await using AsyncServiceScope scope = factory.Services.CreateAsyncScope();
             TuskletDbContext db = scope.ServiceProvider.GetRequiredService<TuskletDbContext>();
-            AppUser user = await db.Users.SingleAsync();
+            User user = await db.Users.SingleAsync();
             Assert.That(user.IsAdmin, Is.True);
             Assert.That(user.PasswordHash, Is.Not.EqualTo(Password));
         }
