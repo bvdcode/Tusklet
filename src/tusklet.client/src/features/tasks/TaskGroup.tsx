@@ -52,6 +52,7 @@ export default function TaskGroup({
         <Typography
           component="h2"
           variant="subtitle1"
+          align="center"
           id={titleId}
           data-task-group={groupId}
           sx={
