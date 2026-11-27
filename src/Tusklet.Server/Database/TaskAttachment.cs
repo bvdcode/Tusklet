@@ -11,6 +11,10 @@ namespace Tusklet.Server.Database
     [Table("task_attachments")]
     public class TaskAttachment : BaseEntity<Guid>
     {
+        public TaskAttachment() { }
+
+        internal TaskAttachment(Guid id) => Id = id;
+
         [Column("task_item_id")]
         public Guid TaskItemId { get; set; }
 

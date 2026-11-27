@@ -12,6 +12,10 @@ namespace Tusklet.Server.Database
     [Index(nameof(OwnerId), nameof(Position))]
     public class TaskList : BaseEntity<Guid>
     {
+        public TaskList() { }
+
+        internal TaskList(Guid id) => Id = id;
+
         [Column("owner_id")]
         public Guid OwnerId { get; set; }
 
