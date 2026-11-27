@@ -1,10 +1,4 @@
-import {
-  Alert,
-  Button,
-  CircularProgress,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Alert, Button, Stack, Typography } from "@mui/material";
 import {
   useMutation,
   useQueries,
@@ -13,6 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import PageProgress from "../../shared/PageProgress";
 import AccountPageLayout, {
   type AccountPage,
 } from "../accounts/AccountPageLayout";
@@ -63,13 +58,17 @@ export default function Workspace(account: AccountPage) {
       retry: false,
     })),
   });
-  const rows = visibleLists.flatMap((list, index) =>
-    (items[index]?.data ?? []).map((task) => ({
-      ...task,
-      listId: list.id,
-      listName: list.isInbox ? t("tasks.inbox") : list.name,
-    })),
-  );
+  const loading = lists.isPending || items.some((query) => query.isPending);
+  const loadFailed = lists.isError || items.some((query) => query.isError);
+  const rows = loading
+    ? []
+    : visibleLists.flatMap((list, index) =>
+        (items[index]?.data ?? []).map((task) => ({
+          ...task,
+          listId: list.id,
+          listName: list.isInbox ? t("tasks.inbox") : list.name,
+        })),
+      );
   const groups = arrangeTasks(rows, grouping, sorting, i18n.resolvedLanguage, {
     open: t("tasks.open"),
     completed: t("tasks.completed"),
@@ -90,8 +89,6 @@ export default function Workspace(account: AccountPage) {
   );
   const currentTask = rows.find((task) => task.id === details?.task.id);
   const detailsOpen = details?.open === true && currentTask !== undefined;
-  const loading = lists.isPending || items.some((query) => query.isPending);
-  const loadFailed = lists.isError || items.some((query) => query.isError);
 
   const create = useMutation({
     mutationFn: (input: CreateTaskInput) => createTask(input, requestToken),
@@ -137,13 +134,15 @@ export default function Workspace(account: AccountPage) {
       expanded
       headerRef={headerRef}
       center={
-        groupHeadings.length > 0 && (
+        groupHeadings.length > 0 ? (
           <TaskGroupNavigation
             key={`${grouping}:${selectedId}`}
             groups={groupHeadings}
             headerRef={headerRef}
             groupsRef={groupsRef}
           />
+        ) : (
+          loading && grouping !== "none" && <span aria-hidden="true" />
         )
       }
       actions={
@@ -170,6 +169,7 @@ export default function Workspace(account: AccountPage) {
         />
       }
     >
+      {loading && <PageProgress />}
       <Typography
         component="h1"
         sx={{
@@ -208,9 +208,6 @@ export default function Workspace(account: AccountPage) {
             "@media (prefers-reduced-motion: reduce)": { transition: "none" },
           }}
         >
-          {loading && (
-            <CircularProgress size={24} aria-label={t("common.loading")} />
-          )}
           {loadFailed && (
             <Alert
               severity="error"

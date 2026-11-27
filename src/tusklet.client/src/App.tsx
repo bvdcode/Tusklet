@@ -1,10 +1,4 @@
-import {
-  Alert,
-  Button,
-  CircularProgress,
-  Container,
-  Stack,
-} from "@mui/material";
+import { Alert, Button, Container, Stack } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -20,6 +14,7 @@ import AccountPageLayout from "./features/accounts/AccountPageLayout";
 import AccountLayout from "./features/accounts/AccountLayout";
 import SignInForm from "./features/accounts/SignInForm";
 import UserPreferencesProvider from "./features/accounts/UserPreferencesProvider";
+import PageProgress from "./shared/PageProgress";
 
 const Workspace = lazy(() => import("./features/tasks/Workspace"));
 const ProfilePage = lazy(() => import("./features/accounts/ProfilePage"));
@@ -59,22 +54,22 @@ export default function App() {
     ) : null;
 
   if (!session.data) {
+    if (!session.isError) {
+      return <PageProgress />;
+    }
+
     return (
       <Container
         component="main"
         maxWidth="sm"
         sx={{ flex: 1, display: "grid", placeItems: "center" }}
       >
-        {session.isError ? (
-          <Stack spacing={2}>
-            <Alert severity="error">{t("auth.loadError")}</Alert>
-            <Button variant="outlined" onClick={() => void session.refetch()}>
-              {t("common.retry")}
-            </Button>
-          </Stack>
-        ) : (
-          <CircularProgress size={28} aria-label={t("common.loading")} />
-        )}
+        <Stack spacing={2}>
+          <Alert severity="error">{t("auth.loadError")}</Alert>
+          <Button variant="outlined" onClick={() => void session.refetch()}>
+            {t("common.retry")}
+          </Button>
+        </Stack>
       </Container>
     );
   }
@@ -89,19 +84,15 @@ export default function App() {
     };
     return (
       <UserPreferencesProvider key={user.id} user={user}>
-        <Suspense
-          fallback={
-            <AccountPageLayout {...account}>
-              <CircularProgress size={24} aria-label={t("common.loading")} />
-            </AccountPageLayout>
-          }
-        >
+        <Suspense fallback={<PageProgress />}>
           <Routes>
             <Route path="/" element={<Workspace {...account} />} />
             <Route
               element={
                 <AccountPageLayout {...account}>
-                  <Outlet />
+                  <Suspense fallback={<PageProgress />}>
+                    <Outlet />
+                  </Suspense>
                 </AccountPageLayout>
               }
             >
