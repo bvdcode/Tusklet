@@ -26,6 +26,8 @@ namespace Tusklet.Server
             app.UseAuthorization();
             app.MapControllers();
             app.MapHealthChecks("/health");
+            app.MapFallbackToFile("/profile", "index.html");
+            app.MapFallbackToFile("/admin", "index.html");
 
             return app.RunAsync();
         }

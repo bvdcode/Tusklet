@@ -12,13 +12,16 @@ namespace Tusklet.Server.Auth
 {
     internal static class OpenIdEvents
     {
-        private const string FailureUrl = "/?openid=failed";
+        public static string FailureLocation(string? linkSession)
+        {
+            return linkSession is null ? "/?openid=failed" : "/profile?openid=failed";
+        }
 
         public static Task RedirectAsync(RedirectContext context, OpenIdConfiguration? configuration)
         {
             if (configuration is null)
             {
-                context.Response.Redirect(FailureUrl);
+                context.Response.Redirect(FailureLocation(context.Properties.GetString(OpenIdOptions.LinkSessionKey)));
                 context.HandleResponse();
                 return Task.CompletedTask;
             }
@@ -34,24 +37,25 @@ namespace Tusklet.Server.Auth
             ClaimsPrincipal? identity = context.Principal;
             string? issuer = identity?.FindFirstValue("iss");
             string? subject = identity?.FindFirstValue("sub");
+            string? linkSession = context.Properties?.GetString(OpenIdOptions.LinkSessionKey);
+            string failureLocation = FailureLocation(linkSession);
             if (string.IsNullOrEmpty(issuer) || string.IsNullOrEmpty(subject)
                 || issuer.Length > 512 || subject.Length > 255
                 || !Guid.TryParse(context.Properties?.GetString(OpenIdOptions.RevisionKey), out Guid revision))
             {
-                context.Response.Redirect(FailureUrl);
+                context.Response.Redirect(failureLocation);
                 return;
             }
 
             HttpContext http = context.HttpContext;
             Guid? linkUserId = null;
-            string? linkSession = context.Properties.GetString(OpenIdOptions.LinkSessionKey);
             if (linkSession is not null)
             {
                 AuthenticateResult current = await http.AuthenticateAsync(Session.Scheme);
                 if (current.Principal?.FindFirstValue(Session.SessionIdClaim) != linkSession
                     || Session.GetUserId(current.Principal) is not Guid userId)
                 {
-                    context.Response.Redirect(FailureUrl);
+                    context.Response.Redirect(failureLocation);
                     return;
                 }
                 linkUserId = userId;
@@ -62,7 +66,7 @@ namespace Tusklet.Server.Auth
                 http.RequestAborted);
             if (user is null)
             {
-                context.Response.Redirect(FailureUrl);
+                context.Response.Redirect(failureLocation);
                 return;
             }
 
@@ -70,13 +74,13 @@ namespace Tusklet.Server.Auth
             {
                 await Session.SignInAsync(http, user);
             }
-            context.Response.Redirect(linkUserId is null ? "/" : "/?openid=linked");
+            context.Response.Redirect(linkUserId is null ? "/" : "/profile?openid=linked");
         }
 
         public static Task FailAsync(RemoteFailureContext context)
         {
             context.HandleResponse();
-            context.Response.Redirect(FailureUrl);
+            context.Response.Redirect(FailureLocation(context.Properties?.GetString(OpenIdOptions.LinkSessionKey)));
             return Task.CompletedTask;
         }
     }

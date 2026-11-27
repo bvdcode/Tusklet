@@ -103,7 +103,7 @@ namespace Tusklet.Server.Controllers
         {
             if (!HttpContext.RequestServices.GetRequiredService<OpenIdOptions>().Enabled)
             {
-                return LocalRedirect("/?openid=failed");
+                return LocalRedirect(OpenIdEvents.FailureLocation(linkSession));
             }
 
             AuthenticationProperties properties = new() { RedirectUri = "/" };
@@ -120,7 +120,7 @@ namespace Tusklet.Server.Controllers
                 && (exception is InvalidOperationException || exception is HttpRequestException))
             {
                 logger.LogWarning("Could not start an OpenID Connect challenge ({ErrorType})", exception.GetType().Name);
-                return LocalRedirect("/?openid=failed");
+                return LocalRedirect(OpenIdEvents.FailureLocation(linkSession));
             }
         }
     }

@@ -67,6 +67,9 @@ jobs:
           test "$(curl -fsS --retry 20 --retry-all-errors --retry-delay 1 --max-time 2 "$base_url/health")" = Healthy
           page="$(curl -fsS "$base_url/")"
           grep -Fq '<title>Tusklet</title>' <<< "$page"
+          for path in profile admin; do
+            test "$(curl -fsS "$base_url/$path")" = "$page"
+          done
           asset="$(sed -n 's/.*src="\([^"]*\.js\)".*/\1/p' <<< "$page")"
           test -n "$asset"
           curl -fsS -o /dev/null "$base_url$asset"

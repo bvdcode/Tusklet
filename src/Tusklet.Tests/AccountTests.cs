@@ -85,7 +85,7 @@ namespace Tusklet.Tests
             using HttpResponseMessage linkResult = await browser.GetAsync(
                 provider.Authorize(link.Headers.Location!, Callback));
             Assert.That(provider.CallbackFailure?.Message, Is.Null);
-            Assert.That(linkResult.Headers.Location?.OriginalString, Is.EqualTo("/?openid=linked"));
+            Assert.That(linkResult.Headers.Location?.OriginalString, Is.EqualTo("/profile?openid=linked"));
             JsonElement linked = await SessionAsync(browser);
             Assert.That(linked.GetProperty("user").GetProperty("openIdLinked").GetBoolean(), Is.True);
             using HttpResponseMessage logout = await SendAsync(browser, linked, HttpMethod.Post, "/api/auth/logout");
