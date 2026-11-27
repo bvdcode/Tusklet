@@ -16,6 +16,7 @@ import {
   MenuItem,
   Toolbar,
   Typography,
+  useTheme,
 } from "@mui/material";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -38,6 +39,7 @@ type Props = {
 
 export default function AccountHeader({ session, user, onLogout }: Props) {
   const { t } = useTranslation();
+  const menuEdge = useTheme().direction === "rtl" ? "left" : "right";
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
@@ -111,8 +113,8 @@ export default function AccountHeader({ session, user, onLogout }: Props) {
             anchorEl={anchor}
             open={open}
             onClose={close}
-            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-            transformOrigin={{ vertical: "top", horizontal: "right" }}
+            anchorOrigin={{ vertical: "bottom", horizontal: menuEdge }}
+            transformOrigin={{ vertical: "top", horizontal: menuEdge }}
             slotProps={{
               list: {
                 id: "account-menu",

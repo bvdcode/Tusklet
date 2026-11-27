@@ -1,13 +1,11 @@
 import "@fontsource-variable/dm-sans";
-import { CssBaseline, ThemeProvider } from "@mui/material";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./shared/i18n";
-import theme from "./shared/theme";
-import { readThemeMode } from "./shared/themeMode";
+import LocaleThemeProvider from "./shared/LocaleThemeProvider";
 
 const root = document.getElementById("root");
 if (root === null) {
@@ -18,18 +16,12 @@ const queryClient = new QueryClient();
 
 createRoot(root).render(
   <StrictMode>
-    <ThemeProvider
-      theme={theme}
-      defaultMode={readThemeMode()}
-      storageManager={null}
-      disableTransitionOnChange
-    >
-      <CssBaseline />
+    <LocaleThemeProvider>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <App />
         </BrowserRouter>
       </QueryClientProvider>
-    </ThemeProvider>
+    </LocaleThemeProvider>
   </StrictMode>,
 );

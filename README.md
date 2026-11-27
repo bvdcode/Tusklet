@@ -45,6 +45,10 @@ In **Profile settings**, choose a Microsoft To Do backup ZIP. The supported form
 
 The import stores text notes, dates, priorities, task statuses, checklist steps, attachments, linked resources, recurrence rules and reminder settings. Imported schedules and links are available in task details. Shared lists become personal copies. The preview identifies tasks with unsupported details.
 
+## Interface language
+
+Choose a language in **Profile settings**. **Auto** follows the browser’s preferred languages. The available languages are English, Russian, Spanish, French, Portuguese, Indonesian, Simplified Chinese, Hindi, Bengali, Arabic and Urdu. The selection is stored in the browser.
+
 ## Develop
 
 Install the .NET 11 SDK and Node.js 26.

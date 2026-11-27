@@ -108,7 +108,7 @@ export default function Workspace({
             >
               {lists.data.map((list) => (
                 <MenuItem key={list.id} value={list.id}>
-                  {list.name}
+                  {list.isInbox ? t("tasks.inbox") : list.name}
                 </MenuItem>
               ))}
             </Select>

@@ -12,7 +12,7 @@ export type TaskImportReport = {
   links: number;
 };
 
-export type TaskList = { id: string; name: string };
+export type TaskList = { id: string; name: string; isInbox: boolean };
 
 export type TaskProgress =
   "NotStarted" | "InProgress" | "WaitingOnOthers" | "Deferred";

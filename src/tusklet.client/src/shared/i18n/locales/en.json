@@ -54,7 +54,9 @@
     "theme": "Theme",
     "systemTheme": "System",
     "lightTheme": "Light",
-    "darkTheme": "Dark"
+    "darkTheme": "Dark",
+    "language": "Language",
+    "autoLanguage": "Auto"
   },
   "import": {
     "title": "Import from Microsoft To Do",
@@ -77,6 +79,7 @@
   "tasks": {
     "title": "Tasks",
     "list": "Task list",
+    "inbox": "Inbox",
     "empty": "No tasks yet.",
     "loadError": "Could not load tasks.",
     "create": "New task",

@@ -1,4 +1,4 @@
-import { createTheme } from "@mui/material";
+import { createTheme, type ThemeOptions } from "@mui/material/styles";
 
 type BrandPalette = {
   main: string;
@@ -17,7 +17,7 @@ declare module "@mui/material/styles" {
   }
 }
 
-const theme = createTheme({
+const options: ThemeOptions = {
   cssVariables: { colorSchemeSelector: "data-color-scheme" },
   shape: { borderRadius: 12 },
   typography: {
@@ -92,6 +92,9 @@ const theme = createTheme({
       },
     },
   },
-});
+};
+
+const theme = createTheme(options);
+export const rtlTheme = createTheme({ ...options, direction: "rtl" });
 
 export default theme;

@@ -11,6 +11,7 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import LanguageSettings from "./LanguageSettings";
 import OpenIdButton from "./OpenIdButton";
 import TaskImportSettings from "./TaskImportSettings";
 import ThemeSettings from "./ThemeSettings";
@@ -126,6 +127,8 @@ export default function ProfilePage({ session, user }: Props) {
         )}
         <Divider />
         <ThemeSettings />
+        <Divider />
+        <LanguageSettings />
         <Divider />
         <TaskImportSettings requestToken={session.requestToken} />
       </Stack>
