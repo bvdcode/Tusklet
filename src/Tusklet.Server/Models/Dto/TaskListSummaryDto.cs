@@ -8,5 +8,6 @@ namespace Tusklet.Server.Models.Dto
     public class TaskListSummaryDto : BaseDto<Guid>
     {
         public required string Name { get; init; }
+        public bool IsInbox { get; init; }
     }
 }

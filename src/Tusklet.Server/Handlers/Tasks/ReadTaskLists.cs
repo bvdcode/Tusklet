@@ -16,7 +16,8 @@ namespace Tusklet.Server.Handlers.Tasks
         {
             return db.TaskLists.Where(list => list.OwnerId == request.OwnerId)
                 .OrderBy(list => list.Position).ThenBy(list => list.Id)
-                .Select(list => new TaskListSummaryDto { Id = list.Id, Name = list.Name }).ToListAsync(ct);
+                .Select(list => new TaskListSummaryDto { Id = list.Id, Name = list.Name, IsInbox = list.Id == list.OwnerId })
+                .ToListAsync(ct);
         }
     }
 }

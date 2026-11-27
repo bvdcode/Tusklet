@@ -37,6 +37,7 @@ namespace Tusklet.Tests
 
             TaskListSummaryDto[]? lists = await browser.GetFromJsonAsync<TaskListSummaryDto[]>("/api/tasks/lists");
             Assert.That(lists?.Single().Name, Is.EqualTo("Inbox"));
+            Assert.That(lists?.Single().IsInbox, Is.True);
             TaskItemSummaryDto[]? items = await browser.GetFromJsonAsync<TaskItemSummaryDto[]>($"/api/tasks/lists/{listId}");
             TaskItemSummaryDto task = items!.Single(item => item.Title == "Read the draft");
             using (Assert.EnterMultipleScope())
