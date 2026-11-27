@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using Tusklet.Server.Auth;
 using Tusklet.Server.Handlers.Tasks;
+using Tusklet.Server.Models.Requests;
 using Tusklet.Server.Services;
 
 namespace Tusklet.Server.Controllers
@@ -32,6 +33,27 @@ namespace Tusklet.Server.Controllers
             return Session.GetUserId(User) is Guid ownerId
                 ? Ok(await mediator.Send(new ReadTaskItems(ownerId, listId), ct))
                 : Unauthorized();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateAsync(CreateTaskInput input, CancellationToken ct)
+        {
+            if (Session.GetUserId(User) is not Guid ownerId)
+            {
+                return Unauthorized();
+            }
+            Guid? listId = await mediator.Send(new CreateTask(ownerId, input), ct);
+            return listId.HasValue ? StatusCode(StatusCodes.Status201Created, new { ListId = listId.Value }) : NotFound();
+        }
+
+        [HttpPut("{taskId:guid}/completion")]
+        public async Task<IActionResult> SetCompletionAsync(Guid taskId, TaskCompletionInput input, CancellationToken ct)
+        {
+            if (Session.GetUserId(User) is not Guid ownerId)
+            {
+                return Unauthorized();
+            }
+            return await mediator.Send(new SetTaskCompletion(ownerId, taskId, input.IsCompleted), ct) ? NoContent() : NotFound();
         }
 
         [HttpPost("import")]
