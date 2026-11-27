@@ -2,8 +2,10 @@ import {
   Alert,
   Button,
   CircularProgress,
+  Fade,
   Stack,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 import {
   useMutation,
@@ -31,6 +33,7 @@ import {
   type CreateTaskInput,
 } from "./tasksApi";
 import { arrangeTasks, type TaskRow } from "./taskView";
+import useActiveTaskGroup from "./useActiveTaskGroup";
 
 export default function Workspace(account: AccountPage) {
   const { t, i18n } = useTranslation();
@@ -38,6 +41,11 @@ export default function Workspace(account: AccountPage) {
   const [selectedId, setSelectedId] = useState("");
   const { preferences, changePreference } = useUserPreferences();
   const { taskGrouping: grouping, taskSorting: sorting } = preferences;
+  const { headerRef, groupsRef, activeGroupId } = useActiveTaskGroup(
+    grouping,
+    selectedId,
+  );
+  const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   const [creating, setCreating] = useState(false);
   const [details, setDetails] = useState<{ task: TaskRow; open: boolean }>();
   const ownerId = account.user.id;
@@ -70,7 +78,20 @@ export default function Workspace(account: AccountPage) {
   const groups = arrangeTasks(rows, grouping, sorting, i18n.resolvedLanguage, {
     open: t("tasks.open"),
     completed: t("tasks.completed"),
-  });
+  })
+    .filter((group) => group.tasks.length > 0)
+    .map((group) => ({
+      ...group,
+      title:
+        grouping === "status"
+          ? t("tasks.statusGroupTitle", {
+              status: group.title,
+              taskCount: group.tasks.length,
+            })
+          : group.title,
+    }));
+  const activeGroup =
+    groups.find((group) => group.id === activeGroupId) ?? groups[0];
   const currentTask = rows.find((task) => task.id === details?.task.id);
   const detailsOpen = details?.open === true && currentTask !== undefined;
   const loading = lists.isPending || items.some((query) => query.isPending);
@@ -118,6 +139,22 @@ export default function Workspace(account: AccountPage) {
     <AccountPageLayout
       {...account}
       expanded
+      headerRef={headerRef}
+      center={
+        activeGroup?.title && (
+          <Fade key={activeGroup.id} in timeout={reducedMotion ? 0 : 180}>
+            <Typography
+              component="div"
+              variant="subtitle2"
+              noWrap
+              title={activeGroup.title}
+              sx={{ fontSize: { xs: "0.8125rem", sm: "0.875rem" } }}
+            >
+              {activeGroup.title}
+            </Typography>
+          </Fade>
+        )
+      }
       actions={
         <WorkspaceControls
           lists={taskLists}
@@ -156,6 +193,7 @@ export default function Workspace(account: AccountPage) {
       </Typography>
       <Stack direction="row">
         <Stack
+          ref={groupsRef}
           spacing={2}
           sx={{
             flex: 1,
@@ -187,29 +225,22 @@ export default function Workspace(account: AccountPage) {
           {completion.isError && (
             <Alert severity="error">{t("tasks.completionError")}</Alert>
           )}
-          {groups
-            .filter((group) => group.tasks.length > 0)
-            .map((group) => (
-              <TaskGroup
-                key={group.id}
-                title={
-                  grouping === "status"
-                    ? t("tasks.statusGroupTitle", {
-                        status: group.title,
-                        taskCount: group.tasks.length,
-                      })
-                    : group.title
-                }
-                tasks={group.tasks}
-                showListName={!active && grouping !== "list"}
-                changing={completion.isPending}
-                selectedTaskId={detailsOpen ? currentTask.id : null}
-                onTaskSelect={toggleDetails}
-                onCompletionChange={(id, isCompleted) =>
-                  completion.mutate({ id, isCompleted })
-                }
-              />
-            ))}
+          {groups.map((group, index) => (
+            <TaskGroup
+              key={group.id}
+              groupId={group.id}
+              title={group.title}
+              hideHeading={index === 0}
+              tasks={group.tasks}
+              showListName={!active && grouping !== "list"}
+              changing={completion.isPending}
+              selectedTaskId={detailsOpen ? currentTask.id : null}
+              onTaskSelect={toggleDetails}
+              onCompletionChange={(id, isCompleted) =>
+                completion.mutate({ id, isCompleted })
+              }
+            />
+          ))}
         </Stack>
         <TaskDetailsPanel
           task={currentTask ?? details?.task}

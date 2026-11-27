@@ -11,10 +11,18 @@ import type { TaskItem } from "./tasksApi";
 
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
 
 test("shows tasks across lists and lets users sort, group and select a list", async () => {
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      observe = vi.fn();
+      disconnect = vi.fn();
+    },
+  );
   const task: TaskItem = {
     id: "first",
     title: "Zebra",
@@ -152,7 +160,24 @@ test("shows tasks across lists and lets users sort, group and select a list", as
     key: "Escape",
   });
   expect(await screen.findByRole("list", { name: "To do (2)" })).toBeTruthy();
-  expect(screen.getByRole("list", { name: "Completed (1)" })).toBeTruthy();
+  const completedHeading = screen.getByRole("heading", {
+    name: "Completed (1)",
+  });
+  vi.spyOn(header, "getBoundingClientRect").mockReturnValue(
+    new DOMRect(0, 0, 360, 61),
+  );
+  let completedTop = 500;
+  vi.spyOn(completedHeading, "getBoundingClientRect").mockImplementation(
+    () => new DOMRect(0, completedTop, 300, 24),
+  );
+  fireEvent.scroll(window);
+  expect(await within(header).findByText("To do (2)")).toBeTruthy();
+  completedTop = 35;
+  fireEvent.scroll(window);
+  expect(await within(header).findByText("Completed (1)")).toBeTruthy();
+  completedTop = 200;
+  fireEvent.scroll(window);
+  expect(await within(header).findByText("To do (2)")).toBeTruthy();
 
   fireEvent.click(filters);
   const selector = screen.getByRole("combobox", { name: "Task list" });

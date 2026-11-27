@@ -14,12 +14,13 @@ import {
   ListItemText,
   Menu,
   MenuItem,
+  Stack,
   Toolbar,
   Typography,
   useTheme,
 } from "@mui/material";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, type ReactNode } from "react";
+import { useState, type ReactNode, type Ref } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import Brand from "../../shared/Brand";
@@ -36,6 +37,8 @@ type Props = {
   user: SessionUser;
   onLogout: () => void;
   actions?: ReactNode;
+  center?: ReactNode;
+  headerRef?: Ref<HTMLElement>;
 };
 
 export default function AccountHeader({
@@ -43,6 +46,8 @@ export default function AccountHeader({
   user,
   onLogout,
   actions,
+  center,
+  headerRef,
 }: Props) {
   const { t } = useTranslation();
   const menuEdge = useTheme().direction === "rtl" ? "left" : "right";
@@ -72,6 +77,7 @@ export default function AccountHeader({
 
   return (
     <AppBar
+      ref={headerRef}
       position="sticky"
       color="inherit"
       elevation={0}
@@ -87,6 +93,13 @@ export default function AccountHeader({
           sx={{
             justifyContent: "space-between",
             gap: { xs: 0.25, sm: 2 },
+            ...(center && {
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr minmax(0, auto) 1fr",
+                sm: "minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr)",
+              },
+            }),
             minHeight: {
               xs: "var(--tusklet-account-toolbar-height)",
               sm: "var(--tusklet-account-toolbar-height)",
@@ -102,29 +115,48 @@ export default function AccountHeader({
               textDecoration: "none",
               borderRadius: 1,
               flexShrink: 0,
+              justifySelf: "start",
+              ...(center && {
+                "& .MuiTypography-root": {
+                  display: { xs: "none", sm: "block" },
+                },
+              }),
             }}
           >
             <Brand />
           </Box>
-          {actions}
-          <IconButton
-            id="account-menu-button"
-            aria-label={t("auth.accountMenu")}
-            title={t("auth.accountMenu")}
-            aria-haspopup="menu"
-            aria-controls={open ? "account-menu" : undefined}
-            aria-expanded={open}
-            onClick={(event) => setAnchor(event.currentTarget)}
-            sx={{ p: 0.5, flexShrink: 0 }}
+          {center && (
+            <Box sx={{ minWidth: 0, textAlign: "center" }}>{center}</Box>
+          )}
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: "center",
+              justifySelf: "end",
+              flexShrink: 0,
+              gap: { xs: 0.25, sm: 2 },
+            }}
           >
-            <Avatar
-              src={user.pictureUrl ?? undefined}
-              slotProps={{ img: { alt: "", referrerPolicy: "no-referrer" } }}
-              aria-hidden="true"
+            {actions}
+            <IconButton
+              id="account-menu-button"
+              aria-label={t("auth.accountMenu")}
+              title={t("auth.accountMenu")}
+              aria-haspopup="menu"
+              aria-controls={open ? "account-menu" : undefined}
+              aria-expanded={open}
+              onClick={(event) => setAnchor(event.currentTarget)}
+              sx={{ p: 0.5, flexShrink: 0 }}
             >
-              {Array.from(user.username)[0]?.toLocaleUpperCase()}
-            </Avatar>
-          </IconButton>
+              <Avatar
+                src={user.pictureUrl ?? undefined}
+                slotProps={{ img: { alt: "", referrerPolicy: "no-referrer" } }}
+                aria-hidden="true"
+              >
+                {Array.from(user.username)[0]?.toLocaleUpperCase()}
+              </Avatar>
+            </IconButton>
+          </Stack>
           <Menu
             anchorEl={anchor}
             open={open}

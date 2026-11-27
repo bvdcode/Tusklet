@@ -1,5 +1,5 @@
 import { Alert, Button, Container } from "@mui/material";
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 import { useTranslation } from "react-i18next";
 import AccountHeader from "./AccountHeader";
 import type { SessionStatus, SessionUser } from "./accountsApi";
@@ -18,10 +18,14 @@ export default function AccountPageLayout({
   onLogout,
   notice,
   actions,
+  center,
+  headerRef,
   expanded,
   children,
 }: AccountPage & {
   actions?: ReactNode;
+  center?: ReactNode;
+  headerRef?: Ref<HTMLElement>;
   expanded?: boolean;
   children: ReactNode;
 }) {
@@ -35,6 +39,8 @@ export default function AccountPageLayout({
         user={user}
         onLogout={onLogout}
         actions={actions}
+        center={center}
+        headerRef={headerRef}
       />
       <Container
         component="main"

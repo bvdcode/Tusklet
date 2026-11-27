@@ -18,7 +18,9 @@ import { dueDateColor, getLocalToday } from "./taskDueDate";
 import type { TaskRow } from "./taskView";
 
 export default function TaskGroup({
+  groupId,
   title,
+  hideHeading,
   tasks,
   showListName,
   changing,
@@ -26,7 +28,9 @@ export default function TaskGroup({
   onTaskSelect,
   onCompletionChange,
 }: {
+  groupId: string;
   title?: string;
+  hideHeading: boolean;
   tasks: TaskRow[];
   showListName: boolean;
   changing: boolean;
@@ -43,9 +47,25 @@ export default function TaskGroup({
   const today = getLocalToday();
 
   return (
-    <Stack spacing={1.25}>
+    <Stack spacing={1.25} useFlexGap>
       {title && (
-        <Typography component="h2" variant="subtitle1" id={titleId}>
+        <Typography
+          component="h2"
+          variant="subtitle1"
+          id={titleId}
+          data-task-group={groupId}
+          sx={
+            hideHeading
+              ? {
+                  position: "absolute",
+                  width: "1px",
+                  height: "1px",
+                  clipPath: "inset(50%)",
+                  overflow: "hidden",
+                }
+              : undefined
+          }
+        >
           {title}
         </Typography>
       )}
