@@ -6,8 +6,7 @@ using Tusklet.Server.Data;
 
 namespace Tusklet.Server.Features.Accounts
 {
-    internal class AccountStartup(IServiceScopeFactory scopes,
-        SetupCode setupCode, OpenIdOptions openId, ILogger<AccountStartup> logger) : IHostedService
+    internal class AccountStartup(IServiceScopeFactory scopes, OpenIdOptions openId) : IHostedService
     {
         public async Task StartAsync(CancellationToken ct)
         {
@@ -17,14 +16,6 @@ namespace Tusklet.Server.Features.Accounts
 
             OpenIdProvider? provider = await db.OpenIdProviders.AsNoTracking().SingleOrDefaultAsync(ct);
             openId.Refresh(provider);
-            if (await db.Users.AnyAsync(ct))
-            {
-                setupCode.Clear();
-                return;
-            }
-
-            await setupCode.CreateAsync(ct);
-            logger.LogInformation("First-time setup code is available at {Path}", setupCode.FilePath);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

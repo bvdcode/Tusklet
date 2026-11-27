@@ -51,7 +51,8 @@ jobs:
         shell: bash
         run: |
           docker network create tusklet-smoke
-          trap 'if (( $? != 0 )); then docker logs tusklet-smoke; fi; docker rm -f tusklet-smoke tusklet-db; docker network rm tusklet-smoke' EXIT
+          cookie_jar="$(mktemp)"
+          trap 'if (( $? != 0 )); then docker logs tusklet-smoke; fi; rm -f -- "$cookie_jar"; docker rm -f tusklet-smoke tusklet-db; docker network rm tusklet-smoke' EXIT
           docker run --detach --name tusklet-db --network tusklet-smoke \
             --env POSTGRES_HOST_AUTH_METHOD=trust --env POSTGRES_DB=tusklet postgres:18
           for attempt in {1..20}; do
@@ -69,12 +70,22 @@ jobs:
           asset="$(sed -n 's/.*src="\([^"]*\.js\)".*/\1/p' <<< "$page")"
           test -n "$asset"
           curl -fsS -o /dev/null "$base_url$asset"
-          curl -fsS "$base_url/api/auth/session" | jq -e '.setupRequired and (.user == null)'
-          docker exec tusklet-smoke test -s /tmp/tusklet/setup-code
+          session="$(curl -fsS -c "$cookie_jar" "$base_url/api/auth/session")"
+          jq -e '.setupRequired and (.user == null)' <<< "$session"
+          csrf="$(jq -er '.requestToken' <<< "$session")"
+          curl -fsS -o /dev/null -b "$cookie_jar" \
+            -H "X-CSRF-Token: $csrf" -H 'Content-Type: application/json' \
+            --data '{"username":"smoke-admin","password":"test-passphrase"}' "$base_url/api/auth/setup"
+          curl -fsS "$base_url/api/auth/session" | jq -e '.setupRequired | not'
           curl -fsS "$base_url/api/counter" | jq -e '.count == 0'
           curl -fsS -X POST "$base_url/api/counter" | jq -e '.count == 1'
           curl -fsS "$base_url/api/counter" | jq -e '.count == 1'
           test "$(curl -sS -o /dev/null -w '%{http_code}' "$base_url/api/missing")" = 404
+          container_logs="$(docker logs tusklet-smoke 2>&1)"
+          if grep -Eq 'Request (starting|finished)|Executed DbCommand' <<< "$container_logs"; then
+            echo 'Routine HTTP or SQL messages were written to the log.'
+            exit 1
+          fi
 
   version:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'

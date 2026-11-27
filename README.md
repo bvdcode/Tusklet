@@ -24,11 +24,7 @@ docker run -d --name tusklet -p 127.0.0.1:8080:8080 \
   -e TUSKLET_PG_USERNAME -e TUSKLET_PG_PASSWORD bvdcode/tusklet:latest
 ```
 
-`TUSKLET_PG_PORT` defaults to `5432`. Open [localhost:8080](http://localhost:8080) and create the administrator. Read the one-time code from the running container.
-
-```sh
-docker exec tusklet cat /tmp/tusklet/setup-code
-```
+`TUSKLET_PG_PORT` defaults to `5432`. Open [localhost:8080](http://localhost:8080) and choose a username and password. The first account created on an empty database becomes the administrator.
 
 PostgreSQL stores accounts, OpenID settings, and the keys that protect sessions and the OpenID client secret. Use HTTPS when publishing the application behind a reverse proxy.
 
@@ -54,7 +50,7 @@ Install the .NET 11 SDK and Node.js 26.
 | `src/tusklet.client` | React, TypeScript, and Vite client |
 | `src/Tusklet.Tests` | API integration tests |
 
-Point the `TUSKLET_PG_*` variables at a development PostgreSQL database and start the API from the repository root. Read the initial setup code from `src/Tusklet.Server/data/setup-code`.
+Point the `TUSKLET_PG_*` variables at a development PostgreSQL database and start the API from the repository root.
 
 ```sh
 dotnet run --project src/Tusklet.Server

@@ -19,7 +19,7 @@ namespace Tusklet.Tests
         private const string Callback = "https://tusklet.test/api/auth/openid/callback";
 
         [Test]
-        public async Task SetupRequiresCodeAndOnlyOneRequestCanCreateAnAdministrator()
+        public async Task OnlyOneRequestCanCreateAnAdministrator()
         {
             await using TuskletFactory factory = new();
             using HttpClient first = factory.CreateBrowser();
@@ -29,23 +29,20 @@ namespace Tusklet.Tests
             Assert.That(firstSession.GetProperty("setupRequired").GetBoolean(), Is.True);
 
             using HttpResponseMessage noCsrf = await first.PostAsJsonAsync("/api/auth/setup",
-                new { username = "admin", password = Password, setupCode = new string('0', 32) });
+                new { username = "admin", password = Password });
             Assert.That(noCsrf.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
-            using HttpResponseMessage wrongCode = await SendAsync(first, firstSession, HttpMethod.Post,
-                "/api/auth/setup", new { username = "admin", password = Password, setupCode = new string('0', 32) });
-            Assert.That(wrongCode.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
 
-            string setupCode = await File.ReadAllTextAsync(factory.SetupCodeFile);
             HttpResponseMessage[] responses = await Task.WhenAll(
                 SendAsync(first, firstSession, HttpMethod.Post, "/api/auth/setup",
-                    new { username = "first", password = Password, setupCode }),
+                    new { username = "first", password = Password }),
                 SendAsync(second, secondSession, HttpMethod.Post, "/api/auth/setup",
-                    new { username = "second", password = Password, setupCode }));
+                    new { username = "second", password = Password }));
             using HttpResponseMessage firstReply = responses[0];
             using HttpResponseMessage secondReply = responses[1];
             Assert.That(responses.Select(x => x.StatusCode),
                 Is.EquivalentTo(new[] { HttpStatusCode.NoContent, HttpStatusCode.Unauthorized }));
-            Assert.That(File.Exists(factory.SetupCodeFile), Is.False);
+            JsonElement afterSetup = await SessionAsync(first);
+            Assert.That(afterSetup.GetProperty("setupRequired").GetBoolean(), Is.False);
 
             await using AsyncServiceScope scope = factory.Services.CreateAsyncScope();
             TuskletDbContext db = scope.ServiceProvider.GetRequiredService<TuskletDbContext>();
@@ -64,9 +61,8 @@ namespace Tusklet.Tests
             using HttpResponseMessage anonymousSettings = await browser.GetAsync("/api/admin/openid");
             Assert.That(anonymousSettings.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
             JsonElement beforeSetup = await SessionAsync(browser);
-            string setupCode = await File.ReadAllTextAsync(factory.SetupCodeFile);
             using HttpResponseMessage setup = await SendAsync(browser, beforeSetup, HttpMethod.Post,
-                "/api/auth/setup", new { username = "admin", password = Password, setupCode });
+                "/api/auth/setup", new { username = "admin", password = Password });
             Assert.That(setup.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
             JsonElement admin = await SessionAsync(browser);
             Assert.That(admin.GetProperty("user").GetProperty("isAdmin").GetBoolean(), Is.True);

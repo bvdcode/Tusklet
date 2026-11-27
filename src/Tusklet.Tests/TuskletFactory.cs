@@ -19,9 +19,6 @@ namespace Tusklet.Tests
     internal class TuskletFactory(TestOpenIdProvider? backchannel = null) : WebApplicationFactory<Program>
     {
         private readonly NpgsqlConnectionStringBuilder _connection = TestConnection();
-        private readonly DirectoryInfo _data = Directory.CreateTempSubdirectory("tusklet-test-");
-
-        public string SetupCodeFile => Path.Combine(_data.FullName, "setup-code");
 
         public HttpClient CreateBrowser(WebApplicationFactory<Program>? instance = null)
         {
@@ -34,11 +31,7 @@ namespace Tusklet.Tests
 
         public WebApplicationFactory<Program> ReplaceContainer()
         {
-            return WithWebHostBuilder(builder => builder.ConfigureAppConfiguration(configuration =>
-                configuration.AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["Tusklet:SetupCodeFile"] = Path.Combine(_data.FullName, "replacement", "setup-code"),
-                })));
+            return WithWebHostBuilder(builder => builder.UseEnvironment("Production"));
         }
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -52,7 +45,6 @@ namespace Tusklet.Tests
                     ["TUSKLET_PG_DATABASE"] = _connection.Database,
                     ["TUSKLET_PG_USERNAME"] = _connection.Username,
                     ["TUSKLET_PG_PASSWORD"] = _connection.Password,
-                    ["Tusklet:SetupCodeFile"] = SetupCodeFile,
                 });
             });
             if (backchannel is not null)
@@ -78,7 +70,6 @@ namespace Tusklet.Tests
                 .UseNpgsql(_connection.ConnectionString).Options;
             await using TuskletDbContext db = new(options);
             await db.Database.EnsureDeletedAsync();
-            _data.Delete(recursive: true);
         }
 
         private static NpgsqlConnectionStringBuilder TestConnection()

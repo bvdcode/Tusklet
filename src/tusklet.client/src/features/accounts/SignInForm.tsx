@@ -28,12 +28,8 @@ export default function SignInForm({ session }: Props) {
         username: String(form.get("username")).trim(),
         password: String(form.get("password")),
       };
-      return setupRequired
-        ? changeAccount("/api/auth/setup", requestToken, "POST", {
-            ...input,
-            setupCode: String(form.get("setupCode")).trim(),
-          })
-        : changeAccount("/api/auth/login", requestToken, "POST", input);
+      const path = setupRequired ? "/api/auth/setup" : "/api/auth/login";
+      return changeAccount(path, requestToken, "POST", input);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: sessionKey }),
     onError: () => queryClient.invalidateQueries({ queryKey: sessionKey }),
@@ -88,17 +84,6 @@ export default function SignInForm({ session }: Props) {
               required
               fullWidth
             />
-            {setupRequired && (
-              <TextField
-                name="setupCode"
-                label={t("auth.setupCode")}
-                autoComplete="one-time-code"
-                helperText={t("auth.setupCodeHint")}
-                slotProps={{ htmlInput: { maxLength: 32, minLength: 32 } }}
-                required
-                fullWidth
-              />
-            )}
             <Button
               type="submit"
               variant="contained"

@@ -63,10 +63,6 @@ test("creates the initial admin and shows the workspace", async () => {
   fireEvent.change(screen.getByLabelText("Password", { exact: false }), {
     target: { value: "sample-test-password" },
   });
-  const setupCode = "0123456789ABCDEF0123456789ABCDEF";
-  fireEvent.change(screen.getByLabelText("Setup code", { exact: false }), {
-    target: { value: setupCode },
-  });
   fireEvent.click(screen.getByRole("button", { name: "Create account" }));
 
   expect(await screen.findByRole("heading", { name: "Today" })).toBeTruthy();
@@ -80,7 +76,6 @@ test("creates the initial admin and shows the workspace", async () => {
     body: JSON.stringify({
       username: "admin",
       password: "sample-test-password",
-      setupCode,
     }),
   });
 });

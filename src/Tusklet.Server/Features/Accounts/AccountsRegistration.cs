@@ -19,7 +19,6 @@ namespace Tusklet.Server.Features.Accounts
 
         public static IServiceCollection AddAccounts(this IServiceCollection services)
         {
-            services.AddSingleton<SetupCode>();
             services.AddHostedService<AccountStartup>();
             services.AddDbContext<TuskletDbContext>((provider, options) =>
             {
