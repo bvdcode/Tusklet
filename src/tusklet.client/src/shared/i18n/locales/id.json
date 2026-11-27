@@ -155,7 +155,16 @@
     "createError": "Tugas tidak dapat dibuat. Coba lagi.",
     "complete": "Selesaikan “{{title}}”",
     "reopen": "Buka kembali “{{title}}”",
-    "completionError": "Tugas tidak dapat diperbarui. Coba lagi.",
+    "editTitle": "Edit judul",
+    "editNote": "Edit catatan",
+    "clearDueDate": "Hapus tanggal",
+    "calendar": {
+      "previousMonth": "Bulan sebelumnya",
+      "nextMonth": "Bulan berikutnya",
+      "chooseYear": "Pilih tahun",
+      "chooseDay": "Pilih hari"
+    },
+    "updateError": "Tugas tidak dapat diperbarui. Coba lagi.",
     "open": "Belum selesai",
     "completed": "Selesai",
     "important": "Penting"

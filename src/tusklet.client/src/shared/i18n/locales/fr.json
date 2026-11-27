@@ -157,7 +157,16 @@
     "createError": "Impossible de créer la tâche. Réessayez.",
     "complete": "Terminer « {{title}} »",
     "reopen": "Rouvrir « {{title}} »",
-    "completionError": "Impossible de mettre à jour la tâche. Réessayez.",
+    "editTitle": "Modifier le titre",
+    "editNote": "Modifier la note",
+    "clearDueDate": "Effacer la date",
+    "calendar": {
+      "previousMonth": "Mois précédent",
+      "nextMonth": "Mois suivant",
+      "chooseYear": "Choisir l’année",
+      "chooseDay": "Choisir le jour"
+    },
+    "updateError": "Impossible de mettre à jour la tâche. Réessayez.",
     "open": "À faire",
     "completed": "Terminées",
     "important": "Important",

@@ -155,7 +155,16 @@
     "createError": "Could not create the task. Try again.",
     "complete": "Complete {{title}}",
     "reopen": "Reopen {{title}}",
-    "completionError": "Could not update the task. Try again.",
+    "editTitle": "Edit title",
+    "editNote": "Edit note",
+    "clearDueDate": "Clear date",
+    "calendar": {
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "chooseYear": "Choose year",
+      "chooseDay": "Choose day"
+    },
+    "updateError": "Could not update the task. Try again.",
     "open": "To do",
     "completed": "Completed",
     "important": "Important"

@@ -155,7 +155,16 @@
     "createError": "无法创建任务。请重试。",
     "complete": "完成「{{title}}」",
     "reopen": "重新打开「{{title}}」",
-    "completionError": "无法更新任务。请重试。",
+    "editTitle": "编辑标题",
+    "editNote": "编辑备注",
+    "clearDueDate": "清除日期",
+    "calendar": {
+      "previousMonth": "上个月",
+      "nextMonth": "下个月",
+      "chooseYear": "选择年份",
+      "chooseDay": "选择日期"
+    },
+    "updateError": "无法更新任务。请重试。",
     "open": "待办",
     "completed": "已完成",
     "important": "重要"

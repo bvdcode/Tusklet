@@ -157,7 +157,16 @@
     "createError": "No se pudo crear la tarea. Vuelve a intentarlo.",
     "complete": "Completar «{{title}}»",
     "reopen": "Reabrir «{{title}}»",
-    "completionError": "No se pudo actualizar la tarea. Vuelve a intentarlo.",
+    "editTitle": "Editar título",
+    "editNote": "Editar nota",
+    "clearDueDate": "Quitar fecha",
+    "calendar": {
+      "previousMonth": "Mes anterior",
+      "nextMonth": "Mes siguiente",
+      "chooseYear": "Elegir año",
+      "chooseDay": "Elegir día"
+    },
+    "updateError": "No se pudo actualizar la tarea. Vuelve a intentarlo.",
     "open": "Pendientes",
     "completed": "Completadas",
     "important": "Importante",

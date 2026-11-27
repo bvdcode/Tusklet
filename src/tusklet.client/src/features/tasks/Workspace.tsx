@@ -1,11 +1,6 @@
 import { Alert, Button, Stack, Typography } from "@mui/material";
-import {
-  useMutation,
-  useQueries,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import PageProgress from "../../shared/PageProgress";
 import AccountPageLayout, {
@@ -20,17 +15,19 @@ import TaskGroupNavigation from "./TaskGroupNavigation";
 import WorkspaceControls from "./WorkspaceControls";
 import {
   createTask,
-  readTaskItems,
   readTaskLists,
   setTaskCompletion,
   taskItemsKey,
   taskListsKey,
+  updateTask,
   type CreateTaskInput,
+  type UpdateTaskInput,
 } from "./tasksApi";
-import { arrangeTasks, type TaskRow } from "./taskView";
+import useTaskDetailRoute from "./useTaskDetailRoute";
+import useTaskWorkspaceRows from "./useTaskWorkspaceRows";
 
 export default function Workspace(account: AccountPage) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [selectedId, setSelectedId] = useState("");
   const { preferences, changePreference } = useUserPreferences();
@@ -39,7 +36,7 @@ export default function Workspace(account: AccountPage) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const groupsRef = useRef<HTMLDivElement>(null);
   const [creating, setCreating] = useState(false);
-  const [details, setDetails] = useState<{ task: TaskRow; open: boolean }>();
+  const { taskId, closeDetails, toggleDetails } = useTaskDetailRoute();
   const ownerId = account.user.id;
   const requestToken = account.session.requestToken;
   const listsKey = [...taskListsKey, ownerId];
@@ -51,46 +48,19 @@ export default function Workspace(account: AccountPage) {
   });
   const taskLists = lists.data ?? [];
   const active = taskLists.find((list) => list.id === selectedId);
-  const visibleLists = active ? [active] : taskLists;
-  const items = useQueries({
-    queries: visibleLists.map((list) => ({
-      queryKey: [...itemsKey, list.id],
-      queryFn: ({ signal }: { signal: AbortSignal }) =>
-        readTaskItems(list.id, signal),
-      retry: false,
-    })),
-  });
-  const loading = lists.isPending || items.some((query) => query.isPending);
-  const loadFailed = lists.isError || items.some((query) => query.isError);
-  const rows = loading
-    ? []
-    : visibleLists.flatMap((list, index) =>
-        (items[index]?.data ?? []).map((task) => ({
-          ...task,
-          listId: list.id,
-          listName: list.isInbox ? t("tasks.inbox") : list.name,
-        })),
-      );
-  const groups = arrangeTasks(rows, grouping, sorting, i18n.resolvedLanguage, {
-    open: t("tasks.open"),
-    completed: t("tasks.completed"),
-  })
-    .filter((group) => group.tasks.length > 0)
-    .map((group) => ({
-      ...group,
-      title:
-        grouping === "status"
-          ? t("tasks.statusGroupTitle", {
-              status: group.title,
-              taskCount: group.tasks.length,
-            })
-          : group.title,
-    }));
-  const groupHeadings = groups.flatMap(({ id, title }) =>
-    title ? [{ id, title }] : [],
+  const { rows, groups, groupHeadings, loading, failed } = useTaskWorkspaceRows(
+    ownerId,
+    taskLists,
+    active,
+    grouping,
+    sorting,
+    lists.isPending,
   );
-  const currentTask = rows.find((task) => task.id === details?.task.id);
-  const detailsOpen = details?.open === true && currentTask !== undefined;
+  const loadFailed = lists.isError || failed.length > 0;
+  const currentTask = rows.find((task) => task.id === taskId);
+  const selectedGroup =
+    currentTask && groups.find((group) => group.tasks.includes(currentTask));
+  const detailsOpen = currentTask !== undefined;
 
   const create = useMutation({
     mutationFn: (input: CreateTaskInput) => createTask(input, requestToken),
@@ -112,22 +82,25 @@ export default function Workspace(account: AccountPage) {
     if (lists.isError) {
       void lists.refetch();
     }
-    for (const query of items) {
-      if (query.isError) {
-        void query.refetch();
-      }
+    for (const refetch of failed) {
+      void refetch();
     }
   }
 
-  function closeDetails() {
-    setDetails((current) => current && { ...current, open: false });
-  }
+  const { mutate: setCompletion } = completion;
+  const changeCompletion = useCallback(
+    (id: string, isCompleted: boolean) => {
+      setCompletion({ id, isCompleted });
+    },
+    [setCompletion],
+  );
 
-  function toggleDetails(task: TaskRow) {
-    setDetails((current) => ({
-      task,
-      open: !(current?.open && current.task.id === task.id),
-    }));
+  async function saveTask(id: string, input: UpdateTaskInput) {
+    await updateTask(id, input, requestToken);
+    if (active && input.listId && input.listId !== active.id) {
+      closeDetails(id);
+    }
+    await queryClient.invalidateQueries({ queryKey: itemsKey });
   }
 
   return (
@@ -228,7 +201,7 @@ export default function Workspace(account: AccountPage) {
             <Typography color="text.secondary">{t("tasks.empty")}</Typography>
           )}
           {completion.isError && (
-            <Alert severity="error">{t("tasks.completionError")}</Alert>
+            <Alert severity="error">{t("tasks.updateError")}</Alert>
           )}
           {groups.map((group, index) => (
             <TaskGroup
@@ -239,19 +212,19 @@ export default function Workspace(account: AccountPage) {
               tasks={group.tasks}
               showListName={!active && grouping !== "list"}
               changing={completion.isPending}
-              selectedTaskId={detailsOpen ? currentTask.id : null}
+              selectedTaskId={selectedGroup?.id === group.id ? taskId : null}
               onTaskSelect={toggleDetails}
-              onCompletionChange={(id, isCompleted) =>
-                completion.mutate({ id, isCompleted })
-              }
+              onCompletionChange={changeCompletion}
             />
           ))}
           <ScrollToTopButton focusTarget={titleRef} />
         </Stack>
         <TaskDetailsPanel
-          task={currentTask ?? details?.task}
+          task={currentTask}
+          lists={taskLists}
           open={detailsOpen}
-          onClose={closeDetails}
+          onClose={() => closeDetails()}
+          onUpdate={saveTask}
         />
       </Stack>
       {creating && (

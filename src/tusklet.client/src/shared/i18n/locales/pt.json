@@ -157,7 +157,16 @@
     "createError": "Não foi possível criar a tarefa. Tente novamente.",
     "complete": "Concluir “{{title}}”",
     "reopen": "Reabrir “{{title}}”",
-    "completionError": "Não foi possível atualizar a tarefa. Tente novamente.",
+    "editTitle": "Editar título",
+    "editNote": "Editar nota",
+    "clearDueDate": "Remover data",
+    "calendar": {
+      "previousMonth": "Mês anterior",
+      "nextMonth": "Próximo mês",
+      "chooseYear": "Escolher ano",
+      "chooseDay": "Escolher dia"
+    },
+    "updateError": "Não foi possível atualizar a tarefa. Tente novamente.",
     "open": "A fazer",
     "completed": "Concluídas",
     "important": "Importante",

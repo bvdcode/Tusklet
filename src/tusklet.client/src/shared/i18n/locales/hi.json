@@ -155,7 +155,16 @@
     "createError": "कार्य नहीं बनाया जा सका। फिर कोशिश करें।",
     "complete": "“{{title}}” पूरा करें",
     "reopen": "“{{title}}” फिर खोलें",
-    "completionError": "कार्य अपडेट नहीं हो सका। फिर कोशिश करें।",
+    "editTitle": "शीर्षक संपादित करें",
+    "editNote": "नोट संपादित करें",
+    "clearDueDate": "तारीख हटाएँ",
+    "calendar": {
+      "previousMonth": "पिछला महीना",
+      "nextMonth": "अगला महीना",
+      "chooseYear": "साल चुनें",
+      "chooseDay": "दिन चुनें"
+    },
+    "updateError": "कार्य अपडेट नहीं हो सका। फिर कोशिश करें।",
     "open": "करना है",
     "completed": "पूरे हुए",
     "important": "ज़रूरी"

@@ -155,7 +155,16 @@
     "createError": "کام نہیں بن سکا۔ دوبارہ کوشش کریں۔",
     "complete": "”{{title}}“ مکمل کریں",
     "reopen": "”{{title}}“ دوبارہ کھولیں",
-    "completionError": "کام اپ ڈیٹ نہیں ہو سکا۔ دوبارہ کوشش کریں۔",
+    "editTitle": "عنوان میں ترمیم کریں",
+    "editNote": "نوٹ میں ترمیم کریں",
+    "clearDueDate": "تاریخ ہٹائیں",
+    "calendar": {
+      "previousMonth": "پچھلا مہینہ",
+      "nextMonth": "اگلا مہینہ",
+      "chooseYear": "سال منتخب کریں",
+      "chooseDay": "دن منتخب کریں"
+    },
+    "updateError": "کام اپ ڈیٹ نہیں ہو سکا۔ دوبارہ کوشش کریں۔",
     "open": "کرنا ہے",
     "completed": "مکمل شدہ",
     "important": "اہم"

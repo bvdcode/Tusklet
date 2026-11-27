@@ -163,7 +163,16 @@
     "createError": "تعذّر إنشاء المهمة. أعد المحاولة.",
     "complete": "إكمال «{{title}}»",
     "reopen": "إعادة فتح «{{title}}»",
-    "completionError": "تعذّر تحديث المهمة. أعد المحاولة.",
+    "editTitle": "تعديل العنوان",
+    "editNote": "تعديل الملاحظة",
+    "clearDueDate": "إزالة التاريخ",
+    "calendar": {
+      "previousMonth": "الشهر السابق",
+      "nextMonth": "الشهر التالي",
+      "chooseYear": "اختر السنة",
+      "chooseDay": "اختر اليوم"
+    },
+    "updateError": "تعذّر تحديث المهمة. أعد المحاولة.",
     "open": "المهام المفتوحة",
     "completed": "المهام المكتملة",
     "important": "مهمة",

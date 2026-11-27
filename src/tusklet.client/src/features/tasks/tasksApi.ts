@@ -78,6 +78,10 @@ export type CreateTaskInput = {
   isImportant: boolean;
 };
 
+export type UpdateTaskInput = Partial<Omit<CreateTaskInput, "listId">> & {
+  listId?: string;
+};
+
 export const taskListsKey = ["task-lists"];
 export const taskItemsKey = ["task-items"];
 
@@ -130,6 +134,24 @@ export async function setTaskCompletion(
       "X-CSRF-Token": requestToken,
     },
     body: JSON.stringify({ isCompleted }),
+  });
+  if (!response.ok) {
+    throw new Error(String(response.status));
+  }
+}
+
+export async function updateTask(
+  id: string,
+  input: UpdateTaskInput,
+  requestToken: string,
+): Promise<void> {
+  const response = await fetch(`/api/tasks/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-Token": requestToken,
+    },
+    body: JSON.stringify(input),
   });
   if (!response.ok) {
     throw new Error(String(response.status));
