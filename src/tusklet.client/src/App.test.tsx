@@ -7,6 +7,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
+import { MemoryRouter } from "react-router-dom";
 import App from "./App";
 import "./shared/i18n";
 
@@ -15,11 +16,13 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function renderApp() {
+function renderApp(path = "/") {
   const queryClient = new QueryClient();
   return render(
     <QueryClientProvider client={queryClient}>
-      <App />
+      <MemoryRouter initialEntries={[path]}>
+        <App />
+      </MemoryRouter>
     </QueryClientProvider>,
   );
 }
@@ -66,7 +69,7 @@ test("creates the initial admin and shows the workspace", async () => {
   fireEvent.click(screen.getByRole("button", { name: "Create account" }));
 
   expect(await screen.findByRole("heading", { name: "Today" })).toBeTruthy();
-  expect(screen.getByRole("button", { name: "OpenID settings" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Account menu" })).toBeTruthy();
   expect(fetchSession).toHaveBeenNthCalledWith(2, "/api/auth/setup", {
     method: "POST",
     headers: {
@@ -106,4 +109,81 @@ test("can retry loading the sign-in screen", async () => {
   expect(
     screen.getByRole("button", { name: "Sign in with OpenID" }),
   ).toBeTruthy();
+});
+
+test("locks both sign-in actions during an OpenID redirect and unlocks on return", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue(
+      Response.json({
+        setupRequired: false,
+        openIdEnabled: true,
+        user: null,
+        requestToken: "test-csrf",
+      }),
+    ),
+  );
+  renderApp();
+
+  const openId = await screen.findByRole<HTMLButtonElement>("button", {
+    name: "Sign in with OpenID",
+  });
+  const password = screen.getByRole<HTMLButtonElement>("button", {
+    name: "Sign in",
+  });
+  const form = openId.form;
+  if (form === null) {
+    throw new Error("OpenID form was not found.");
+  }
+  expect(form.getAttribute("action")).toBe("/api/auth/openid/login");
+  fireEvent.submit(form);
+  expect(openId.disabled).toBe(true);
+  expect(password.disabled).toBe(true);
+
+  fireEvent(window, new Event("pageshow"));
+  expect(openId.disabled).toBe(false);
+  expect(password.disabled).toBe(false);
+});
+
+test("opens profile and administration from the account menu", async () => {
+  const session = {
+    setupRequired: false,
+    openIdEnabled: true,
+    user: {
+      id: "admin-id",
+      username: "admin",
+      isAdmin: true,
+      openIdLinked: false,
+    },
+    requestToken: "test-csrf",
+  };
+  vi.stubGlobal(
+    "fetch",
+    vi.fn((url: string) =>
+      Promise.resolve(
+        url === "/api/admin/openid"
+          ? new Response(null, { status: 204 })
+          : Response.json(session),
+      ),
+    ),
+  );
+  renderApp();
+
+  const menu = await screen.findByRole("button", { name: "Account menu" });
+  expect(screen.queryByRole("button", { name: "OpenID settings" })).toBeNull();
+  fireEvent.click(menu);
+  fireEvent.click(
+    await screen.findByRole("menuitem", { name: "Profile settings" }),
+  );
+  expect(await screen.findByRole("heading", { name: "Profile" })).toBeTruthy();
+  expect(screen.queryByRole("dialog")).toBeNull();
+
+  fireEvent.click(menu);
+  fireEvent.click(
+    await screen.findByRole("menuitem", { name: "Administration" }),
+  );
+  expect(
+    await screen.findByRole("heading", { name: "Administration" }),
+  ).toBeTruthy();
+  expect(await screen.findByLabelText(/^Issuer URL/)).toBeTruthy();
 });

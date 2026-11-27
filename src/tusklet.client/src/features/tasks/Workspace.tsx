@@ -1,38 +1,37 @@
-import { Chip, Container, Paper, Stack, Typography } from "@mui/material";
+import { Chip, Stack, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import TaskPreview from "./TaskPreview";
 
 export default function Workspace() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const today = new Intl.DateTimeFormat(i18n.resolvedLanguage, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  }).format(new Date());
 
   return (
-    <Container maxWidth="lg">
+    <Stack spacing={3}>
       <Stack
-        direction={{ xs: "column", md: "row" }}
-        spacing={{ xs: 3, md: 4 }}
-        sx={{ alignItems: { md: "flex-start" } }}
+        direction="row"
+        sx={{
+          alignItems: "flex-end",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 1.5,
+        }}
       >
-        <Paper
-          variant="outlined"
-          component="aside"
-          sx={{ p: 2, borderRadius: 3, width: { md: 220 } }}
-        >
-          <Stack spacing={1.25}>
-            <Typography variant="subtitle2" color="text.secondary">
-              {t("tasks.lists")}
-            </Typography>
-            <Chip
-              label={t("tasks.today")}
-              sx={{
-                alignSelf: "flex-start",
-                color: "primary.main",
-                bgcolor: "action.selected",
-              }}
-            />
-          </Stack>
-        </Paper>
-        <TaskPreview />
+        <Stack spacing={0.25}>
+          <Typography variant="subtitle2" color="text.secondary">
+            {today}
+          </Typography>
+          <Typography component="h1" variant="h3">
+            {t("tasks.today")}
+          </Typography>
+        </Stack>
+        <Chip label={t("tasks.preview")} variant="outlined" size="small" />
       </Stack>
-    </Container>
+      <TaskPreview />
+    </Stack>
   );
 }

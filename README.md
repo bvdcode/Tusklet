@@ -32,10 +32,10 @@ PostgreSQL stores accounts, OpenID settings, and the keys that protect sessions 
 
 Configure one OpenID Connect provider per Tusklet instance.
 
-1. Sign in as the administrator and open **OpenID settings**. Copy the callback URL.
+1. Sign in as the administrator. Open the account menu and choose **Administration**. Copy the callback URL under **OpenID Connect**.
 2. In Pocket ID or another OpenID Connect provider, create a confidential client. Enter that callback URL and enable authorization code flow with PKCE.
 3. In Tusklet, enter the provider's HTTPS issuer URL, client ID, and client secret. Enable OpenID sign-in and save.
-4. Open **Profile**, choose **Link OpenID account**, and sign in with the provider. The next time you sign in to Tusklet you can choose **Sign in with OpenID**.
+4. Choose **Profile settings** from the account menu, select **Link OpenID account**, and sign in with the provider. The next time you sign in to Tusklet you can choose **Sign in with OpenID**.
 
 The local password remains available for administration. OpenID sign-in is limited to accounts linked from a signed-in profile.
 

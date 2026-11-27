@@ -1,175 +1,115 @@
-import {
-  Alert,
-  AppBar,
-  Box,
-  Button,
-  CircularProgress,
-  Container,
-  Stack,
-  Toolbar,
-  Typography,
-} from "@mui/material";
+import { Alert, Box, Button, Container, Skeleton, Stack } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Navigate, Route, Routes, useSearchParams } from "react-router-dom";
 import { readSession, sessionKey } from "./features/accounts/accountsApi";
+import AccountHeader from "./features/accounts/AccountHeader";
+import AccountLayout from "./features/accounts/AccountLayout";
 import SignInForm from "./features/accounts/SignInForm";
-import logo from "./shared/assets/tusklet.svg";
 
-const ProfileDialog = lazy(() => import("./features/accounts/ProfileDialog"));
-const ProviderDialog = lazy(() => import("./features/accounts/ProviderDialog"));
 const Workspace = lazy(() => import("./features/tasks/Workspace"));
+const ProfilePage = lazy(() => import("./features/accounts/ProfilePage"));
+const AdminPage = lazy(() => import("./features/accounts/AdminPage"));
 
 export default function App() {
   const { t } = useTranslation();
-  const [dialog, setDialog] = useState<"profile" | "provider" | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [openIdOutcome, setOpenIdOutcome] = useState(() =>
-    new URLSearchParams(window.location.search).get("openid"),
+    searchParams.get("openid"),
   );
   const session = useQuery({
     queryKey: sessionKey,
     queryFn: ({ signal }) => readSession(signal),
     retry: false,
   });
-  const user = session.data?.user;
 
   useEffect(() => {
-    const url = new URL(window.location.href);
-    if (url.searchParams.has("openid")) {
-      url.searchParams.delete("openid");
-      window.history.replaceState(null, "", url);
+    if (searchParams.has("openid")) {
+      const next = new URLSearchParams(searchParams);
+      next.delete("openid");
+      setSearchParams(next, { replace: true });
     }
-  }, []);
+  }, [searchParams, setSearchParams]);
 
-  return (
-    <>
-      <AppBar
-        position="static"
-        color="inherit"
-        elevation={0}
-        sx={{
-          bgcolor: "background.paper",
-          borderBottom: 1,
-          borderColor: "divider",
-        }}
+  const notice =
+    openIdOutcome === "failed" || openIdOutcome === "linked" ? (
+      <Alert
+        severity={openIdOutcome === "failed" ? "error" : "success"}
+        onClose={() => setOpenIdOutcome(null)}
+        sx={{ mb: 2.5 }}
       >
-        <Container maxWidth="lg">
-          <Toolbar
-            disableGutters
-            sx={{
-              gap: 1.5,
-              justifyContent: "space-between",
-              flexWrap: "wrap",
-              py: 1,
-            }}
-          >
-            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-              <Box
-                component="img"
-                src={logo}
-                alt=""
-                sx={(theme) => ({
-                  width: 38,
-                  height: 38,
-                  ...theme.applyStyles("dark", {
-                    filter: "brightness(0) invert(1)",
-                  }),
-                })}
-              />
-              <Typography
-                variant="h6"
-                component="span"
-                sx={{ fontWeight: 750 }}
-              >
-                {t("appName")}
-              </Typography>
-            </Stack>
-            {user && (
-              <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap" }}>
-                <Button
-                  sx={{ color: "text.primary" }}
-                  onClick={() => setDialog("profile")}
-                >
-                  {t("auth.profile")}
-                </Button>
-                {user.isAdmin && (
-                  <Button
-                    sx={{ color: "text.primary" }}
-                    onClick={() => setDialog("provider")}
-                  >
-                    {t("provider.title")}
-                  </Button>
-                )}
-              </Stack>
-            )}
-          </Toolbar>
-        </Container>
-      </AppBar>
-      <Box component="main" sx={{ py: { xs: 3, sm: 6 } }}>
-        <Container maxWidth={user ? "lg" : "xs"}>
-          {openIdOutcome === "failed" && (
-            <Alert
-              severity="error"
-              onClose={() => setOpenIdOutcome(null)}
-              sx={{ mb: 3 }}
-            >
-              {t("auth.openIdError")}
-            </Alert>
-          )}
-          {openIdOutcome === "linked" && (
-            <Alert
-              severity="success"
-              onClose={() => setOpenIdOutcome(null)}
-              sx={{ mb: 3 }}
-            >
-              {t("auth.linked")}
-            </Alert>
-          )}
-          {session.isPending && (
-            <CircularProgress size={28} aria-label={t("common.loading")} />
-          )}
-          {session.isError && (
-            <Alert
-              severity="error"
-              action={
-                <Button color="inherit" onClick={() => void session.refetch()}>
-                  {t("common.retry")}
-                </Button>
-              }
-            >
-              {t("auth.loadError")}
-            </Alert>
-          )}
-          {session.data && !user && (
-            <SignInForm
-              key={String(session.data.setupRequired)}
-              session={session.data}
-            />
-          )}
-        </Container>
-        {session.data && user && (
+        {t(openIdOutcome === "failed" ? "auth.openIdError" : "auth.linked")}
+      </Alert>
+    ) : null;
+
+  if (session.data?.user) {
+    const { user, requestToken } = session.data;
+    return (
+      <>
+        <AccountHeader
+          session={session.data}
+          user={user}
+          onLogout={() => setOpenIdOutcome(null)}
+        />
+        <Container component="main" maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
+          {notice}
           <Suspense
             fallback={
-              <CircularProgress size={28} aria-label={t("common.loading")} />
+              <Box role="status" aria-label={t("common.loading")}>
+                <Skeleton variant="text" width="32%" height={52} />
+                <Skeleton variant="rounded" height={240} />
+              </Box>
             }
           >
-            <Workspace />
-            {dialog === "profile" && (
-              <ProfileDialog
-                session={session.data}
-                user={user}
-                onClose={() => setDialog(null)}
+            <Routes>
+              <Route path="/" element={<Workspace />} />
+              <Route
+                path="/profile"
+                element={<ProfilePage session={session.data} user={user} />}
               />
-            )}
-            {dialog === "provider" && user.isAdmin && (
-              <ProviderDialog
-                requestToken={session.data.requestToken}
-                onClose={() => setDialog(null)}
+              <Route
+                path="/admin"
+                element={
+                  user.isAdmin ? (
+                    <AdminPage requestToken={requestToken} />
+                  ) : (
+                    <Navigate to="/" replace />
+                  )
+                }
               />
-            )}
+            </Routes>
           </Suspense>
-        )}
-      </Box>
-    </>
+        </Container>
+      </>
+    );
+  }
+
+  return (
+    <AccountLayout>
+      {notice}
+      {session.isPending && (
+        <Stack role="status" aria-label={t("common.loading")} spacing={2}>
+          <Skeleton variant="text" width="58%" height={52} />
+          <Skeleton variant="rounded" height={56} />
+          <Skeleton variant="rounded" height={56} />
+          <Skeleton variant="rounded" height={48} />
+        </Stack>
+      )}
+      {session.isError && (
+        <Stack spacing={2}>
+          <Alert severity="error">{t("auth.loadError")}</Alert>
+          <Button variant="outlined" onClick={() => void session.refetch()}>
+            {t("common.retry")}
+          </Button>
+        </Stack>
+      )}
+      {session.data && (
+        <SignInForm
+          key={String(session.data.setupRequired)}
+          session={session.data}
+        />
+      )}
+    </AccountLayout>
   );
 }

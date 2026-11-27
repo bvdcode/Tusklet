@@ -1,7 +1,11 @@
+import CheckCircleOutlined from "@mui/icons-material/CheckCircleOutlined";
+import RadioButtonUnchecked from "@mui/icons-material/RadioButtonUnchecked";
+import StarBorderRounded from "@mui/icons-material/StarBorderRounded";
 import {
   Chip,
   List,
   ListItem,
+  ListItemIcon,
   ListItemText,
   Paper,
   Stack,
@@ -13,48 +17,65 @@ export default function TaskPreview() {
   const { t } = useTranslation();
 
   return (
-    <Stack spacing={2} sx={{ minWidth: 0, flex: 1 }}>
-      <Stack
-        direction="row"
-        spacing={2}
-        sx={{ alignItems: "center", flexWrap: "wrap" }}
-      >
-        <Typography component="h1" variant="h4">
-          {t("tasks.today")}
+    <Stack spacing={3}>
+      <Stack spacing={1.25}>
+        <Typography component="h2" variant="subtitle1" id="open-tasks-title">
+          {t("tasks.open")}
         </Typography>
-        <Chip label={t("tasks.preview")} variant="outlined" size="small" />
+        <Paper variant="outlined">
+          <List disablePadding aria-labelledby="open-tasks-title">
+            <ListItem
+              divider
+              sx={{ minHeight: 64, gap: 1, px: { xs: 1.5, sm: 2.5 } }}
+            >
+              <ListItemIcon sx={{ minWidth: 24, color: "text.secondary" }}>
+                <RadioButtonUnchecked fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary={t("tasks.second")} />
+              <Chip
+                icon={<StarBorderRounded />}
+                label={t("tasks.important")}
+                color="warning"
+                variant="outlined"
+                size="small"
+              />
+            </ListItem>
+            <ListItem sx={{ minHeight: 64, gap: 1, px: { xs: 1.5, sm: 2.5 } }}>
+              <ListItemIcon sx={{ minWidth: 24, color: "text.secondary" }}>
+                <RadioButtonUnchecked fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary={t("tasks.third")} />
+            </ListItem>
+          </List>
+        </Paper>
       </Stack>
-      <Paper variant="outlined" sx={{ borderRadius: 3 }}>
-        <List disablePadding>
-          <ListItem
-            divider
-            sx={{ gap: 1, flexWrap: "wrap", justifyContent: "space-between" }}
-          >
-            <ListItemText primary={t("tasks.first")} />
-            <Chip
-              label={t("tasks.completed")}
-              color="success"
-              variant="outlined"
-              size="small"
-            />
-          </ListItem>
-          <ListItem
-            divider
-            sx={{ gap: 1, flexWrap: "wrap", justifyContent: "space-between" }}
-          >
-            <ListItemText primary={t("tasks.second")} />
-            <Chip
-              label={t("tasks.important")}
-              color="warning"
-              variant="outlined"
-              size="small"
-            />
-          </ListItem>
-          <ListItem>
-            <ListItemText primary={t("tasks.third")} />
-          </ListItem>
-        </List>
-      </Paper>
+      <Stack spacing={1.25}>
+        <Typography
+          component="h2"
+          variant="subtitle1"
+          id="completed-tasks-title"
+        >
+          {t("tasks.completed")}
+        </Typography>
+        <Paper variant="outlined">
+          <List disablePadding aria-labelledby="completed-tasks-title">
+            <ListItem sx={{ minHeight: 64, gap: 1, px: { xs: 1.5, sm: 2.5 } }}>
+              <ListItemIcon sx={{ minWidth: 24, color: "success.main" }}>
+                <CheckCircleOutlined fontSize="small" />
+              </ListItemIcon>
+              <ListItemText
+                primary={t("tasks.first")}
+                slotProps={{
+                  primary: {
+                    color: "text.secondary",
+                    sx: { textDecoration: "line-through" },
+                  },
+                }}
+              />
+            </ListItem>
+          </List>
+        </Paper>
+      </Stack>
     </Stack>
   );
 }
