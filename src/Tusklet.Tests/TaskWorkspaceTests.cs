@@ -81,10 +81,43 @@ namespace Tusklet.Tests
             using HttpResponseMessage forbiddenCompletion = await SendAsync(browser, HttpMethod.Put,
                 $"/api/tasks/{otherTask.Id}/completion", token, new { isCompleted = true });
 
+            string taskPath = $"/api/tasks/{task.Id}";
+            using HttpResponseMessage forbiddenEdit = await SendAsync(browser, HttpMethod.Patch,
+                $"/api/tasks/{otherTask.Id}", token, new { title = "Not my task" });
+            using HttpResponseMessage forbiddenMove = await SendAsync(browser, HttpMethod.Patch, taskPath, token,
+                new { listId = otherTask.TaskListId, title = "Not my list" });
+            using HttpResponseMessage invalidTitle = await SendAsync(browser, HttpMethod.Patch, taskPath, token,
+                new { title = "   " });
+            using HttpResponseMessage renamed = await SendAsync(browser, HttpMethod.Patch, taskPath, token,
+                new { listId = selected.Id, title = "  Review the draft  ", isImportant = false });
+            Assert.That(renamed.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+
+            TaskItemSummaryDto[]? movedItems = await browser.GetFromJsonAsync<TaskItemSummaryDto[]>($"/api/tasks/lists/{selected.Id}");
+            TaskItemSummaryDto moved = movedItems!.Last();
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(forbiddenEdit.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+                Assert.That(forbiddenMove.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+                Assert.That(invalidTitle.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+                Assert.That(moved.Id, Is.EqualTo(task.Id));
+                Assert.That(moved.Title, Is.EqualTo("Review the draft"));
+                Assert.That(moved.Note, Is.EqualTo(task.Note));
+                Assert.That(moved.DueDate, Is.EqualTo(task.DueDate));
+                Assert.That(moved.IsImportant, Is.False);
+            }
+
+            using HttpResponseMessage cleared = await SendAsync(browser, HttpMethod.Patch, taskPath, token,
+                new { note = (string?)null, dueDate = (DateOnly?)null });
+            Assert.That(cleared.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+            TaskItemSummaryDto[]? clearedItems = await browser.GetFromJsonAsync<TaskItemSummaryDto[]>($"/api/tasks/lists/{selected.Id}");
+            TaskItemSummaryDto clearedTask = clearedItems!.Single(item => item.Id == task.Id);
+
             using (Assert.EnterMultipleScope())
             {
                 Assert.That(forbiddenList.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
                 Assert.That(forbiddenCompletion.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+                Assert.That(clearedTask.Note, Is.Null);
+                Assert.That(clearedTask.DueDate, Is.Null);
                 Assert.That(await db.TaskItems.AnyAsync(item => item.TaskListId == selected.Id && item.Title == "In the selected list"), Is.True);
                 Assert.That(await db.TaskItems.AnyAsync(item => item.Id == task.Id && item.CompletedAt == null), Is.True);
             }

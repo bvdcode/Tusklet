@@ -56,6 +56,16 @@ namespace Tusklet.Server.Controllers
             return await mediator.Send(new SetTaskCompletion(ownerId, taskId, input.IsCompleted), ct) ? NoContent() : NotFound();
         }
 
+        [HttpPatch("{taskId:guid}")]
+        public async Task<IActionResult> UpdateAsync(Guid taskId, UpdateTaskInput input, CancellationToken ct)
+        {
+            if (Session.GetUserId(User) is not Guid ownerId)
+            {
+                return Unauthorized();
+            }
+            return await mediator.Send(new UpdateTask(ownerId, taskId, input), ct) ? NoContent() : NotFound();
+        }
+
         [HttpPost("import")]
         [Consumes("multipart/form-data")]
         [RequestSizeLimit(MicrosoftTodoArchive.MaxUploadBytes + 1024 * 1024)]
