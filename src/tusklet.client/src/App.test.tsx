@@ -1,35 +1,11 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ThemeProvider } from "@mui/material";
-import {
-  cleanup,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
-import { MemoryRouter } from "react-router-dom";
-import App from "./App";
-import "./shared/i18n";
-import theme from "./shared/theme";
+import { renderApp } from "./test/renderApp";
 
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
 });
-
-function renderApp(path = "/") {
-  const queryClient = new QueryClient();
-  return render(
-    <ThemeProvider theme={theme} defaultMode="system" storageManager={null}>
-      <QueryClientProvider client={queryClient}>
-        <MemoryRouter initialEntries={[path]}>
-          <App />
-        </MemoryRouter>
-      </QueryClientProvider>
-    </ThemeProvider>,
-  );
-}
 
 test("creates the initial admin and shows the workspace", async () => {
   const fetchSession = vi
@@ -199,7 +175,7 @@ test("opens profile and administration from the account menu", async () => {
   expect(screen.queryByRole("heading", { name: "Profile" })).toBeNull();
   expect(screen.queryByRole("dialog")).toBeNull();
 
-  fireEvent.click(menu);
+  fireEvent.click(screen.getByRole("button", { name: "Account menu" }));
   fireEvent.click(
     await screen.findByRole("menuitem", { name: "Administration" }),
   );

@@ -79,6 +79,21 @@
     "restored_many": "Se restauraron los datos faltantes en {{count}} tareas."
   },
   "tasks": {
+    "allTasks": "Todas las tareas",
+    "filters": "Filtros",
+    "groupBy": "Agrupar por",
+    "sortBy": "Ordenar por",
+    "groupOptions": {
+      "none": "Sin agrupación",
+      "list": "Lista",
+      "status": "Estado"
+    },
+    "sortOptions": {
+      "listOrder": "Orden de las listas",
+      "title": "Título",
+      "dueDate": "Fecha de vencimiento",
+      "importance": "Importancia"
+    },
     "title": "Tareas",
     "list": "Lista de tareas",
     "inbox": "Bandeja de entrada",

@@ -77,6 +77,21 @@
     "viewTasks": "Lihat tugas"
   },
   "tasks": {
+    "allTasks": "Semua tugas",
+    "filters": "Filter",
+    "groupBy": "Kelompokkan menurut",
+    "sortBy": "Urutkan menurut",
+    "groupOptions": {
+      "none": "Tanpa pengelompokan",
+      "list": "Daftar",
+      "status": "Status"
+    },
+    "sortOptions": {
+      "listOrder": "Urutan daftar",
+      "title": "Judul",
+      "dueDate": "Tenggat",
+      "importance": "Kepentingan"
+    },
     "title": "Tugas",
     "list": "Daftar tugas",
     "inbox": "Kotak masuk",

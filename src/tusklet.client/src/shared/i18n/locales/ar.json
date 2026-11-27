@@ -85,6 +85,21 @@
     "restored_many": "تمت استعادة التفاصيل الناقصة لـ {{count}} من المهام."
   },
   "tasks": {
+    "allTasks": "كل المهام",
+    "filters": "عوامل التصفية",
+    "groupBy": "التجميع حسب",
+    "sortBy": "الترتيب حسب",
+    "groupOptions": {
+      "none": "بدون تجميع",
+      "list": "القائمة",
+      "status": "الحالة"
+    },
+    "sortOptions": {
+      "listOrder": "ترتيب القوائم",
+      "title": "العنوان",
+      "dueDate": "تاريخ الاستحقاق",
+      "importance": "الأهمية"
+    },
     "title": "المهام",
     "list": "قائمة المهام",
     "inbox": "الوارد",

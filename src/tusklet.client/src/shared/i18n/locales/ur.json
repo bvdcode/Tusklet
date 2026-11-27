@@ -77,6 +77,21 @@
     "viewTasks": "کام دیکھیں"
   },
   "tasks": {
+    "allTasks": "تمام کام",
+    "filters": "فلٹرز",
+    "groupBy": "گروپ بندی کی بنیاد",
+    "sortBy": "ترتیب کی بنیاد",
+    "groupOptions": {
+      "none": "گروپ بندی نہیں",
+      "list": "فہرست",
+      "status": "حالت"
+    },
+    "sortOptions": {
+      "listOrder": "فہرستوں کی ترتیب",
+      "title": "عنوان",
+      "dueDate": "مقررہ تاریخ",
+      "importance": "اہمیت"
+    },
     "title": "کام",
     "list": "کاموں کی فہرست",
     "inbox": "ان باکس",

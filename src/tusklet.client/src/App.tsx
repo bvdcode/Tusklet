@@ -8,9 +8,15 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Navigate, Route, Routes, useSearchParams } from "react-router-dom";
+import {
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+  useSearchParams,
+} from "react-router-dom";
 import { readSession, sessionKey } from "./features/accounts/accountsApi";
-import AccountHeader from "./features/accounts/AccountHeader";
+import AccountPageLayout from "./features/accounts/AccountPageLayout";
 import AccountLayout from "./features/accounts/AccountLayout";
 import SignInForm from "./features/accounts/SignInForm";
 
@@ -72,49 +78,46 @@ export default function App() {
 
   if (session.data.user) {
     const { user, requestToken } = session.data;
+    const account = {
+      session: session.data,
+      user,
+      notice,
+      onLogout: () => setOpenIdOutcome(null),
+    };
     return (
-      <>
-        <AccountHeader
-          session={session.data}
-          user={user}
-          onLogout={() => setOpenIdOutcome(null)}
-        />
-        <Container component="main" maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
-          {notice}
-          <Suspense
-            fallback={
-              <CircularProgress size={24} aria-label={t("common.loading")} />
+      <Suspense
+        fallback={
+          <AccountPageLayout {...account}>
+            <CircularProgress size={24} aria-label={t("common.loading")} />
+          </AccountPageLayout>
+        }
+      >
+        <Routes>
+          <Route path="/" element={<Workspace key={user.id} {...account} />} />
+          <Route
+            element={
+              <AccountPageLayout {...account}>
+                <Outlet />
+              </AccountPageLayout>
             }
           >
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <Workspace
-                    key={user.id}
-                    ownerId={user.id}
-                    requestToken={requestToken}
-                  />
-                }
-              />
-              <Route
-                path="/profile"
-                element={<ProfilePage session={session.data} user={user} />}
-              />
-              <Route
-                path="/admin"
-                element={
-                  user.isAdmin ? (
-                    <AdminPage requestToken={requestToken} />
-                  ) : (
-                    <Navigate to="/" replace />
-                  )
-                }
-              />
-            </Routes>
-          </Suspense>
-        </Container>
-      </>
+            <Route
+              path="/profile"
+              element={<ProfilePage session={session.data} user={user} />}
+            />
+            <Route
+              path="/admin"
+              element={
+                user.isAdmin ? (
+                  <AdminPage requestToken={requestToken} />
+                ) : (
+                  <Navigate to="/" replace />
+                )
+              }
+            />
+          </Route>
+        </Routes>
+      </Suspense>
     );
   }
 

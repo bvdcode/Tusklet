@@ -1,17 +1,21 @@
+import CloseRounded from "@mui/icons-material/CloseRounded";
 import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
+  Box,
+  Drawer,
+  IconButton,
   Link,
   List,
   ListItem,
   ListItemText,
+  Stack,
+  Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
-import type { TaskItem } from "./tasksApi";
+import { dueDateColor, getLocalToday } from "./taskDueDate";
+import type { TaskRow } from "./taskView";
 
 const units = {
   daily: "day",
@@ -32,15 +36,19 @@ const weekdays = {
   saturday: 6,
 } as const;
 
-export default function TaskDetailsDialog({
+const panelWidth = { xs: "min(100%, 400px)", md: 360, lg: 400 };
+
+export default function TaskDetailsPanel({
   task,
   onClose,
 }: {
-  task: TaskItem;
+  task: TaskRow;
   onClose: () => void;
 }) {
   const { t, i18n } = useTranslation();
   const titleId = useId();
+  const theme = useTheme();
+  const docked = useMediaQuery(theme.breakpoints.up("md"));
   const locale = i18n.resolvedLanguage;
   const date = new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
@@ -123,17 +131,55 @@ export default function TaskDetailsDialog({
   }
 
   return (
-    <Dialog
+    <Drawer
       open
+      anchor="right"
+      variant={docked ? "persistent" : "temporary"}
       onClose={onClose}
-      maxWidth="xs"
-      fullWidth
-      aria-labelledby={titleId}
+      slotProps={{
+        docked: { sx: { width: panelWidth } },
+        paper: {
+          role: docked ? "complementary" : "dialog",
+          "aria-labelledby": titleId,
+          sx: {
+            width: panelWidth,
+            ...(docked && {
+              top: "calc(var(--tusklet-account-toolbar-height) + 1px)",
+              bottom: 0,
+              height: "auto",
+              right: `max(${theme.spacing(3)}, (100% - ${theme.breakpoints.values.lg}px) / 2 + ${theme.spacing(3)})`,
+            }),
+          },
+        },
+      }}
     >
-      <DialogTitle id={titleId} sx={{ overflowWrap: "anywhere" }}>
-        {task.title}
-      </DialogTitle>
-      <DialogContent>
+      <Stack
+        direction="row"
+        sx={{
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          p: 2,
+          gap: 1,
+        }}
+      >
+        <Typography
+          id={titleId}
+          component="h2"
+          variant="h6"
+          sx={{ overflowWrap: "anywhere", minWidth: 0 }}
+        >
+          {task.title}
+        </Typography>
+        <IconButton
+          onClick={onClose}
+          aria-label={t("common.close")}
+          size="small"
+          sx={{ flexShrink: 0 }}
+        >
+          <CloseRounded />
+        </IconButton>
+      </Stack>
+      <Box sx={{ px: 2, pb: 2, overflowY: "auto" }}>
         <List
           disablePadding
           dense
@@ -162,6 +208,35 @@ export default function TaskDetailsDialog({
               secondary={t(`tasks.progress.${status}`)}
             />
           </ListItem>
+          <ListItem disableGutters>
+            <ListItemText primary={t("tasks.list")} secondary={task.listName} />
+          </ListItem>
+          {task.dueDate && (
+            <ListItem disableGutters>
+              <ListItemText
+                primary={t("tasks.dueDate")}
+                secondary={
+                  <Typography
+                    component="time"
+                    dateTime={task.dueDate}
+                    variant="body2"
+                    color={dueDateColor(
+                      task.dueDate,
+                      getLocalToday(),
+                      task.isCompleted,
+                    )}
+                  >
+                    {date.format(new Date(task.dueDate))}
+                  </Typography>
+                }
+              />
+            </ListItem>
+          )}
+          {task.isImportant && (
+            <ListItem disableGutters>
+              <ListItemText primary={t("tasks.important")} />
+            </ListItem>
+          )}
           {task.startsAt && (
             <ListItem disableGutters>
               <ListItemText
@@ -215,10 +290,18 @@ export default function TaskDetailsDialog({
             </ListItem>
           ))}
         </List>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{t("common.close")}</Button>
-      </DialogActions>
-    </Dialog>
+        {task.note && (
+          <Stack spacing={0.5} sx={{ mt: 2 }}>
+            <Typography variant="subtitle2">{t("tasks.note")}</Typography>
+            <Typography
+              variant="body2"
+              sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}
+            >
+              {task.note}
+            </Typography>
+          </Stack>
+        )}
+      </Box>
+    </Drawer>
   );
 }

@@ -77,6 +77,21 @@
     "viewTasks": "View tasks"
   },
   "tasks": {
+    "allTasks": "All tasks",
+    "filters": "Filters",
+    "groupBy": "Group by",
+    "sortBy": "Sort by",
+    "groupOptions": {
+      "none": "None",
+      "list": "List",
+      "status": "Status"
+    },
+    "sortOptions": {
+      "listOrder": "List order",
+      "title": "Title",
+      "dueDate": "Due date",
+      "importance": "Importance"
+    },
     "title": "Tasks",
     "list": "Task list",
     "inbox": "Inbox",

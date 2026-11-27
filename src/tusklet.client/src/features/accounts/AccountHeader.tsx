@@ -19,7 +19,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import Brand from "../../shared/Brand";
@@ -35,9 +35,15 @@ type Props = {
   session: SessionStatus;
   user: SessionUser;
   onLogout: () => void;
+  actions?: ReactNode;
 };
 
-export default function AccountHeader({ session, user, onLogout }: Props) {
+export default function AccountHeader({
+  session,
+  user,
+  onLogout,
+  actions,
+}: Props) {
   const { t } = useTranslation();
   const menuEdge = useTheme().direction === "rtl" ? "left" : "right";
   const queryClient = useQueryClient();
@@ -66,7 +72,7 @@ export default function AccountHeader({ session, user, onLogout }: Props) {
 
   return (
     <AppBar
-      position="static"
+      position="sticky"
       color="inherit"
       elevation={0}
       sx={{
@@ -80,17 +86,29 @@ export default function AccountHeader({ session, user, onLogout }: Props) {
           disableGutters
           sx={{
             justifyContent: "space-between",
-            gap: 2,
-            minHeight: { xs: 60, sm: 68 },
+            gap: { xs: 0.25, sm: 2 },
+            minHeight: { xs: 60, sm: "var(--tusklet-account-toolbar-height)" },
           }}
         >
           <Box
             component={Link}
             to="/"
-            sx={{ color: "inherit", textDecoration: "none", borderRadius: 1 }}
+            aria-label={t("appName")}
+            sx={{
+              color: "inherit",
+              textDecoration: "none",
+              borderRadius: 1,
+              flexShrink: 0,
+              ...(actions && {
+                "& .MuiTypography-root": {
+                  display: { xs: "none", sm: "block" },
+                },
+              }),
+            }}
           >
             <Brand />
           </Box>
+          {actions}
           <IconButton
             id="account-menu-button"
             aria-label={t("auth.accountMenu")}
@@ -99,7 +117,7 @@ export default function AccountHeader({ session, user, onLogout }: Props) {
             aria-controls={open ? "account-menu" : undefined}
             aria-expanded={open}
             onClick={(event) => setAnchor(event.currentTarget)}
-            sx={{ p: 0.5 }}
+            sx={{ p: 0.5, flexShrink: 0 }}
           >
             <Avatar
               src={user.pictureUrl ?? undefined}

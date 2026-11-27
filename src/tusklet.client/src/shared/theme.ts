@@ -67,8 +67,13 @@ const options: ThemeOptions = {
   components: {
     MuiCssBaseline: {
       styleOverrides: {
-        "html, body, #root": { height: "100%" },
-        "#root": { display: "flex", flexDirection: "column" },
+        "html, body": { height: "100%" },
+        "#root": {
+          "--tusklet-account-toolbar-height": "68px",
+          minHeight: "100%",
+          display: "flex",
+          flexDirection: "column",
+        },
       },
     },
     MuiAvatar: {

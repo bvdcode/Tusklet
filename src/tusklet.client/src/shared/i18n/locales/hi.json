@@ -77,6 +77,21 @@
     "viewTasks": "कार्य देखें"
   },
   "tasks": {
+    "allTasks": "सभी कार्य",
+    "filters": "फ़िल्टर",
+    "groupBy": "समूह बनाएँ",
+    "sortBy": "क्रमबद्ध करें",
+    "groupOptions": {
+      "none": "कोई समूह नहीं",
+      "list": "सूची",
+      "status": "स्थिति"
+    },
+    "sortOptions": {
+      "listOrder": "सूचियों का क्रम",
+      "title": "शीर्षक",
+      "dueDate": "नियत तारीख",
+      "importance": "महत्व"
+    },
     "title": "कार्य",
     "list": "कार्य सूची",
     "inbox": "इनबॉक्स",

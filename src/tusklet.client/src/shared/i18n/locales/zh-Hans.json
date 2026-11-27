@@ -77,6 +77,21 @@
     "viewTasks": "查看任务"
   },
   "tasks": {
+    "allTasks": "所有任务",
+    "filters": "筛选",
+    "groupBy": "分组依据",
+    "sortBy": "排序依据",
+    "groupOptions": {
+      "none": "不分组",
+      "list": "列表",
+      "status": "状态"
+    },
+    "sortOptions": {
+      "listOrder": "列表顺序",
+      "title": "标题",
+      "dueDate": "截止日期",
+      "importance": "重要程度"
+    },
     "title": "任务",
     "list": "任务列表",
     "inbox": "收件箱",

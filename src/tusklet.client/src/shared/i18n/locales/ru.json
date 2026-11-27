@@ -81,6 +81,21 @@
     "restored_many": "Восстановлены недостающие поля у {{count}} задач."
   },
   "tasks": {
+    "allTasks": "Все задачи",
+    "filters": "Фильтры",
+    "groupBy": "Группировать по",
+    "sortBy": "Сортировать по",
+    "groupOptions": {
+      "none": "Без группировки",
+      "list": "Список",
+      "status": "Статус"
+    },
+    "sortOptions": {
+      "listOrder": "Порядок в списках",
+      "title": "Заголовок",
+      "dueDate": "Срок",
+      "importance": "Важность"
+    },
     "title": "Задачи",
     "list": "Список задач",
     "inbox": "Входящие",

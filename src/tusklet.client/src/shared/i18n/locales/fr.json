@@ -79,6 +79,21 @@
     "restored_many": "Données manquantes restaurées pour {{count}} tâches."
   },
   "tasks": {
+    "allTasks": "Toutes les tâches",
+    "filters": "Filtres",
+    "groupBy": "Regrouper par",
+    "sortBy": "Trier par",
+    "groupOptions": {
+      "none": "Aucun regroupement",
+      "list": "Liste",
+      "status": "Statut"
+    },
+    "sortOptions": {
+      "listOrder": "Ordre des listes",
+      "title": "Titre",
+      "dueDate": "Échéance",
+      "importance": "Importance"
+    },
     "title": "Tâches",
     "list": "Liste de tâches",
     "inbox": "Boîte de réception",

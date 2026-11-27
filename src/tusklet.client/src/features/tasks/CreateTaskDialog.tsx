@@ -12,10 +12,11 @@ import {
 } from "@mui/material";
 import { useId, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
-import type { CreateTaskInput } from "./tasksApi";
+import type { CreateTaskInput, TaskList } from "./tasksApi";
 
 type Props = {
   listId: string | null;
+  lists: TaskList[];
   saving: boolean;
   failed: boolean;
   onSave: (input: CreateTaskInput) => void;
@@ -24,6 +25,7 @@ type Props = {
 
 export default function CreateTaskDialog({
   listId,
+  lists,
   saving,
   failed,
   onSave,
@@ -40,7 +42,7 @@ export default function CreateTaskDialog({
       return;
     }
     onSave({
-      listId,
+      listId: String(form.get("listId") ?? "").trim() || listId,
       title,
       note: String(form.get("note") ?? "").trim() || null,
       dueDate: String(form.get("dueDate") ?? "").trim() || null,
@@ -69,6 +71,25 @@ export default function CreateTaskDialog({
               disabled={saving}
               slotProps={{ htmlInput: { maxLength: 255, pattern: ".*\\S.*" } }}
             />
+            {lists.length > 0 && (
+              <TextField
+                select
+                name="listId"
+                label={t("tasks.list")}
+                defaultValue={listId ?? ""}
+                disabled={saving}
+                slotProps={{
+                  select: { native: true },
+                  inputLabel: { shrink: true },
+                }}
+              >
+                {lists.map((list) => (
+                  <option key={list.id} value={list.id}>
+                    {list.isInbox ? t("tasks.inbox") : list.name}
+                  </option>
+                ))}
+              </TextField>
+            )}
             <TextField
               name="note"
               label={t("tasks.note")}

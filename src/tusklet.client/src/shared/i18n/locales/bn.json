@@ -77,6 +77,21 @@
     "viewTasks": "কাজ দেখুন"
   },
   "tasks": {
+    "allTasks": "সব কাজ",
+    "filters": "ফিল্টার",
+    "groupBy": "দলবদ্ধ করুন",
+    "sortBy": "সাজান",
+    "groupOptions": {
+      "none": "দলবদ্ধ নয়",
+      "list": "তালিকা",
+      "status": "অবস্থা"
+    },
+    "sortOptions": {
+      "listOrder": "তালিকার ক্রম",
+      "title": "শিরোনাম",
+      "dueDate": "নির্ধারিত তারিখ",
+      "importance": "গুরুত্ব"
+    },
     "title": "কাজ",
     "list": "কাজের তালিকা",
     "inbox": "ইনবক্স",
