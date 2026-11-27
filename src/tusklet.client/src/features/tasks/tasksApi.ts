@@ -8,9 +8,52 @@ export type TaskImportReport = {
   newTasks: number;
   unsupportedTasks: number;
   sharedLists: number;
+  restoredTasks: number;
+  links: number;
 };
 
 export type TaskList = { id: string; name: string };
+
+export type TaskProgress =
+  "NotStarted" | "InProgress" | "WaitingOnOthers" | "Deferred";
+
+export type TaskRecurrence = {
+  pattern: {
+    type:
+      | "daily"
+      | "weekly"
+      | "absoluteMonthly"
+      | "relativeMonthly"
+      | "absoluteYearly"
+      | "relativeYearly";
+    interval: number;
+    daysOfWeek?: (
+      | "sunday"
+      | "monday"
+      | "tuesday"
+      | "wednesday"
+      | "thursday"
+      | "friday"
+      | "saturday"
+    )[];
+    dayOfMonth?: number;
+    month?: number;
+    index?: "first" | "second" | "third" | "fourth" | "last";
+  };
+  range: {
+    type: "noEnd" | "endDate" | "numbered";
+    startDate: string;
+    endDate?: string;
+    numberOfOccurrences?: number;
+  };
+};
+
+export type TaskLink = {
+  id: string;
+  url: string;
+  displayName: string | null;
+  applicationName: string | null;
+};
 
 export type TaskItem = {
   id: string;
@@ -19,6 +62,12 @@ export type TaskItem = {
   dueDate: string | null;
   isImportant: boolean;
   isCompleted: boolean;
+  progress: TaskProgress | null;
+  startsAt: string | null;
+  reminderAt: string | null;
+  reminderEnabled: boolean | null;
+  recurrence: TaskRecurrence | null;
+  links: TaskLink[];
 };
 
 export type CreateTaskInput = {

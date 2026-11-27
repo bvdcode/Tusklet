@@ -41,9 +41,9 @@ The local password remains available for administration. OpenID sign-in is limit
 
 ## Import from Microsoft To Do
 
-In **Profile settings**, choose a Microsoft To Do backup ZIP. The supported format is `microsoft-todo-export` version 1, with `tasks.json` and its referenced attachment files. Review the counts and choose **Import tasks** to add the new lists and tasks to your account. Repeat imports skip existing source records and preserve edits in Tusklet.
+In **Profile settings**, choose a Microsoft To Do backup ZIP. The supported format is `microsoft-todo-export` version 1, with `tasks.json` and its referenced attachment files. Review the counts and choose **Import tasks** or **Restore details**. Repeat imports fill missing imported details on existing tasks and preserve edits in Tusklet.
 
-The import stores text notes, dates, priorities, completed tasks, checklist steps, and attachments. Shared lists become personal copies. The preview identifies tasks with unsupported details.
+The import stores text notes, dates, priorities, task statuses, checklist steps, attachments, linked resources, recurrence rules and reminder settings. Imported schedules and links are available in task details. Shared lists become personal copies. The preview identifies tasks with unsupported details.
 
 ## Develop
 

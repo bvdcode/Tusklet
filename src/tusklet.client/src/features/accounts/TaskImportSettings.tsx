@@ -29,7 +29,8 @@ export default function TaskImportSettings({
   });
   const report = apply.data ?? preview.data;
   const hasNewRecords =
-    report !== undefined && (report.newLists > 0 || report.newTasks > 0);
+    report !== undefined &&
+    (report.newLists > 0 || report.newTasks > 0 || report.restoredTasks > 0);
 
   return (
     <Stack spacing={1.5}>
@@ -96,9 +97,16 @@ export default function TaskImportSettings({
             <Typography variant="body2">
               {t(apply.isSuccess ? "import.added" : "import.toAdd", {
                 ...report,
-                skipped: report.tasks - report.newTasks,
+                skipped: report.tasks - report.newTasks - report.restoredTasks,
               })}
             </Typography>
+            {report.restoredTasks > 0 && (
+              <Typography variant="body2">
+                {t(apply.isSuccess ? "import.restored" : "import.toRestore", {
+                  count: report.restoredTasks,
+                })}
+              </Typography>
+            )}
           </Alert>
           {(report.unsupportedTasks > 0 || report.sharedLists > 0) && (
             <Alert severity="warning">
@@ -130,7 +138,11 @@ export default function TaskImportSettings({
               loading={apply.isPending}
               sx={{ alignSelf: { sm: "flex-end" } }}
             >
-              {t("import.apply")}
+              {t(
+                report.newLists > 0 || report.newTasks > 0
+                  ? "import.apply"
+                  : "import.restoreAction",
+              )}
             </Button>
           )}
         </Stack>

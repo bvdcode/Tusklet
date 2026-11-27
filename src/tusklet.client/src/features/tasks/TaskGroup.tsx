@@ -4,6 +4,7 @@ import StarBorderRounded from "@mui/icons-material/StarBorderRounded";
 import {
   Checkbox,
   Chip,
+  Link,
   List,
   ListItem,
   ListItemIcon,
@@ -12,8 +13,9 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { useId } from "react";
+import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
+import TaskDetailsDialog from "./TaskDetailsDialog";
 import type { TaskItem } from "./tasksApi";
 
 export default function TaskGroup({
@@ -28,6 +30,7 @@ export default function TaskGroup({
   onCompletionChange: (id: string, isCompleted: boolean) => void;
 }) {
   const titleId = useId();
+  const [details, setDetails] = useState<TaskItem | null>(null);
   const { t, i18n } = useTranslation();
   const date = new Intl.DateTimeFormat(i18n.resolvedLanguage, {
     dateStyle: "medium",
@@ -68,7 +71,26 @@ export default function TaskGroup({
                 />
               </ListItemIcon>
               <ListItemText
-                primary={task.title}
+                primary={
+                  task.progress ||
+                  task.startsAt ||
+                  task.reminderEnabled !== null ||
+                  task.recurrence ||
+                  task.links.length > 0 ? (
+                    <Link
+                      component="button"
+                      type="button"
+                      color="inherit"
+                      underline="always"
+                      onClick={() => setDetails(task)}
+                      sx={{ textAlign: "start", overflowWrap: "anywhere" }}
+                    >
+                      {task.title}
+                    </Link>
+                  ) : (
+                    task.title
+                  )
+                }
                 secondary={task.note}
                 sx={{ minWidth: 0, overflowWrap: "anywhere" }}
                 slotProps={{
@@ -117,6 +139,9 @@ export default function TaskGroup({
           ))}
         </List>
       </Paper>
+      {details && (
+        <TaskDetailsDialog task={details} onClose={() => setDetails(null)} />
+      )}
     </Stack>
   );
 }
