@@ -8,14 +8,15 @@ export default function Brand() {
   return (
     <Stack direction="row" sx={{ alignItems: "center", gap: 1 }}>
       <Box
-        component="img"
-        src={logo}
-        alt=""
-        sx={(theme) => ({
+        component="span"
+        aria-hidden="true"
+        sx={{
           width: 38,
           height: 38,
-          ...theme.applyStyles("dark", { filter: "brightness(0) invert(1)" }),
-        })}
+          flexShrink: 0,
+          bgcolor: "primary.main",
+          mask: `url("${logo}") center / contain no-repeat`,
+        }}
       />
       <Typography
         component="span"

@@ -18,7 +18,7 @@ declare module "@mui/material/styles" {
 }
 
 const theme = createTheme({
-  cssVariables: true,
+  cssVariables: { colorSchemeSelector: "data-color-scheme" },
   shape: { borderRadius: 12 },
   typography: {
     fontFamily: '"DM Sans Variable", system-ui, sans-serif',

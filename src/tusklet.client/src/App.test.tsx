@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "@mui/material";
 import {
   cleanup,
   fireEvent,
@@ -10,6 +11,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import App from "./App";
 import "./shared/i18n";
+import theme from "./shared/theme";
 
 afterEach(() => {
   cleanup();
@@ -19,11 +21,13 @@ afterEach(() => {
 function renderApp(path = "/") {
   const queryClient = new QueryClient();
   return render(
-    <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[path]}>
-        <App />
-      </MemoryRouter>
-    </QueryClientProvider>,
+    <ThemeProvider theme={theme} defaultMode="system" storageManager={null}>
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={[path]}>
+          <App />
+        </MemoryRouter>
+      </QueryClientProvider>
+    </ThemeProvider>,
   );
 }
 
@@ -52,7 +56,8 @@ test("creates the initial admin and shows the workspace", async () => {
         },
         requestToken: "signed-in-csrf",
       }),
-    );
+    )
+    .mockResolvedValueOnce(Response.json([]));
   vi.stubGlobal("fetch", fetchSession);
 
   renderApp();
@@ -69,7 +74,7 @@ test("creates the initial admin and shows the workspace", async () => {
   });
   fireEvent.click(screen.getByRole("button", { name: "Create account" }));
 
-  expect(await screen.findByRole("heading", { name: "Today" })).toBeTruthy();
+  expect(await screen.findByRole("heading", { name: "Tasks" })).toBeTruthy();
   expect(screen.getByRole("button", { name: "Account menu" })).toBeTruthy();
   expect(fetchSession).toHaveBeenNthCalledWith(2, "/api/auth/setup", {
     method: "POST",
@@ -110,6 +115,19 @@ test("can retry loading the sign-in screen", async () => {
   expect(
     screen.getByRole("button", { name: "Sign in with OpenID" }),
   ).toBeTruthy();
+});
+
+test("keeps the login layout hidden until the session is known", () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(() => new Promise<Response>(() => {})),
+  );
+
+  renderApp("/profile");
+
+  expect(screen.getByRole("progressbar", { name: "Loading" })).toBeTruthy();
+  expect(screen.queryByText("Tusklet")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Sign in" })).toBeNull();
 });
 
 test("locks both sign-in actions during an OpenID redirect and unlocks on return", async () => {
@@ -165,7 +183,7 @@ test("opens profile and administration from the account menu", async () => {
       Promise.resolve(
         url === "/api/admin/openid"
           ? new Response(null, { status: 204 })
-          : Response.json(session),
+          : Response.json(url === "/api/tasks/lists" ? [] : session),
       ),
     ),
   );

@@ -1,4 +1,10 @@
-import { Alert, Box, Button, Container, Skeleton, Stack } from "@mui/material";
+import {
+  Alert,
+  Button,
+  CircularProgress,
+  Container,
+  Stack,
+} from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -43,7 +49,28 @@ export default function App() {
       </Alert>
     ) : null;
 
-  if (session.data?.user) {
+  if (!session.data) {
+    return (
+      <Container
+        component="main"
+        maxWidth="sm"
+        sx={{ flex: 1, display: "grid", placeItems: "center" }}
+      >
+        {session.isError ? (
+          <Stack spacing={2}>
+            <Alert severity="error">{t("auth.loadError")}</Alert>
+            <Button variant="outlined" onClick={() => void session.refetch()}>
+              {t("common.retry")}
+            </Button>
+          </Stack>
+        ) : (
+          <CircularProgress size={28} aria-label={t("common.loading")} />
+        )}
+      </Container>
+    );
+  }
+
+  if (session.data.user) {
     const { user, requestToken } = session.data;
     return (
       <>
@@ -56,13 +83,11 @@ export default function App() {
           {notice}
           <Suspense
             fallback={
-              <Box role="status" aria-label={t("common.loading")}>
-                <Skeleton variant="rounded" height={240} />
-              </Box>
+              <CircularProgress size={24} aria-label={t("common.loading")} />
             }
           >
             <Routes>
-              <Route path="/" element={<Workspace />} />
+              <Route path="/" element={<Workspace ownerId={user.id} />} />
               <Route
                 path="/profile"
                 element={<ProfilePage session={session.data} user={user} />}
@@ -87,28 +112,10 @@ export default function App() {
   return (
     <AccountLayout>
       {notice}
-      {session.isPending && (
-        <Stack role="status" aria-label={t("common.loading")} spacing={2}>
-          <Skeleton variant="text" width="58%" height={52} />
-          <Skeleton variant="rounded" height={56} />
-          <Skeleton variant="rounded" height={56} />
-          <Skeleton variant="rounded" height={48} />
-        </Stack>
-      )}
-      {session.isError && (
-        <Stack spacing={2}>
-          <Alert severity="error">{t("auth.loadError")}</Alert>
-          <Button variant="outlined" onClick={() => void session.refetch()}>
-            {t("common.retry")}
-          </Button>
-        </Stack>
-      )}
-      {session.data && (
-        <SignInForm
-          key={String(session.data.setupRequired)}
-          session={session.data}
-        />
-      )}
+      <SignInForm
+        key={String(session.data.setupRequired)}
+        session={session.data}
+      />
     </AccountLayout>
   );
 }

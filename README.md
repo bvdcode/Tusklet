@@ -1,6 +1,6 @@
 # Tusklet
 
-Tusklet is a self-hosted task manager in early development. The current preview includes administrator setup, password and OpenID Connect sign-in, and a sample task list. A single ASP.NET Core 11 process hosts the API and React client.
+Tusklet is a self-hosted task manager in early development. The current preview includes administrator setup, password and OpenID Connect sign-in, and task import from Microsoft To Do backups. A single ASP.NET Core 11 process hosts the API and React client.
 
 [![CI](https://github.com/bvdcode/Tusklet/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/bvdcode/Tusklet/actions/workflows/ci.yml)
 [![Release](https://badgen.net/github/release/bvdcode/Tusklet)](https://github.com/bvdcode/Tusklet/releases/latest)
@@ -11,7 +11,7 @@ Tusklet is a self-hosted task manager in early development. The current preview 
 
 The image serves the client and API together. Release images for Linux AMD64 and ARM64 are available on [Docker Hub](https://hub.docker.com/r/bvdcode/tusklet) and [GitHub Container Registry](https://github.com/bvdcode/Tusklet/pkgs/container/tusklet).
 
-Create a PostgreSQL database and a dedicated login with permission to manage its schema. Set the PostgreSQL environment variables for the container. Tusklet applies its EF Core migrations at startup.
+Create a UTF-8 PostgreSQL database and a dedicated login with permission to manage its schema. Set the PostgreSQL environment variables for the container. Tusklet applies its EF Core migrations at startup.
 
 ```sh
 export TUSKLET_PG_HOST='<postgres host>'
@@ -38,6 +38,12 @@ Configure one OpenID Connect provider per Tusklet instance.
 4. Choose **Profile settings** from the account menu, select **Link OpenID account**, and sign in with the provider. The next time you sign in to Tusklet you can choose **Sign in with OpenID**.
 
 The local password remains available for administration. OpenID sign-in is limited to accounts linked from a signed-in profile.
+
+## Import from Microsoft To Do
+
+In **Profile settings**, choose a Microsoft To Do backup ZIP. The supported format is `microsoft-todo-export` version 1, with `tasks.json` and its referenced attachment files. Review the counts and choose **Import tasks** to add the new lists and tasks to your account. Repeat imports skip existing source records and preserve edits in Tusklet.
+
+The import stores text notes, dates, priorities, completed tasks, checklist steps, and attachments. Shared lists become personal copies. The preview identifies tasks with unsupported details.
 
 ## Develop
 

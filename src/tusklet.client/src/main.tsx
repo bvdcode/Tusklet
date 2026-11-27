@@ -7,6 +7,7 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./shared/i18n";
 import theme from "./shared/theme";
+import { readThemeMode } from "./shared/themeMode";
 
 const root = document.getElementById("root");
 if (root === null) {
@@ -17,7 +18,12 @@ const queryClient = new QueryClient();
 
 createRoot(root).render(
   <StrictMode>
-    <ThemeProvider theme={theme} defaultMode="system" storageManager={null}>
+    <ThemeProvider
+      theme={theme}
+      defaultMode={readThemeMode()}
+      storageManager={null}
+      disableTransitionOnChange
+    >
       <CssBaseline />
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>

@@ -49,13 +49,32 @@
     "loadError": "Could not load provider settings.",
     "saveError": "Could not save settings. Check the HTTPS issuer, callback URL and client secret."
   },
+  "profile": {
+    "theme": "Theme",
+    "systemTheme": "System",
+    "lightTheme": "Light",
+    "darkTheme": "Dark"
+  },
+  "import": {
+    "title": "Import from Microsoft To Do",
+    "choose": "Choose ZIP backup",
+    "contents": "{{lists}} lists · {{tasks}} tasks ({{completed}} completed) · {{steps}} steps · {{attachments}} attachments",
+    "toAdd": "{{newLists}} new lists and {{newTasks}} new tasks · {{skipped}} tasks already imported",
+    "added": "Added {{newLists}} lists and {{newTasks}} tasks. Skipped {{skipped}} existing tasks.",
+    "partial": "Some details on {{unsupportedTasks}} tasks won’t transfer, including extra statuses, reminders, recurrence, start dates, categories and links.",
+    "shared": "Shared lists are imported as personal copies ({{sharedLists}}).",
+    "previewError": "Could not read the backup. Choose a supported Microsoft To Do ZIP under 25 MB.",
+    "applyError": "Could not import the tasks. Try again.",
+    "apply": "Import tasks",
+    "viewTasks": "View tasks"
+  },
   "tasks": {
-    "today": "Today",
-    "preview": "Sample tasks",
+    "title": "Tasks",
+    "list": "Task list",
+    "empty": "No tasks yet.",
+    "emptyList": "This list is empty.",
+    "loadError": "Could not load tasks.",
     "open": "To do",
-    "first": "Organize the inbox",
-    "second": "Plan the week",
-    "third": "Order groceries",
     "completed": "Completed",
     "important": "Important"
   }

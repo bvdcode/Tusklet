@@ -12,6 +12,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import OpenIdButton from "./OpenIdButton";
+import TaskImportSettings from "./TaskImportSettings";
+import ThemeSettings from "./ThemeSettings";
 import {
   changeAccount,
   type SessionStatus,
@@ -122,6 +124,10 @@ export default function ProfilePage({ session, user }: Props) {
         {unlink.isError && (
           <Alert severity="error">{t("auth.unlinkError")}</Alert>
         )}
+        <Divider />
+        <ThemeSettings />
+        <Divider />
+        <TaskImportSettings requestToken={session.requestToken} />
       </Stack>
     </Paper>
   );

@@ -22,6 +22,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import Brand from "../../shared/Brand";
+import { taskItemsKey, taskListsKey } from "../tasks/tasksApi";
 import {
   changeAccount,
   sessionKey,
@@ -48,8 +49,10 @@ export default function AccountHeader({ session, user, onLogout }: Props) {
     onSuccess: async () => {
       setAnchor(null);
       onLogout();
-      void navigate("/", { replace: true });
+      queryClient.removeQueries({ queryKey: taskListsKey });
+      queryClient.removeQueries({ queryKey: taskItemsKey });
       await queryClient.resetQueries({ queryKey: sessionKey, exact: true });
+      void navigate("/", { replace: true });
     },
   });
 
