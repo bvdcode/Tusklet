@@ -89,6 +89,7 @@
     "allTasks": "Все задачи",
     "filters": "Фильтры",
     "groupBy": "Группировать по",
+    "statusGroupTitle": "{{status}} ({{taskCount, number}})",
     "sortBy": "Сортировать по",
     "groupOptions": {
       "none": "Без группировки",

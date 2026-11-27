@@ -85,6 +85,7 @@
     "allTasks": "সব কাজ",
     "filters": "ফিল্টার",
     "groupBy": "দলবদ্ধ করুন",
+    "statusGroupTitle": "{{status}} ({{taskCount, number}})",
     "sortBy": "সাজান",
     "groupOptions": {
       "none": "দলবদ্ধ নয়",

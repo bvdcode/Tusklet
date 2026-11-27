@@ -46,9 +46,15 @@ test("shows tasks across lists and lets users sort, group and select a list", as
       { id: "inbox", name: "Inbox", isInbox: true },
       { id: "personal", name: "Personal", isInbox: false },
     ],
-    "/api/tasks/lists/inbox": [task],
+    "/api/tasks/lists/inbox": [task, { ...task, id: "third", title: "Yak" }],
     "/api/tasks/lists/personal": [
-      { ...task, id: "second", title: "Apple", isCompleted: true },
+      {
+        ...task,
+        id: "second",
+        title: "Apple",
+        isCompleted: true,
+        isImportant: true,
+      },
     ],
   };
   const groupingEndpoint = "/api/auth/preferences/taskGrouping";
@@ -71,15 +77,18 @@ test("shows tasks across lists and lets users sort, group and select a list", as
 
   await screen.findByText("Apple", {}, { timeout: 3000 });
   const header = screen.getByRole("banner");
-  const selector = within(header).getByRole("combobox", { name: "Task list" });
   const filters = within(header).getByRole("button", { name: "Filters" });
-  expect(selector.textContent).toBe("All tasks");
+  expect(
+    within(header).queryByRole("combobox", { name: "Task list" }),
+  ).toBeNull();
   expect(within(header).getByRole("button", { name: "New task" })).toBeTruthy();
   expect(screen.getAllByRole("list")).toHaveLength(1);
   expect(screen.getAllByRole("listitem")[0].textContent).toContain("Zebra");
 
   const zebra = screen.getByRole("button", { name: "Zebra" });
   const apple = screen.getByRole("button", { name: "Apple" });
+  const star = within(apple).getByRole("img", { name: "Important" });
+  expect(star.parentElement?.textContent).toContain("Apple");
   fireEvent.click(zebra);
   const details = await screen.findByRole("complementary", { name: "Zebra" });
   expect(within(details).getByText("To do")).toBeTruthy();
@@ -100,6 +109,10 @@ test("shows tasks across lists and lets users sort, group and select a list", as
   await waitFor(() => expect(screen.queryByRole("complementary")).toBeNull());
 
   fireEvent.click(filters);
+  const taskList = screen.getByRole("combobox", { name: "Task list" });
+  expect(
+    within(taskList).getByRole("option", { name: "All tasks", selected: true }),
+  ).toBeTruthy();
   fireEvent.change(screen.getByRole("combobox", { name: "Sort by" }), {
     target: { value: "title" },
   });
@@ -131,8 +144,24 @@ test("shows tasks across lists and lets users sort, group and select a list", as
     }),
   );
 
-  fireEvent.mouseDown(selector);
-  fireEvent.click(await screen.findByRole("option", { name: "Personal" }));
+  fireEvent.click(filters);
+  fireEvent.change(screen.getByRole("combobox", { name: "Group by" }), {
+    target: { value: "status" },
+  });
+  fireEvent.keyDown(screen.getByRole("combobox", { name: "Group by" }), {
+    key: "Escape",
+  });
+  expect(await screen.findByRole("list", { name: "To do (2)" })).toBeTruthy();
+  expect(screen.getByRole("list", { name: "Completed (1)" })).toBeTruthy();
+
+  fireEvent.click(filters);
+  const selector = screen.getByRole("combobox", { name: "Task list" });
+  fireEvent.change(selector, { target: { value: "personal" } });
+  fireEvent.keyDown(selector, { key: "Escape" });
+  await waitFor(() =>
+    expect(screen.queryByRole("dialog", { name: "Filters" })).toBeNull(),
+  );
   expect(screen.queryByText("Zebra")).toBeNull();
-  expect(screen.getByText("Apple")).toBeTruthy();
+  expect(screen.queryByRole("list", { name: "To do (2)" })).toBeNull();
+  expect(screen.getByRole("list", { name: "Completed (1)" })).toBeTruthy();
 });

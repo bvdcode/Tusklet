@@ -192,7 +192,14 @@ export default function Workspace(account: AccountPage) {
             .map((group) => (
               <TaskGroup
                 key={group.id}
-                title={group.title}
+                title={
+                  grouping === "status"
+                    ? t("tasks.statusGroupTitle", {
+                        status: group.title,
+                        taskCount: group.tasks.length,
+                      })
+                    : group.title
+                }
                 tasks={group.tasks}
                 showListName={!active && grouping !== "list"}
                 changing={completion.isPending}

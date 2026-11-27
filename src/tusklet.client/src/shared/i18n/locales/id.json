@@ -85,6 +85,7 @@
     "allTasks": "Semua tugas",
     "filters": "Filter",
     "groupBy": "Kelompokkan menurut",
+    "statusGroupTitle": "{{status}} ({{taskCount, number}})",
     "sortBy": "Urutkan menurut",
     "groupOptions": {
       "none": "Tanpa pengelompokan",

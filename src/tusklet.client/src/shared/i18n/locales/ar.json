@@ -93,6 +93,7 @@
     "allTasks": "كل المهام",
     "filters": "عوامل التصفية",
     "groupBy": "التجميع حسب",
+    "statusGroupTitle": "{{status}} ({{taskCount, number}})",
     "sortBy": "الترتيب حسب",
     "groupOptions": {
       "none": "بدون تجميع",

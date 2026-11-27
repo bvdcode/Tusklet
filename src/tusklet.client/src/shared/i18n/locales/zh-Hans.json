@@ -85,6 +85,7 @@
     "allTasks": "所有任务",
     "filters": "筛选",
     "groupBy": "分组依据",
+    "statusGroupTitle": "{{status}} ({{taskCount, number}})",
     "sortBy": "排序依据",
     "groupOptions": {
       "none": "不分组",

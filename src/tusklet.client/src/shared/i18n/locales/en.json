@@ -85,6 +85,7 @@
     "allTasks": "All tasks",
     "filters": "Filters",
     "groupBy": "Group by",
+    "statusGroupTitle": "{{status}} ({{taskCount, number}})",
     "sortBy": "Sort by",
     "groupOptions": {
       "none": "None",

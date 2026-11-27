@@ -102,11 +102,6 @@ export default function AccountHeader({
               textDecoration: "none",
               borderRadius: 1,
               flexShrink: 0,
-              ...(actions && {
-                "& .MuiTypography-root": {
-                  display: { xs: "none", sm: "block" },
-                },
-              }),
             }}
           >
             <Brand />

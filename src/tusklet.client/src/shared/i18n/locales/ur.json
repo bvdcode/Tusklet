@@ -85,6 +85,7 @@
     "allTasks": "تمام کام",
     "filters": "فلٹرز",
     "groupBy": "گروپ بندی کی بنیاد",
+    "statusGroupTitle": "{{status}} ({{taskCount, number}})",
     "sortBy": "ترتیب کی بنیاد",
     "groupOptions": {
       "none": "گروپ بندی نہیں",

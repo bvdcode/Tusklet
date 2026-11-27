@@ -1,9 +1,8 @@
 import CheckCircleOutlined from "@mui/icons-material/CheckCircleOutlined";
 import RadioButtonUnchecked from "@mui/icons-material/RadioButtonUnchecked";
-import StarBorderRounded from "@mui/icons-material/StarBorderRounded";
+import StarRounded from "@mui/icons-material/StarRounded";
 import {
   Checkbox,
-  Chip,
   List,
   ListItem,
   ListItemButton,
@@ -94,6 +93,11 @@ export default function TaskGroup({
               </ListItemIcon>
               <ListItemButton
                 aria-label={task.title}
+                aria-describedby={
+                  task.isImportant
+                    ? `${titleId}-important-${task.id}`
+                    : undefined
+                }
                 aria-expanded={selectedTaskId === task.id}
                 onClick={() => onTaskSelect(task)}
                 sx={{
@@ -112,7 +116,20 @@ export default function TaskGroup({
                 }}
               >
                 <ListItemText
-                  primary={task.title}
+                  primary={
+                    <>
+                      {task.title}
+                      {task.isImportant && (
+                        <StarRounded
+                          id={`${titleId}-important-${task.id}`}
+                          titleAccess={t("tasks.important")}
+                          color="action"
+                          fontSize="inherit"
+                          sx={{ ml: 0.5, verticalAlign: "text-bottom" }}
+                        />
+                      )}
+                    </>
+                  }
                   secondary={
                     showListName
                       ? [task.listName, task.note].filter(Boolean).join(" · ")
@@ -137,45 +154,24 @@ export default function TaskGroup({
                     },
                   }}
                 />
-                <Stack
-                  direction={{ xs: "column", sm: "row" }}
-                  sx={{
-                    alignItems: "flex-end",
-                    gap: 0.75,
-                    flexShrink: 0,
-                    "@container (max-width: 380px)": {
-                      flexDirection: "column",
-                    },
-                    "@container (max-width: 280px)": {
-                      alignItems: "flex-start",
-                      overflowWrap: "anywhere",
-                    },
-                  }}
-                >
-                  {task.dueDate && (
-                    <Typography
-                      component="time"
-                      dateTime={task.dueDate}
-                      variant="body2"
-                      color={dueDateColor(
-                        task.dueDate,
-                        today,
-                        task.isCompleted,
-                      )}
-                    >
-                      {date.format(new Date(task.dueDate))}
-                    </Typography>
-                  )}
-                  {task.isImportant && (
-                    <Chip
-                      icon={<StarBorderRounded />}
-                      label={t("tasks.important")}
-                      color="warning"
-                      variant="outlined"
-                      size="small"
-                    />
-                  )}
-                </Stack>
+                {task.dueDate && (
+                  <Typography
+                    component="time"
+                    dateTime={task.dueDate}
+                    variant="body2"
+                    color={dueDateColor(task.dueDate, today, task.isCompleted)}
+                    sx={{
+                      flexShrink: 0,
+                      textAlign: "end",
+                      "@container (max-width: 280px)": {
+                        textAlign: "start",
+                        overflowWrap: "anywhere",
+                      },
+                    }}
+                  >
+                    {date.format(new Date(task.dueDate))}
+                  </Typography>
+                )}
               </ListItemButton>
             </ListItem>
           ))}

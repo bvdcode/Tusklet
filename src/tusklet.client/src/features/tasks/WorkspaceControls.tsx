@@ -1,15 +1,6 @@
 import AddRounded from "@mui/icons-material/AddRounded";
 import TuneRounded from "@mui/icons-material/TuneRounded";
-import {
-  FormControl,
-  IconButton,
-  MenuItem,
-  Popover,
-  Select,
-  Stack,
-  TextField,
-  useTheme,
-} from "@mui/material";
+import { IconButton, Popover, Stack, TextField, useTheme } from "@mui/material";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TaskList } from "./tasksApi";
@@ -32,6 +23,11 @@ type Props = {
   onCreate: () => void;
 };
 
+const selectSlots = {
+  select: { native: true },
+  inputLabel: { shrink: true },
+} as const;
+
 export default function WorkspaceControls({
   lists,
   activeId,
@@ -47,6 +43,8 @@ export default function WorkspaceControls({
   const id = useId();
   const edge = useTheme().direction === "rtl" ? "left" : "right";
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  const hasFilters =
+    activeId !== "" || grouping !== "none" || sorting !== "listOrder";
 
   return (
     <Stack
@@ -59,37 +57,13 @@ export default function WorkspaceControls({
         gap: { xs: 0.25, sm: 0.75 },
       }}
     >
-      <FormControl
-        size="small"
-        sx={{ width: { xs: "100%", sm: 208 }, minWidth: 0 }}
-      >
-        <Select
-          displayEmpty
-          value={activeId}
-          onChange={(event) => onListChange(event.target.value)}
-          SelectDisplayProps={{ "aria-label": t("tasks.list") }}
-          sx={{
-            typography: { xs: "body2", sm: "body1" },
-            "& .MuiSelect-select": { pl: { xs: 1, sm: 1.75 } },
-          }}
-        >
-          <MenuItem value="">{t("tasks.allTasks")}</MenuItem>
-          {lists.map((list) => (
-            <MenuItem key={list.id} value={list.id}>
-              {list.isInbox ? t("tasks.inbox") : list.name}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
       <IconButton
         aria-label={t("tasks.filters")}
         title={t("tasks.filters")}
         aria-expanded={anchor !== null}
         aria-haspopup="dialog"
         aria-controls={anchor ? id : undefined}
-        color={
-          grouping !== "none" || sorting !== "listOrder" ? "primary" : "default"
-        }
+        color={hasFilters ? "primary" : "default"}
         onClick={(event) => setAnchor(event.currentTarget)}
       >
         <TuneRounded />
@@ -122,12 +96,24 @@ export default function WorkspaceControls({
           <TextField
             select
             size="small"
+            label={t("tasks.list")}
+            value={activeId}
+            slotProps={selectSlots}
+            onChange={(event) => onListChange(event.target.value)}
+          >
+            <option value="">{t("tasks.allTasks")}</option>
+            {lists.map((list) => (
+              <option key={list.id} value={list.id}>
+                {list.isInbox ? t("tasks.inbox") : list.name}
+              </option>
+            ))}
+          </TextField>
+          <TextField
+            select
+            size="small"
             label={t("tasks.groupBy")}
             value={grouping}
-            slotProps={{
-              select: { native: true },
-              inputLabel: { shrink: true },
-            }}
+            slotProps={selectSlots}
             onChange={(event) => {
               const value = groupingOptions.find(
                 (option) => option === event.target.value,
@@ -148,10 +134,7 @@ export default function WorkspaceControls({
             size="small"
             label={t("tasks.sortBy")}
             value={sorting}
-            slotProps={{
-              select: { native: true },
-              inputLabel: { shrink: true },
-            }}
+            slotProps={selectSlots}
             onChange={(event) => {
               const value = sortingOptions.find(
                 (option) => option === event.target.value,

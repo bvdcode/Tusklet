@@ -85,6 +85,7 @@
     "allTasks": "सभी कार्य",
     "filters": "फ़िल्टर",
     "groupBy": "समूह बनाएँ",
+    "statusGroupTitle": "{{status}} ({{taskCount, number}})",
     "sortBy": "क्रमबद्ध करें",
     "groupOptions": {
       "none": "कोई समूह नहीं",

@@ -34,11 +34,12 @@ export default function UserPreferencesProvider({
   const queryClient = useQueryClient();
   const [deviceLanguage] = useState(readLanguagePreference);
   const [pending, setPending] = useState<PendingPreferences>({});
+  const session = queryClient.getQueryData<SessionStatus>(sessionKey);
   const preferences: UserPreferences = {
     language: deviceLanguage,
     taskGrouping: "none",
     taskSorting: "listOrder",
-    ...user.preferences,
+    ...(session?.user?.id === user.id ? session.user.preferences : undefined),
   };
   const updates = Object.values(pending);
   for (const { change } of updates) {
