@@ -155,14 +155,19 @@ namespace Tusklet.Tests
             using HttpResponseMessage invalid = await SendAsync(first, firstSession, HttpMethod.Put,
                 root + "language", new { value = "missing" });
             Assert.That(invalid.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            using HttpResponseMessage invalidShortcut = await SendAsync(first, firstSession, HttpMethod.Put,
+                root + "taskDueDateShortcut", new { value = "2026-11-27" });
+            Assert.That(invalidShortcut.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
 
             HttpResponseMessage[] writes = await Task.WhenAll(
                 SendAsync(first, firstSession, HttpMethod.Put, root + "taskGrouping", new { value = "list" }),
                 SendAsync(second, secondSession, HttpMethod.Put, root + "taskSorting", new { value = "dueDate" }),
-                SendAsync(first, firstSession, HttpMethod.Put, root + "language", new { value = "ru" }));
+                SendAsync(first, firstSession, HttpMethod.Put, root + "language", new { value = "ru" }),
+                SendAsync(second, secondSession, HttpMethod.Put, root + "taskDueDateShortcut", new { value = "halfYear" }));
             using HttpResponseMessage grouping = writes[0];
             using HttpResponseMessage sorting = writes[1];
             using HttpResponseMessage language = writes[2];
+            using HttpResponseMessage shortcut = writes[3];
             Assert.That(writes.Select(reply => reply.StatusCode), Is.All.EqualTo(HttpStatusCode.NoContent));
 
             JsonElement values = (await SessionAsync(second)).GetProperty("user").GetProperty("preferences");
@@ -171,12 +176,17 @@ namespace Tusklet.Tests
                 Assert.That(values.GetProperty("taskGrouping").GetString(), Is.EqualTo("list"));
                 Assert.That(values.GetProperty("taskSorting").GetString(), Is.EqualTo("dueDate"));
                 Assert.That(values.GetProperty("language").GetString(), Is.EqualTo("ru"));
+                Assert.That(values.GetProperty("taskDueDateShortcut").GetString(), Is.EqualTo("halfYear"));
             });
             using HttpResponseMessage reset = await SendAsync(second, secondSession, HttpMethod.Put,
                 root + "language", new { value = "auto" });
             Assert.That(reset.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+            using HttpResponseMessage resetShortcut = await SendAsync(second, secondSession, HttpMethod.Put,
+                root + "taskDueDateShortcut", new { value = "none" });
+            Assert.That(resetShortcut.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
             JsonElement refreshed = (await SessionAsync(first)).GetProperty("user").GetProperty("preferences");
             Assert.That(refreshed.GetProperty("language").GetString(), Is.EqualTo("auto"));
+            Assert.That(refreshed.GetProperty("taskDueDateShortcut").GetString(), Is.EqualTo("none"));
             Assert.That((await SessionAsync(guest)).GetProperty("user").ValueKind, Is.EqualTo(JsonValueKind.Null));
         }
 
