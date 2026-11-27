@@ -175,15 +175,47 @@ test("opens profile and administration from the account menu", async () => {
   fireEvent.click(
     await screen.findByRole("menuitem", { name: "Profile settings" }),
   );
-  expect(await screen.findByRole("heading", { name: "Profile" })).toBeTruthy();
+  expect(await screen.findByRole("heading", { name: "admin" })).toBeTruthy();
+  expect(screen.queryByRole("heading", { name: "Profile" })).toBeNull();
   expect(screen.queryByRole("dialog")).toBeNull();
 
   fireEvent.click(menu);
   fireEvent.click(
     await screen.findByRole("menuitem", { name: "Administration" }),
   );
-  expect(
-    await screen.findByRole("heading", { name: "Administration" }),
-  ).toBeTruthy();
   expect(await screen.findByLabelText(/^Issuer URL/)).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "OpenID Connect" })).toBeTruthy();
+  expect(screen.queryByRole("heading", { name: "Administration" })).toBeNull();
+});
+
+test("shows a linked OpenID account with an accessible check icon", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue(
+      Response.json({
+        setupRequired: false,
+        openIdEnabled: true,
+        user: {
+          id: "admin-id",
+          username: "admin",
+          isAdmin: true,
+          openIdLinked: true,
+        },
+        requestToken: "test-csrf",
+      }),
+    ),
+  );
+
+  renderApp("/profile?openid=linked");
+
+  expect(
+    await screen.findByRole("img", { name: "OpenID account linked." }),
+  ).toBeTruthy();
+  expect(screen.queryByRole("alert")).toBeNull();
+  expect(
+    screen.queryByText("OpenID account linked.", { selector: "p" }),
+  ).toBeNull();
+  expect(
+    screen.getByRole("button", { name: "Unlink OpenID account" }),
+  ).toBeTruthy();
 });

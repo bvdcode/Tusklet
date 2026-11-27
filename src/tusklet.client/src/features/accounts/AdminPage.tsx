@@ -40,64 +40,58 @@ export default function AdminPage({ requestToken }: { requestToken: string }) {
   });
 
   return (
-    <Stack spacing={3}>
-      <Typography component="h1" variant="h3">
-        {t("auth.admin")}
-      </Typography>
-      <Paper
-        component="section"
-        aria-labelledby="provider-title"
-        variant="outlined"
-        sx={{ p: { xs: 2.5, sm: 3.5 } }}
-      >
-        <Stack spacing={2.5}>
-          <Typography component="h2" variant="h6" id="provider-title">
-            {t("auth.openId")}
-          </Typography>
-          {settings.isSuccess && (
-            <ProviderForm
-              settings={settings.data}
-              isSaving={save.isPending}
-              saveFailed={save.isError}
-              saveSucceeded={save.isSuccess}
-              onSave={save.mutate}
-              onEdit={save.reset}
-            />
-          )}
-          {!settings.isSuccess &&
-            (settings.isPending || settings.isFetching) && (
-              <Stack role="status" aria-label={t("common.loading")} spacing={2}>
-                <Skeleton variant="rounded" height={56} />
-                <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                  <Skeleton
-                    variant="rounded"
-                    height={56}
-                    sx={{ flex: { sm: 1 } }}
-                  />
-                  <Skeleton
-                    variant="rounded"
-                    height={56}
-                    sx={{ flex: { sm: 1 } }}
-                  />
-                </Stack>
-                <Skeleton variant="rounded" height={80} />
-                <Skeleton variant="rounded" height={48} />
-              </Stack>
-            )}
-          {settings.isError && !settings.isFetching && (
-            <Stack spacing={1.5}>
-              <Alert severity="error">{t("provider.loadError")}</Alert>
-              <Button
-                variant="outlined"
-                onClick={() => void settings.refetch()}
-                sx={{ alignSelf: "flex-start" }}
-              >
-                {t("common.retry")}
-              </Button>
+    <Paper
+      component="section"
+      aria-labelledby="provider-title"
+      variant="outlined"
+      sx={{ p: { xs: 2.5, sm: 3.5 } }}
+    >
+      <Stack spacing={2.5}>
+        <Typography component="h1" variant="h6" id="provider-title">
+          {t("auth.openId")}
+        </Typography>
+        {settings.isSuccess && (
+          <ProviderForm
+            settings={settings.data}
+            isSaving={save.isPending}
+            saveFailed={save.isError}
+            saveSucceeded={save.isSuccess}
+            onSave={save.mutate}
+            onEdit={save.reset}
+          />
+        )}
+        {!settings.isSuccess && (settings.isPending || settings.isFetching) && (
+          <Stack role="status" aria-label={t("common.loading")} spacing={2}>
+            <Skeleton variant="rounded" height={56} />
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+              <Skeleton
+                variant="rounded"
+                height={56}
+                sx={{ flex: { sm: 1 } }}
+              />
+              <Skeleton
+                variant="rounded"
+                height={56}
+                sx={{ flex: { sm: 1 } }}
+              />
             </Stack>
-          )}
-        </Stack>
-      </Paper>
-    </Stack>
+            <Skeleton variant="rounded" height={80} />
+            <Skeleton variant="rounded" height={48} />
+          </Stack>
+        )}
+        {settings.isError && !settings.isFetching && (
+          <Stack spacing={1.5}>
+            <Alert severity="error">{t("provider.loadError")}</Alert>
+            <Button
+              variant="outlined"
+              onClick={() => void settings.refetch()}
+              sx={{ alignSelf: { xs: "stretch", sm: "flex-end" } }}
+            >
+              {t("common.retry")}
+            </Button>
+          </Stack>
+        )}
+      </Stack>
+    </Paper>
   );
 }

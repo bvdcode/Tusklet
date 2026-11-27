@@ -3,6 +3,8 @@ import { Box, Button } from "@mui/material";
 import { useEffect, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 
+const buttonSizes = { login: "large", link: "medium" } as const;
+
 type Props = {
   action: "login" | "link";
   requestToken: string;
@@ -43,9 +45,6 @@ export default function OpenIdButton({
       method="post"
       onSubmit={submit}
       aria-busy={redirecting}
-      sx={{
-        alignSelf: { sm: { link: "flex-start", login: "stretch" }[action] },
-      }}
     >
       <input
         type="hidden"
@@ -55,7 +54,7 @@ export default function OpenIdButton({
       <Button
         type="submit"
         variant="outlined"
-        size="large"
+        size={buttonSizes[action]}
         fullWidth
         startIcon={<KeyOutlined />}
         loading={redirecting}

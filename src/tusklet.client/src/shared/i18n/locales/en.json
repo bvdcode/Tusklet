@@ -19,7 +19,6 @@
     "rateLimited": "Too many attempts. Try again in a minute.",
     "loadError": "Could not load your session.",
     "accountMenu": "Account menu",
-    "profile": "Profile",
     "profileSettings": "Profile settings",
     "admin": "Administration",
     "adminRole": "Administrator",

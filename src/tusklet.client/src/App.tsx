@@ -33,13 +33,13 @@ export default function App() {
   }, [searchParams, setSearchParams]);
 
   const notice =
-    openIdOutcome === "failed" || openIdOutcome === "linked" ? (
+    openIdOutcome === "failed" ? (
       <Alert
-        severity={openIdOutcome === "failed" ? "error" : "success"}
+        severity="error"
         onClose={() => setOpenIdOutcome(null)}
         sx={{ mb: 2.5 }}
       >
-        {t(openIdOutcome === "failed" ? "auth.openIdError" : "auth.linked")}
+        {t("auth.openIdError")}
       </Alert>
     ) : null;
 
@@ -57,7 +57,6 @@ export default function App() {
           <Suspense
             fallback={
               <Box role="status" aria-label={t("common.loading")}>
-                <Skeleton variant="text" width="32%" height={52} />
                 <Skeleton variant="rounded" height={240} />
               </Box>
             }
