@@ -73,6 +73,10 @@ dotnet ef migrations add MigrationName --project src/Tusklet.Server \
   --configuration Migrations --output-dir Migrations
 ```
 
+## Task storage
+
+Each task belongs to a list owned by a user. A task stores its title, priority, position, optional due date, completion time and one plain-text note. Checklist steps carry their own order and completion time. Attachments store the file name, media type and contents in separate PostgreSQL rows, so task lists can be read without loading file contents.
+
 ## API
 
 - `GET /api/auth/session` reads the setup status, current account and CSRF token.

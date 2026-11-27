@@ -13,6 +13,10 @@ namespace Tusklet.Server.Database
         public DbSet<User> Users => Set<User>();
         public DbSet<OpenIdProvider> OpenIdProviders => Set<OpenIdProvider>();
         public DbSet<ExternalIdentity> ExternalIdentities => Set<ExternalIdentity>();
+        public DbSet<TaskList> TaskLists => Set<TaskList>();
+        public DbSet<TaskItem> TaskItems => Set<TaskItem>();
+        public DbSet<TaskStep> TaskSteps => Set<TaskStep>();
+        public DbSet<TaskAttachment> TaskAttachments => Set<TaskAttachment>();
         public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
     }
 }
