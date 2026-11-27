@@ -7,6 +7,7 @@
     "close": "Tutup",
     "cancel": "Batal",
     "retry": "Coba lagi",
+    "create": "Buat",
     "save": "Simpan"
   },
   "pwa": {
@@ -109,6 +110,15 @@
     "taskTitle": "Judul",
     "note": "Catatan",
     "dueDate": "Tenggat",
+    "dueDateShortcuts": {
+      "today": "Hari ini",
+      "tomorrow": "Besok",
+      "week": "Minggu",
+      "month": "Bulan",
+      "twoMonths": "2 bulan",
+      "halfYear": "6 bulan",
+      "year": "Tahun"
+    },
     "startDate": "Tanggal mulai",
     "status": "Status",
     "progress": {

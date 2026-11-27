@@ -7,6 +7,7 @@
     "close": "Fechar",
     "cancel": "Cancelar",
     "retry": "Tentar novamente",
+    "create": "Criar",
     "save": "Salvar"
   },
   "pwa": {
@@ -111,6 +112,15 @@
     "taskTitle": "Título",
     "note": "Nota",
     "dueDate": "Prazo",
+    "dueDateShortcuts": {
+      "today": "Hoje",
+      "tomorrow": "Amanhã",
+      "week": "Semana",
+      "month": "Mês",
+      "twoMonths": "2 meses",
+      "halfYear": "6 meses",
+      "year": "Ano"
+    },
     "startDate": "Data de início",
     "status": "Status",
     "progress": {

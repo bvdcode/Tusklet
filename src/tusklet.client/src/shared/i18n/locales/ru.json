@@ -7,6 +7,7 @@
     "close": "Закрыть",
     "cancel": "Отмена",
     "retry": "Повторить",
+    "create": "Создать",
     "save": "Сохранить"
   },
   "pwa": {
@@ -113,6 +114,15 @@
     "taskTitle": "Заголовок",
     "note": "Заметка",
     "dueDate": "Срок",
+    "dueDateShortcuts": {
+      "today": "Сегодня",
+      "tomorrow": "Завтра",
+      "week": "Неделя",
+      "month": "Месяц",
+      "twoMonths": "2 месяца",
+      "halfYear": "Полгода",
+      "year": "Год"
+    },
     "startDate": "Дата начала",
     "status": "Статус",
     "progress": {

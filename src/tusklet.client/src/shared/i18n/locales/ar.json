@@ -7,6 +7,7 @@
     "close": "إغلاق",
     "cancel": "إلغاء",
     "retry": "إعادة المحاولة",
+    "create": "إنشاء",
     "save": "حفظ"
   },
   "pwa": {
@@ -117,6 +118,15 @@
     "taskTitle": "العنوان",
     "note": "ملاحظة",
     "dueDate": "تاريخ الاستحقاق",
+    "dueDateShortcuts": {
+      "today": "اليوم",
+      "tomorrow": "غدًا",
+      "week": "أسبوع",
+      "month": "شهر",
+      "twoMonths": "شهران",
+      "halfYear": "نصف سنة",
+      "year": "سنة"
+    },
     "startDate": "تاريخ البدء",
     "status": "الحالة",
     "progress": {

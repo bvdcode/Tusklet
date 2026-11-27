@@ -7,6 +7,7 @@
     "close": "بند کریں",
     "cancel": "منسوخ کریں",
     "retry": "دوبارہ کوشش کریں",
+    "create": "بنائیں",
     "save": "محفوظ کریں"
   },
   "pwa": {
@@ -109,6 +110,15 @@
     "taskTitle": "عنوان",
     "note": "نوٹ",
     "dueDate": "آخری تاریخ",
+    "dueDateShortcuts": {
+      "today": "آج",
+      "tomorrow": "کل",
+      "week": "ہفتہ",
+      "month": "مہینہ",
+      "twoMonths": "۲ ماہ",
+      "halfYear": "۶ ماہ",
+      "year": "سال"
+    },
     "startDate": "شروع ہونے کی تاریخ",
     "status": "حالت",
     "progress": {

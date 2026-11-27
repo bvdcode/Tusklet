@@ -7,6 +7,7 @@
     "close": "बंद करें",
     "cancel": "रद्द करें",
     "retry": "फिर से कोशिश करें",
+    "create": "बनाएँ",
     "save": "सहेजें"
   },
   "pwa": {
@@ -109,6 +110,15 @@
     "taskTitle": "शीर्षक",
     "note": "नोट",
     "dueDate": "समय-सीमा",
+    "dueDateShortcuts": {
+      "today": "आज",
+      "tomorrow": "कल",
+      "week": "हफ़्ता",
+      "month": "महीना",
+      "twoMonths": "2 महीने",
+      "halfYear": "6 महीने",
+      "year": "साल"
+    },
     "startDate": "शुरू होने की तारीख",
     "status": "स्थिति",
     "progress": {

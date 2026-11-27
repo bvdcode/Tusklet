@@ -2,6 +2,7 @@ import {
   Alert,
   Button,
   Checkbox,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
@@ -10,8 +11,15 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import { useId, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
+import { useUserPreferences } from "../accounts/userPreferences";
+import {
+  dueDateShortcuts,
+  getShortcutDate,
+  longDueDateShortcuts,
+  type TaskDueDateShortcut,
+} from "./taskDueDate";
 import type { CreateTaskInput, TaskList } from "./tasksApi";
 
 type Props = {
@@ -32,7 +40,21 @@ export default function CreateTaskDialog({
   onClose,
 }: Props) {
   const { t } = useTranslation();
+  const { preferences, changePreference } = useUserPreferences();
+  const { taskDueDateShortcut } = preferences;
   const titleId = useId();
+  const [dueDate, setDueDate] = useState(() => ({
+    value: getShortcutDate(taskDueDateShortcut),
+    shortcut: taskDueDateShortcut,
+  }));
+
+  function selectShortcut(shortcut: TaskDueDateShortcut) {
+    const next = dueDate.shortcut === shortcut ? "none" : shortcut;
+    setDueDate({ value: getShortcutDate(next), shortcut: next });
+    if (next !== taskDueDateShortcut) {
+      changePreference({ key: "taskDueDateShortcut", value: next });
+    }
+  }
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -98,13 +120,54 @@ export default function CreateTaskDialog({
               maxRows={6}
               disabled={saving}
             />
-            <TextField
-              name="dueDate"
-              label={t("tasks.dueDate")}
-              type="date"
-              disabled={saving}
-              slotProps={{ inputLabel: { shrink: true } }}
-            />
+            <Stack spacing={1} sx={{ containerType: "inline-size" }}>
+              <TextField
+                name="dueDate"
+                label={t("tasks.dueDate")}
+                type="date"
+                value={dueDate.value}
+                onChange={(event) =>
+                  setDueDate({ value: event.target.value, shortcut: "none" })
+                }
+                disabled={saving}
+                slotProps={{ inputLabel: { shrink: true } }}
+              />
+              <Stack spacing={0.5} useFlexGap>
+                {[dueDateShortcuts, longDueDateShortcuts].map((shortcuts) => (
+                  <Stack
+                    key={shortcuts[0]}
+                    direction="row"
+                    sx={{
+                      flexWrap: "wrap",
+                      gap: 0.5,
+                      "& .MuiChip-root": { flexGrow: 1 },
+                      "& .MuiChip-label": { px: { xs: 0.5, sm: 0.75 } },
+                      ...(shortcuts === dueDateShortcuts && {
+                        "@container (max-width: 247px)": {
+                          display: "grid",
+                          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                        },
+                      }),
+                    }}
+                  >
+                    {shortcuts.map((shortcut) => (
+                      <Chip
+                        key={shortcut}
+                        label={t(`tasks.dueDateShortcuts.${shortcut}`)}
+                        size="small"
+                        variant="outlined"
+                        aria-pressed={dueDate.shortcut === shortcut}
+                        color={
+                          dueDate.shortcut === shortcut ? "primary" : "default"
+                        }
+                        disabled={saving}
+                        onClick={() => selectShortcut(shortcut)}
+                      />
+                    ))}
+                  </Stack>
+                ))}
+              </Stack>
+            </Stack>
             <FormControlLabel
               control={<Checkbox name="important" />}
               label={t("tasks.important")}
@@ -117,7 +180,7 @@ export default function CreateTaskDialog({
             {t("common.cancel")}
           </Button>
           <Button type="submit" variant="contained" loading={saving}>
-            {t("common.save")}
+            {t("common.create")}
           </Button>
         </DialogActions>
       </Stack>

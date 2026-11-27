@@ -39,6 +39,7 @@ export default function UserPreferencesProvider({
     language: deviceLanguage,
     taskGrouping: "none",
     taskSorting: "listOrder",
+    taskDueDateShortcut: "none",
     ...(session?.user?.id === user.id ? session.user.preferences : undefined),
   };
   const updates = Object.values(pending);

@@ -7,6 +7,7 @@
     "close": "বন্ধ করুন",
     "cancel": "বাতিল করুন",
     "retry": "আবার চেষ্টা করুন",
+    "create": "তৈরি করুন",
     "save": "সংরক্ষণ করুন"
   },
   "pwa": {
@@ -109,6 +110,15 @@
     "taskTitle": "শিরোনাম",
     "note": "নোট",
     "dueDate": "শেষ তারিখ",
+    "dueDateShortcuts": {
+      "today": "আজ",
+      "tomorrow": "আগামীকাল",
+      "week": "সপ্তাহ",
+      "month": "মাস",
+      "twoMonths": "২ মাস",
+      "halfYear": "৬ মাস",
+      "year": "১ বছর"
+    },
     "startDate": "শুরুর তারিখ",
     "status": "অবস্থা",
     "progress": {

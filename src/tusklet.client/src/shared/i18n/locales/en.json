@@ -7,6 +7,7 @@
     "close": "Close",
     "cancel": "Cancel",
     "retry": "Retry",
+    "create": "Create",
     "save": "Save"
   },
   "pwa": {
@@ -109,6 +110,15 @@
     "taskTitle": "Title",
     "note": "Note",
     "dueDate": "Due date",
+    "dueDateShortcuts": {
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "week": "Week",
+      "month": "Month",
+      "twoMonths": "2 months",
+      "halfYear": "6 months",
+      "year": "Year"
+    },
     "startDate": "Start date",
     "status": "Status",
     "progress": {

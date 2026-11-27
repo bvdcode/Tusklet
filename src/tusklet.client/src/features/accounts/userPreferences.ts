@@ -1,11 +1,13 @@
 import { createContext, useContext } from "react";
 import type { LanguagePreference } from "../../shared/i18n/languagePreference";
+import type { TaskDueDateShortcut } from "../tasks/taskDueDate";
 import type { TaskGrouping, TaskSorting } from "../tasks/taskView";
 
 export type UserPreferences = {
   language: LanguagePreference;
   taskGrouping: TaskGrouping;
   taskSorting: TaskSorting;
+  taskDueDateShortcut: TaskDueDateShortcut;
 };
 
 type PreferenceKey = keyof UserPreferences;
