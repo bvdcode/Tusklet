@@ -25,5 +25,8 @@ namespace Tusklet.Server.Database
 
         [Column("is_admin")]
         public bool IsAdmin { get; set; }
+
+        [ConcurrencyCheck]
+        public Dictionary<string, string>? Preferences { get; set; }
     }
 }

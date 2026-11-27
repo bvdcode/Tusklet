@@ -56,6 +56,7 @@
     "lightTheme": "Claro",
     "darkTheme": "Oscuro",
     "language": "Idioma",
+    "preferencesSaveError": "No se pudieron guardar tus preferencias.",
     "autoLanguage": "Automático"
   },
   "import": {

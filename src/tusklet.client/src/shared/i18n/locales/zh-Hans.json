@@ -56,6 +56,7 @@
     "lightTheme": "浅色",
     "darkTheme": "深色",
     "language": "语言",
+    "preferencesSaveError": "无法保存你的偏好设置。",
     "autoLanguage": "自动"
   },
   "import": {

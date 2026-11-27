@@ -3,6 +3,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 using NUnit.Framework;
 using Tusklet.Server.Database;
 
@@ -18,19 +19,13 @@ namespace Tusklet.Tests
             TuskletDbContext db = scope.ServiceProvider.GetRequiredService<TuskletDbContext>();
             await db.Database.MigrateAsync("20261127001827_CreateAccounts");
 
-            User owner = new()
-            {
-                Username = "task-owner",
-                NormalizedUsername = "TASK-OWNER",
-                PasswordHash = "test-password-hash",
-            };
-            db.Users.Add(owner);
-            await db.SaveChangesAsync();
-            db.ChangeTracker.Clear();
+            Guid ownerId = Guid.NewGuid();
+            await SeedAccountBeforeTaskStorageAsync(db, ownerId);
 
             await db.Database.MigrateAsync();
             User savedOwner = await db.Users.SingleAsync();
-            Assert.That(savedOwner.Id, Is.EqualTo(owner.Id));
+            Assert.That(savedOwner.Id, Is.EqualTo(ownerId));
+            Assert.That(savedOwner.Preferences, Is.Null);
 
             DateOnly dueDate = new(2026, 12, 1);
             DateTime completedAt = new(2026, 11, 30, 12, 0, 0, DateTimeKind.Utc);
@@ -59,7 +54,7 @@ namespace Tusklet.Tests
             TaskAttachment savedAttachment = await db.TaskAttachments.SingleAsync();
             using (Assert.EnterMultipleScope())
             {
-                Assert.That(savedTask.TaskList.OwnerId, Is.EqualTo(owner.Id));
+                Assert.That(savedTask.TaskList.OwnerId, Is.EqualTo(ownerId));
                 Assert.That(savedTask.Note, Is.EqualTo(task.Note));
                 Assert.That(savedTask.DueDate, Is.EqualTo(dueDate));
                 Assert.That(savedTask.Priority, Is.EqualTo(TaskPriority.High));
@@ -72,6 +67,18 @@ namespace Tusklet.Tests
             db.ChangeTracker.Clear();
             db.TaskItems.Remove(savedTask);
             await Assert.ThatAsync(() => db.SaveChangesAsync(), Throws.InstanceOf<DbUpdateException>());
+        }
+
+        private static async Task SeedAccountBeforeTaskStorageAsync(TuskletDbContext db, Guid ownerId)
+        {
+            await using NpgsqlConnection connection = new(db.Database.GetConnectionString());
+            await connection.OpenAsync();
+            await using NpgsqlCommand command = new("""
+                INSERT INTO users (id, username, normalized_username, password_hash, is_admin, created_at, updated_at)
+                VALUES (@id, 'task-owner', 'TASK-OWNER', 'test-password-hash', false, now(), now())
+                """, connection);
+            command.Parameters.AddWithValue("id", ownerId);
+            await command.ExecuteNonQueryAsync();
         }
     }
 }

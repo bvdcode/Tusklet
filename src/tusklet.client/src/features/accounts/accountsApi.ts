@@ -1,9 +1,12 @@
+import type { UserPreferences } from "./userPreferences";
+
 export type SessionUser = {
   id: string;
   username: string;
   isAdmin: boolean;
   openIdLinked: boolean;
   pictureUrl: string | null;
+  preferences?: Partial<UserPreferences>;
 };
 
 export type SessionStatus = {

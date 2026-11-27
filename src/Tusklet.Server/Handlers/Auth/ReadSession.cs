@@ -28,6 +28,7 @@ namespace Tusklet.Server.Handlers.Auth
                         IsAdmin = user.IsAdmin,
                         OpenIdLinked = link != null,
                         PictureUrl = link == null ? null : link.PictureUrl,
+                        Preferences = user.Preferences ?? new Dictionary<string, string>(),
                     })
                 .SingleOrDefaultAsync(ct);
 

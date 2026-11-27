@@ -51,13 +51,25 @@ test("shows tasks across lists and lets users sort, group and select a list", as
       { ...task, id: "second", title: "Apple", isCompleted: true },
     ],
   };
-  const fetchTasks = vi.fn((url: keyof typeof responses) =>
-    Promise.resolve(Response.json(responses[url])),
+  const groupingEndpoint = "/api/auth/preferences/taskGrouping";
+  const sortingEndpoint = "/api/auth/preferences/taskSorting";
+  const fetchTasks = vi.fn(
+    (
+      url:
+        | keyof typeof responses
+        | typeof groupingEndpoint
+        | typeof sortingEndpoint,
+    ) =>
+      Promise.resolve(
+        url === groupingEndpoint || url === sortingEndpoint
+          ? new Response(null, { status: 204 })
+          : Response.json(responses[url]),
+      ),
   );
   vi.stubGlobal("fetch", fetchTasks);
   renderApp();
 
-  await screen.findByText("Apple");
+  await screen.findByText("Apple", {}, { timeout: 3000 });
   const header = screen.getByRole("banner");
   const selector = within(header).getByRole("combobox", { name: "Task list" });
   const filters = within(header).getByRole("button", { name: "Filters" });
@@ -92,6 +104,16 @@ test("shows tasks across lists and lets users sort, group and select a list", as
   });
   await waitFor(() =>
     expect(screen.getByRole("list", { name: "Personal" })).toBeTruthy(),
+  );
+  await waitFor(() =>
+    expect(fetchTasks).toHaveBeenCalledWith(groupingEndpoint, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "test-csrf",
+      },
+      body: JSON.stringify({ value: "list" }),
+    }),
   );
 
   fireEvent.mouseDown(selector);

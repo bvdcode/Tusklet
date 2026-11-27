@@ -56,6 +56,7 @@
     "lightTheme": "Светлая",
     "darkTheme": "Тёмная",
     "language": "Язык",
+    "preferencesSaveError": "Не удалось сохранить настройки.",
     "autoLanguage": "Авто"
   },
   "import": {

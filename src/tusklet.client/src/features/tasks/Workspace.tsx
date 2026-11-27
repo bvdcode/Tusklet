@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import AccountPageLayout, {
   type AccountPage,
 } from "../accounts/AccountPageLayout";
+import { useUserPreferences } from "../accounts/userPreferences";
 import CreateTaskDialog from "./CreateTaskDialog";
 import TaskDetailsPanel from "./TaskDetailsPanel";
 import TaskGroup from "./TaskGroup";
@@ -29,14 +30,14 @@ import {
   taskListsKey,
   type CreateTaskInput,
 } from "./tasksApi";
-import { arrangeTasks, type TaskGrouping, type TaskSorting } from "./taskView";
+import { arrangeTasks } from "./taskView";
 
 export default function Workspace(account: AccountPage) {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const [selectedId, setSelectedId] = useState("");
-  const [grouping, setGrouping] = useState<TaskGrouping>("none");
-  const [sorting, setSorting] = useState<TaskSorting>("listOrder");
+  const { preferences, changePreference } = useUserPreferences();
+  const { taskGrouping: grouping, taskSorting: sorting } = preferences;
   const [creating, setCreating] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const ownerId = account.user.id;
@@ -116,8 +117,12 @@ export default function Workspace(account: AccountPage) {
             setSelectedId(id);
             setSelectedTaskId(null);
           }}
-          onGroupingChange={setGrouping}
-          onSortingChange={setSorting}
+          onGroupingChange={(value) =>
+            changePreference({ key: "taskGrouping", value })
+          }
+          onSortingChange={(value) =>
+            changePreference({ key: "taskSorting", value })
+          }
           onCreate={() => {
             create.reset();
             setCreating(true);

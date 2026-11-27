@@ -56,6 +56,7 @@
     "lightTheme": "हल्की",
     "darkTheme": "गहरी",
     "language": "भाषा",
+    "preferencesSaveError": "आपकी प्राथमिकताएँ सहेजी नहीं जा सकीं।",
     "autoLanguage": "अपने आप"
   },
   "import": {

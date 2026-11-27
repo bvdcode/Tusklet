@@ -62,6 +62,25 @@ namespace Tusklet.Server.Controllers
             return NoContent();
         }
 
+        [HttpPut("preferences/{key}")]
+        [Authorize]
+        public async Task<IActionResult> PutPreferenceAsync(string key, UserPreferenceInput input, CancellationToken ct)
+        {
+            if (Session.GetUserId(User) is not Guid userId)
+            {
+                return Unauthorized();
+            }
+
+            PreferenceUpdateResult result = await mediator.Send(new UpdateUserPreference(userId, key, input.Value), ct);
+            return result switch
+            {
+                PreferenceUpdateResult.Updated => NoContent(),
+                PreferenceUpdateResult.Invalid => BadRequest(),
+                PreferenceUpdateResult.MissingUser => Unauthorized(),
+                _ => throw new InvalidOperationException($"Unexpected preference update result: {result}"),
+            };
+        }
+
         [HttpPost("openid/login")]
         [EnableRateLimiting(AccountsRegistration.AnonymousAuthRateLimit)]
         public Task<IActionResult> LoginWithOpenIdAsync()

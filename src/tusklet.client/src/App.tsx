@@ -19,6 +19,7 @@ import { readSession, sessionKey } from "./features/accounts/accountsApi";
 import AccountPageLayout from "./features/accounts/AccountPageLayout";
 import AccountLayout from "./features/accounts/AccountLayout";
 import SignInForm from "./features/accounts/SignInForm";
+import UserPreferencesProvider from "./features/accounts/UserPreferencesProvider";
 
 const Workspace = lazy(() => import("./features/tasks/Workspace"));
 const ProfilePage = lazy(() => import("./features/accounts/ProfilePage"));
@@ -85,39 +86,41 @@ export default function App() {
       onLogout: () => setOpenIdOutcome(null),
     };
     return (
-      <Suspense
-        fallback={
-          <AccountPageLayout {...account}>
-            <CircularProgress size={24} aria-label={t("common.loading")} />
-          </AccountPageLayout>
-        }
-      >
-        <Routes>
-          <Route path="/" element={<Workspace key={user.id} {...account} />} />
-          <Route
-            element={
-              <AccountPageLayout {...account}>
-                <Outlet />
-              </AccountPageLayout>
-            }
-          >
+      <UserPreferencesProvider key={user.id} user={user}>
+        <Suspense
+          fallback={
+            <AccountPageLayout {...account}>
+              <CircularProgress size={24} aria-label={t("common.loading")} />
+            </AccountPageLayout>
+          }
+        >
+          <Routes>
+            <Route path="/" element={<Workspace {...account} />} />
             <Route
-              path="/profile"
-              element={<ProfilePage session={session.data} user={user} />}
-            />
-            <Route
-              path="/admin"
               element={
-                user.isAdmin ? (
-                  <AdminPage requestToken={requestToken} />
-                ) : (
-                  <Navigate to="/" replace />
-                )
+                <AccountPageLayout {...account}>
+                  <Outlet />
+                </AccountPageLayout>
               }
-            />
-          </Route>
-        </Routes>
-      </Suspense>
+            >
+              <Route
+                path="/profile"
+                element={<ProfilePage session={session.data} user={user} />}
+              />
+              <Route
+                path="/admin"
+                element={
+                  user.isAdmin ? (
+                    <AdminPage requestToken={requestToken} />
+                  ) : (
+                    <Navigate to="/" replace />
+                  )
+                }
+              />
+            </Route>
+          </Routes>
+        </Suspense>
+      </UserPreferencesProvider>
     );
   }
 

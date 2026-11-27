@@ -14,5 +14,6 @@ namespace Tusklet.Server.Models.Dto
         public required bool OpenIdLinked { get; init; }
 
         public string? PictureUrl { get; init; }
+        public required IReadOnlyDictionary<string, string> Preferences { get; init; }
     }
 }

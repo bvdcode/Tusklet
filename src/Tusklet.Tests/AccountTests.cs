@@ -128,6 +128,58 @@ namespace Tusklet.Tests
             Assert.That(unlinked.GetProperty("user").GetProperty("pictureUrl").ValueKind, Is.EqualTo(JsonValueKind.Null));
         }
 
+        [Test]
+        public async Task PreferencesAreMergedAcrossSessionsAndBelongToTheSignedInUser()
+        {
+            await using TuskletFactory factory = new();
+            using HttpClient first = factory.CreateBrowser();
+            using HttpClient second = factory.CreateBrowser();
+            using HttpClient guest = factory.CreateBrowser();
+            const string root = "/api/auth/preferences/";
+
+            using HttpResponseMessage anonymous = await guest.PutAsJsonAsync(
+                root + "language", new { value = "ru" });
+            Assert.That(anonymous.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+            using HttpResponseMessage setup = await SendAsync(first, await SessionAsync(first), HttpMethod.Post,
+                "/api/auth/setup", new { username = "admin", password = Password });
+            Assert.That(setup.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+            using HttpResponseMessage login = await SendAsync(second, await SessionAsync(second), HttpMethod.Post,
+                "/api/auth/login", new { username = "admin", password = Password });
+            Assert.That(login.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+
+            JsonElement firstSession = await SessionAsync(first);
+            JsonElement secondSession = await SessionAsync(second);
+            Assert.That(firstSession.GetProperty("user").GetProperty("preferences").EnumerateObject(), Is.Empty);
+            using HttpResponseMessage missingToken = await first.PutAsJsonAsync(root + "language", new { value = "ru" });
+            Assert.That(missingToken.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            using HttpResponseMessage invalid = await SendAsync(first, firstSession, HttpMethod.Put,
+                root + "language", new { value = "missing" });
+            Assert.That(invalid.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+
+            HttpResponseMessage[] writes = await Task.WhenAll(
+                SendAsync(first, firstSession, HttpMethod.Put, root + "taskGrouping", new { value = "list" }),
+                SendAsync(second, secondSession, HttpMethod.Put, root + "taskSorting", new { value = "dueDate" }),
+                SendAsync(first, firstSession, HttpMethod.Put, root + "language", new { value = "ru" }));
+            using HttpResponseMessage grouping = writes[0];
+            using HttpResponseMessage sorting = writes[1];
+            using HttpResponseMessage language = writes[2];
+            Assert.That(writes.Select(reply => reply.StatusCode), Is.All.EqualTo(HttpStatusCode.NoContent));
+
+            JsonElement values = (await SessionAsync(second)).GetProperty("user").GetProperty("preferences");
+            Assert.Multiple(() =>
+            {
+                Assert.That(values.GetProperty("taskGrouping").GetString(), Is.EqualTo("list"));
+                Assert.That(values.GetProperty("taskSorting").GetString(), Is.EqualTo("dueDate"));
+                Assert.That(values.GetProperty("language").GetString(), Is.EqualTo("ru"));
+            });
+            using HttpResponseMessage reset = await SendAsync(second, secondSession, HttpMethod.Put,
+                root + "language", new { value = "auto" });
+            Assert.That(reset.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+            JsonElement refreshed = (await SessionAsync(first)).GetProperty("user").GetProperty("preferences");
+            Assert.That(refreshed.GetProperty("language").GetString(), Is.EqualTo("auto"));
+            Assert.That((await SessionAsync(guest)).GetProperty("user").ValueKind, Is.EqualTo(JsonValueKind.Null));
+        }
+
         private static Task<JsonElement> SessionAsync(HttpClient browser)
         {
             return browser.GetFromJsonAsync<JsonElement>("/api/auth/session");
