@@ -6,6 +6,7 @@ import { useLayoutEffect, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { prefixer } from "stylis";
 import AppUpdatePrompt from "./AppUpdatePrompt";
+import NotificationProvider from "./NotificationProvider";
 import theme, { rtlTheme } from "./theme";
 import { readThemeMode } from "./themeMode";
 
@@ -38,8 +39,10 @@ export default function LocaleThemeProvider({
         disableTransitionOnChange
       >
         <CssBaseline />
-        {children}
-        <AppUpdatePrompt />
+        <NotificationProvider>
+          {children}
+          <AppUpdatePrompt />
+        </NotificationProvider>
       </ThemeProvider>
     </CacheProvider>
   );

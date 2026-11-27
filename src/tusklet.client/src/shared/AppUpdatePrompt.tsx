@@ -1,39 +1,73 @@
 import CloseRounded from "@mui/icons-material/CloseRounded";
-import { Button, IconButton, Snackbar } from "@mui/material";
+import { Button, IconButton, Stack } from "@mui/material";
+import { useSnackbar } from "notistack";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useRegisterSW } from "virtual:pwa-register/react";
 
-export default function AppUpdatePrompt() {
+function UpdateMessage() {
   const { t } = useTranslation();
+  return t("pwa.updateAvailable");
+}
+
+function UpdateActions({
+  onUpdate,
+  onClose,
+}: {
+  onUpdate: () => void;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <Stack direction="row" sx={{ alignItems: "center", ml: "auto" }}>
+      <Button color="primary" onClick={onUpdate}>
+        {t("pwa.update")}
+      </Button>
+      <IconButton size="small" aria-label={t("common.close")} onClick={onClose}>
+        <CloseRounded fontSize="small" />
+      </IconButton>
+    </Stack>
+  );
+}
+
+export default function AppUpdatePrompt() {
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
   } = useRegisterSW({ immediate: true });
 
-  return (
-    <Snackbar
-      open={needRefresh}
-      message={t("pwa.updateAvailable")}
-      onClose={(_, reason) => {
-        if (reason === "escapeKeyDown") {
-          setNeedRefresh(false);
-        }
-      }}
-      action={
-        <>
-          <Button color="inherit" onClick={() => void updateServiceWorker()}>
-            {t("pwa.update")}
-          </Button>
-          <IconButton
-            color="inherit"
-            size="small"
-            aria-label={t("common.close")}
-            onClick={() => setNeedRefresh(false)}
-          >
-            <CloseRounded fontSize="small" />
-          </IconButton>
-        </>
+  useEffect(() => {
+    if (!needRefresh) {
+      return;
+    }
+    const close = () => setNeedRefresh(false);
+    const id = enqueueSnackbar(<UpdateMessage />, {
+      persist: true,
+      action: (
+        <UpdateActions
+          onUpdate={() => void updateServiceWorker()}
+          onClose={close}
+        />
+      ),
+    });
+    function dismissOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape" && !event.defaultPrevented) {
+        close();
       }
-    />
-  );
+    }
+    window.addEventListener("keydown", dismissOnEscape);
+    return () => {
+      window.removeEventListener("keydown", dismissOnEscape);
+      closeSnackbar(id);
+    };
+  }, [
+    closeSnackbar,
+    enqueueSnackbar,
+    needRefresh,
+    setNeedRefresh,
+    updateServiceWorker,
+  ]);
+
+  return null;
 }
