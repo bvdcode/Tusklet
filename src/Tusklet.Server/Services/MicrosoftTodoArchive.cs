@@ -72,6 +72,7 @@ namespace Tusklet.Server.Services
                     TaskItem task = ReadTask(sourceTask, list.Id, importId, identities, position++, batch);
                     batch.Tasks.Add(task);
                     ReadSteps(sourceTask, task.Id, identities, batch);
+                    ReadLinks(sourceTask, task.Id, identities, batch);
                     foreach (JsonElement file in ReadArray(sourceTask, "attachments"))
                     {
                         batch.Attachments.Add(await ReadAttachmentAsync(file, task.Id, identities, entries, filePaths, ct));
@@ -85,10 +86,12 @@ namespace Tusklet.Server.Services
             int position, TaskImportBatch batch)
         {
             string status = ReadString(source, "status");
-            bool completed = status switch
+            TaskProgress? progress = status switch
             {
-                "completed" => true,
-                "notStarted" or "deferred" or "inProgress" or "waitingOnOthers" => false,
+                "completed" or "notStarted" => null,
+                "inProgress" => TaskProgress.InProgress,
+                "waitingOnOthers" => TaskProgress.WaitingOnOthers,
+                "deferred" => TaskProgress.Deferred,
                 _ => throw new InvalidDataException("Unrecognized Microsoft To Do task status."),
             };
             TaskPriority priority = ReadString(source, "importance") switch
@@ -119,15 +122,15 @@ namespace Tusklet.Server.Services
                 }
             }
 
-            if (unsupportedNote || status is "deferred" or "inProgress" or "waitingOnOthers"
-                || IsFlagSet(source, "isReminderOn") || HasValue(source, "reminderDateTime")
-                || HasValue(source, "startDateTime") || HasValue(source, "recurrence")
-                || ReadArray(source, "categories").Any() || ReadArray(source, "linkedResources").Any())
+            if (unsupportedNote || ReadArray(source, "categories").Any())
             {
                 batch.UnsupportedTasks++;
             }
 
             JsonElement due = Property(source, "dueDateTime");
+            (DateTime? startsAt, string? startTimeZone) = ReadOptionalZonedDateTime(source, "startDateTime");
+            (DateTime? reminderAt, string? reminderTimeZone) = ReadOptionalZonedDateTime(source, "reminderDateTime");
+            bool isReminderOn = IsFlagSet(source, "isReminderOn");
             TaskItem task = new(RegisterId(identities, importId, "task", source))
             {
                 TaskListId = listId,
@@ -136,10 +139,66 @@ namespace Tusklet.Server.Services
                 Priority = priority,
                 Position = position,
                 DueDate = due.ValueKind == JsonValueKind.Object ? DateOnly.FromDateTime(ReadLocalDateTime(due)) : null,
-                CompletedAt = completed ? ReadZonedDateTime(Property(source, "completedDateTime")) : null,
+                CompletedAt = status == "completed" ? ReadZonedDateTime(Property(source, "completedDateTime")).Time : null,
+                Progress = progress,
+                StartsAt = startsAt,
+                StartTimeZone = startTimeZone,
+                ReminderAt = reminderAt,
+                ReminderTimeZone = reminderTimeZone,
+                ReminderEnabled = isReminderOn || reminderAt.HasValue ? isReminderOn : null,
+                Recurrence = ReadRecurrence(source),
             };
             batch.CreationTimes.Add(task.Id, ReadTimestamp(source, "createdDateTime"));
             return task;
+        }
+
+        private static JsonElement? ReadRecurrence(JsonElement source)
+        {
+            JsonElement recurrence = Property(source, "recurrence");
+            if (recurrence.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
+            {
+                return null;
+            }
+            JsonElement pattern = Property(recurrence, "pattern");
+            JsonElement range = Property(recurrence, "range");
+            string rangeType = ReadString(range, "type");
+            if (ReadString(pattern, "type") is not ("daily" or "weekly" or "absoluteMonthly" or "relativeMonthly"
+                    or "absoluteYearly" or "relativeYearly")
+                || ReadInt(pattern, "interval") < 1
+                || rangeType is not ("noEnd" or "endDate" or "numbered")
+                || !IsCalendarDate(ReadString(range, "startDate"))
+                || (rangeType == "endDate" && !IsCalendarDate(ReadString(range, "endDate")))
+                || (rangeType == "numbered" && ReadInt(range, "numberOfOccurrences") < 1))
+            {
+                throw new InvalidDataException("A task contains an invalid recurrence rule.");
+            }
+            foreach (JsonElement day in ReadArray(pattern, "daysOfWeek"))
+            {
+                if (day.ValueKind != JsonValueKind.String || day.GetString() is not ("sunday" or "monday" or "tuesday"
+                    or "wednesday" or "thursday" or "friday" or "saturday"))
+                {
+                    throw new InvalidDataException("A task contains an invalid recurrence weekday.");
+                }
+            }
+            return recurrence.Clone();
+        }
+
+        private static bool IsCalendarDate(string value) =>
+            DateOnly.TryParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _);
+
+        private static void ReadLinks(JsonElement source, Guid taskId, HashSet<Guid> identities, TaskImportBatch batch)
+        {
+            foreach (JsonElement link in ReadArray(source, "linkedResources"))
+            {
+                batch.Links.Add(new TaskLink(RegisterId(identities, taskId, "link", link))
+                {
+                    TaskItemId = taskId,
+                    Url = ReadString(link, "webUrl", 8192),
+                    DisplayName = ReadOptionalString(link, "displayName", 255),
+                    ApplicationName = ReadOptionalString(link, "applicationName", 255),
+                    ExternalId = ReadOptionalString(link, "externalId", 512),
+                });
+            }
         }
 
         private static void ReadSteps(JsonElement source, Guid taskId, HashSet<Guid> identities, TaskImportBatch batch)
@@ -218,15 +277,27 @@ namespace Tusklet.Server.Services
             return new Guid(hash.AsSpan(0, 16), bigEndian: true);
         }
 
-        private static DateTime ReadZonedDateTime(JsonElement value)
+        private static (DateTime? Time, string? Zone) ReadOptionalZonedDateTime(JsonElement source, string name)
+        {
+            JsonElement value = Property(source, name);
+            if (value.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
+            {
+                return (null, null);
+            }
+            (DateTime time, string zone) = ReadZonedDateTime(value);
+            return (time, zone);
+        }
+
+        private static (DateTime Time, string Zone) ReadZonedDateTime(JsonElement value)
         {
             DateTime local = ReadLocalDateTime(value);
-            if (!TimeZoneInfo.TryFindSystemTimeZoneById(ReadString(value, "timeZone"), out TimeZoneInfo? zone)
+            string zoneId = ReadString(value, "timeZone");
+            if (!TimeZoneInfo.TryFindSystemTimeZoneById(zoneId, out TimeZoneInfo? zone)
                 || zone.IsInvalidTime(local))
             {
-                throw new InvalidDataException("A task contains an invalid completion time zone.");
+                throw new InvalidDataException("A task contains an invalid time zone.");
             }
-            return TimeZoneInfo.ConvertTimeToUtc(local, zone);
+            return (TimeZoneInfo.ConvertTimeToUtc(local, zone), zoneId);
         }
 
         private static DateTime ReadLocalDateTime(JsonElement value)
@@ -248,9 +319,6 @@ namespace Tusklet.Server.Services
             }
             return dateTime.UtcDateTime;
         }
-
-        private static bool HasValue(JsonElement value, string name) =>
-            Property(value, name).ValueKind is not (JsonValueKind.Undefined or JsonValueKind.Null);
 
         private static bool IsFlagSet(JsonElement value, string name) => Property(value, name).ValueKind == JsonValueKind.True;
 
@@ -280,6 +348,18 @@ namespace Tusklet.Server.Services
             JsonElement property = Property(value, name);
             string? text = property.ValueKind == JsonValueKind.String ? property.GetString() : null;
             return !string.IsNullOrWhiteSpace(text) && text.Length <= maxLength && !text.Contains('\0')
+                ? text : throw new InvalidDataException("The backup contains an invalid text field.");
+        }
+
+        private static string? ReadOptionalString(JsonElement value, string name, int maxLength)
+        {
+            JsonElement property = Property(value, name);
+            if (property.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            {
+                return null;
+            }
+            string? text = property.ValueKind == JsonValueKind.String ? property.GetString() : null;
+            return text is not null && text.Length <= maxLength && !text.Contains('\0')
                 ? text : throw new InvalidDataException("The backup contains an invalid text field.");
         }
     }

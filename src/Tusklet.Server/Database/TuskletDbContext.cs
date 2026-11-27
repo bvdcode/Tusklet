@@ -17,6 +17,7 @@ namespace Tusklet.Server.Database
         public DbSet<TaskItem> TaskItems => Set<TaskItem>();
         public DbSet<TaskStep> TaskSteps => Set<TaskStep>();
         public DbSet<TaskAttachment> TaskAttachments => Set<TaskAttachment>();
+        public DbSet<TaskLink> TaskLinks => Set<TaskLink>();
         public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
     }
 }

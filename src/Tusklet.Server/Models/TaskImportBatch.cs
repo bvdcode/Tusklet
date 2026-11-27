@@ -9,6 +9,7 @@ namespace Tusklet.Server.Models
         public List<TaskItem> Tasks { get; } = [];
         public List<TaskStep> Steps { get; } = [];
         public List<TaskAttachment> Attachments { get; } = [];
+        public List<TaskLink> Links { get; } = [];
         public Dictionary<Guid, DateTime> CreationTimes { get; } = [];
         public int UnsupportedTasks { get; set; }
         public int SharedLists { get; set; }

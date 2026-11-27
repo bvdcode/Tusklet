@@ -5,6 +5,7 @@ using EasyExtensions.EntityFrameworkCore.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json;
 
 namespace Tusklet.Server.Database
 {
@@ -36,10 +37,35 @@ namespace Tusklet.Server.Database
         [Column("due_date")]
         public DateOnly? DueDate { get; set; }
 
+        [Column("progress")]
+        public TaskProgress? Progress { get; set; }
+
+        [Column("starts_at")]
+        public DateTime? StartsAt { get; set; }
+
+        [Column("start_time_zone")]
+        [MaxLength(255)]
+        public string? StartTimeZone { get; set; }
+
+        [Column("reminder_at")]
+        public DateTime? ReminderAt { get; set; }
+
+        [Column("reminder_time_zone")]
+        [MaxLength(255)]
+        public string? ReminderTimeZone { get; set; }
+
+        [Column("reminder_enabled")]
+        public bool? ReminderEnabled { get; set; }
+
+        [Column("recurrence", TypeName = "jsonb")]
+        public JsonElement? Recurrence { get; set; }
+
         [Column("completed_at")]
         public DateTime? CompletedAt { get; set; }
 
         [Column("position")]
         public int Position { get; set; }
+
+        public ICollection<TaskLink> Links { get; set; } = [];
     }
 }

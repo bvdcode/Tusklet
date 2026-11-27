@@ -22,6 +22,21 @@ namespace Tusklet.Server.Handlers.Tasks
                     Title = task.Title,
                     Note = task.Note,
                     DueDate = task.DueDate,
+                    Progress = task.Progress,
+                    StartsAt = task.StartsAt,
+                    StartTimeZone = task.StartTimeZone,
+                    ReminderAt = task.ReminderAt,
+                    ReminderTimeZone = task.ReminderTimeZone,
+                    ReminderEnabled = task.ReminderEnabled,
+                    Recurrence = task.Recurrence,
+                    Links = task.Links.OrderBy(link => link.Id).Select(link => new TaskLinkDto
+                    {
+                        Id = link.Id,
+                        Url = link.Url,
+                        DisplayName = link.DisplayName,
+                        ApplicationName = link.ApplicationName,
+                        ExternalId = link.ExternalId,
+                    }).ToList(),
                     IsImportant = task.Priority == TaskPriority.High,
                     IsCompleted = task.CompletedAt.HasValue,
                 }).ToListAsync(ct);

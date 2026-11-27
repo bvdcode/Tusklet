@@ -37,7 +37,7 @@ namespace Tusklet.Tests
             Assert.That(noCsrf.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
             using HttpResponseMessage preview = await UploadAsync(browser, backup, token, preview: true);
             TaskImportReport? forecast = await preview.Content.ReadFromJsonAsync<TaskImportReport>();
-            Assert.That(forecast, Is.EqualTo(new TaskImportReport(1, 1, 1, 1, 1, 1, 1, 0, 0)));
+            Assert.That(forecast, Is.EqualTo(new TaskImportReport(1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0)));
 
             byte[] corrupted = CreateBackup(content, new string('0', 64));
             using HttpResponseMessage invalid = await UploadAsync(browser, corrupted, token, preview: false);
@@ -74,13 +74,35 @@ namespace Tusklet.Tests
             task.Title = "Edited in Tusklet";
             await db.SaveChangesAsync();
 
-            using HttpResponseMessage repeated = await UploadAsync(browser, backup, token, preview: false);
+            byte[] updated = CreateBackup(content, Convert.ToHexString(SHA256.HashData(content)), includeDetails: true);
+            using HttpResponseMessage restorePreview = await UploadAsync(browser, updated, token, preview: true);
+            TaskImportReport? restoreForecast = await restorePreview.Content.ReadFromJsonAsync<TaskImportReport>();
+            Assert.That(restoreForecast, Is.EqualTo(new TaskImportReport(1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1)));
+            Assert.That(await db.TaskLinks.CountAsync(), Is.Zero);
+
+            using HttpResponseMessage restored = await UploadAsync(browser, updated, token, preview: false);
+            Assert.That(await restored.Content.ReadFromJsonAsync<TaskImportReport>(), Is.EqualTo(restoreForecast));
+            using HttpResponseMessage repeated = await UploadAsync(browser, updated, token, preview: false);
             TaskImportReport? repeatReport = await repeated.Content.ReadFromJsonAsync<TaskImportReport>();
-            Assert.That(repeatReport, Is.EqualTo(new TaskImportReport(1, 1, 1, 1, 1, 0, 0, 0, 0)));
+            Assert.That(repeatReport, Is.EqualTo(new TaskImportReport(1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1)));
             TaskListSummaryDto[]? lists = await browser.GetFromJsonAsync<TaskListSummaryDto[]>("/api/tasks/lists");
             TaskItemSummaryDto[]? tasks = await browser.GetFromJsonAsync<TaskItemSummaryDto[]>($"/api/tasks/lists/{list.Id}");
-            Assert.That(lists?.Single().Name, Is.EqualTo("Renamed list"));
-            Assert.That(tasks?.Single().Title, Is.EqualTo("Edited in Tusklet"));
+            TaskItemSummaryDto restoredTask = tasks!.Single();
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(lists?.Single().Name, Is.EqualTo("Renamed list"));
+                Assert.That(restoredTask.Title, Is.EqualTo("Edited in Tusklet"));
+                Assert.That(restoredTask.IsCompleted, Is.True);
+                Assert.That(restoredTask.Progress, Is.EqualTo(TaskProgress.InProgress));
+                Assert.That(restoredTask.StartsAt, Is.EqualTo(new DateTime(2026, 11, 26, 8, 0, 0, DateTimeKind.Utc)));
+                Assert.That(restoredTask.StartTimeZone, Is.EqualTo("W. Europe Standard Time"));
+                Assert.That(restoredTask.ReminderAt, Is.EqualTo(new DateTime(2026, 11, 27, 12, 15, 0, DateTimeKind.Utc)));
+                Assert.That(restoredTask.ReminderTimeZone, Is.EqualTo("UTC"));
+                Assert.That(restoredTask.ReminderEnabled, Is.False);
+                Assert.That(restoredTask.Recurrence?.GetProperty("pattern").GetProperty("interval").GetInt32(), Is.EqualTo(2));
+                Assert.That(restoredTask.Links.Single().ExternalId, Is.EqualTo("reference-id"));
+                Assert.That(restoredTask.Links.Single().Url, Is.EqualTo("https://example.com/reference"));
+            }
         }
 
         private static async Task<string> RequestTokenAsync(HttpClient browser)
@@ -101,7 +123,7 @@ namespace Tusklet.Tests
             return await browser.SendAsync(request);
         }
 
-        private static byte[] CreateBackup(byte[] content, string hash)
+        private static byte[] CreateBackup(byte[] content, string hash, bool includeDetails = false)
         {
             using MemoryStream buffer = new();
             using (ZipArchive archive = new(buffer, ZipArchiveMode.Create, leaveOpen: true))
@@ -121,11 +143,24 @@ namespace Tusklet.Tests
                     {
                         id = "list-id", displayName = "Work", tasks = new[] { new
                         {
-                            id = "task-id", title = "Original title", status = "completed", importance = "high",
+                            id = "task-id", title = "Original title", status = includeDetails ? "inProgress" : "completed", importance = "high",
                             createdDateTime = "2026-11-24T12:00:00Z",
                             body = new { contentType = "text", content = "Task note" },
                             dueDateTime = new { dateTime = "2026-11-28T00:00:00.0000000", timeZone = "UTC" },
                             completedDateTime = new { dateTime = "2026-11-27T12:00:00.0000000", timeZone = "W. Europe Standard Time" },
+                            startDateTime = includeDetails ? new { dateTime = "2026-11-26T09:00:00.0000000", timeZone = "W. Europe Standard Time" } : null,
+                            isReminderOn = false,
+                            reminderDateTime = includeDetails ? new { dateTime = "2026-11-27T12:15:00.0000000", timeZone = "UTC" } : null,
+                            recurrence = includeDetails ? new
+                            {
+                                pattern = new { type = "weekly", interval = 2, daysOfWeek = new[] { "thursday" } },
+                                range = new { type = "numbered", startDate = "2026-11-26", numberOfOccurrences = 5, recurrenceTimeZone = "UTC" },
+                            } : null,
+                            linkedResources = includeDetails ? new[] { new
+                            {
+                                id = "link-id", webUrl = "https://example.com/reference", displayName = "Reference",
+                                applicationName = "Example", externalId = "reference-id",
+                            } } : null,
                             checklistItems = new[] { new
                             {
                                 id = "step-id", displayName = "Checklist step", isChecked = true,
