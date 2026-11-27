@@ -5,6 +5,7 @@ import rtlPlugin from "@mui/stylis-plugin-rtl";
 import { useLayoutEffect, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { prefixer } from "stylis";
+import AppUpdatePrompt from "./AppUpdatePrompt";
 import theme, { rtlTheme } from "./theme";
 import { readThemeMode } from "./themeMode";
 
@@ -38,6 +39,7 @@ export default function LocaleThemeProvider({
       >
         <CssBaseline />
         {children}
+        <AppUpdatePrompt />
       </ThemeProvider>
     </CacheProvider>
   );

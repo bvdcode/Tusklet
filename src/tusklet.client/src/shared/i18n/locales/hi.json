@@ -7,6 +7,10 @@
     "retry": "फिर से कोशिश करें",
     "save": "सहेजें"
   },
+  "pwa": {
+    "updateAvailable": "Tusklet का नया संस्करण उपलब्ध है।",
+    "update": "अपडेट करें"
+  },
   "auth": {
     "setupTitle": "व्यवस्थापक खाता बनाएँ",
     "loginTitle": "साइन इन करें",

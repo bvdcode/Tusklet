@@ -7,6 +7,10 @@
     "retry": "إعادة المحاولة",
     "save": "حفظ"
   },
+  "pwa": {
+    "updateAvailable": "يتوفر إصدار جديد من Tusklet.",
+    "update": "تحديث"
+  },
   "auth": {
     "setupTitle": "أنشئ حساب المسؤول",
     "loginTitle": "تسجيل الدخول",

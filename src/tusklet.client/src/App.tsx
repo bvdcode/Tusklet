@@ -35,6 +35,8 @@ export default function App() {
     queryKey: sessionKey,
     queryFn: ({ signal }) => readSession(signal),
     retry: false,
+    networkMode: "always",
+    refetchOnReconnect: true,
   });
 
   useEffect(() => {

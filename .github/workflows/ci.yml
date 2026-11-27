@@ -73,6 +73,14 @@ jobs:
           asset="$(sed -n 's/.*src="\([^"]*\.js\)".*/\1/p' <<< "$page")"
           test -n "$asset"
           curl -fsS -o /dev/null "$base_url$asset"
+          grep -Fq 'rel="manifest"' <<< "$page"
+          manifest="$(curl -fsS "$base_url/manifest.webmanifest")"
+          jq -e '.id == "/" and .scope == "/" and .start_url == "/" and .display == "standalone"' <<< "$manifest"
+          while IFS= read -r icon; do
+            curl -fsS -o /dev/null "$base_url$icon"
+          done < <(jq -r '.icons[].src' <<< "$manifest")
+          curl -fsS -o /dev/null "$base_url/icons/apple-touch-icon.png"
+          curl -fsS -o /dev/null "$base_url/sw.js"
           session="$(curl -fsS -c "$cookie_jar" "$base_url/api/auth/session")"
           jq -e '.setupRequired and (.user == null)' <<< "$session"
           csrf="$(jq -er '.requestToken' <<< "$session")"

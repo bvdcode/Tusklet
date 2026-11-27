@@ -7,6 +7,10 @@
     "retry": "Coba lagi",
     "save": "Simpan"
   },
+  "pwa": {
+    "updateAvailable": "Versi baru Tusklet tersedia.",
+    "update": "Perbarui"
+  },
   "auth": {
     "setupTitle": "Buat akun administrator",
     "loginTitle": "Masuk",

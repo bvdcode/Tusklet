@@ -7,6 +7,10 @@
     "retry": "Повторить",
     "save": "Сохранить"
   },
+  "pwa": {
+    "updateAvailable": "Доступна новая версия Tusklet.",
+    "update": "Обновить"
+  },
   "auth": {
     "setupTitle": "Создайте учётную запись администратора",
     "loginTitle": "Вход",

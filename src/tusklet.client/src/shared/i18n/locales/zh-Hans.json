@@ -7,6 +7,10 @@
     "retry": "重试",
     "save": "保存"
   },
+  "pwa": {
+    "updateAvailable": "Tusklet 有新版本可用。",
+    "update": "更新"
+  },
   "auth": {
     "setupTitle": "创建管理员账号",
     "loginTitle": "登录",

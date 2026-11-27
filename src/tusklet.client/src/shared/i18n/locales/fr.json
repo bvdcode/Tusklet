@@ -7,6 +7,10 @@
     "retry": "Réessayer",
     "save": "Enregistrer"
   },
+  "pwa": {
+    "updateAvailable": "Une nouvelle version de Tusklet est disponible.",
+    "update": "Mettre à jour"
+  },
   "auth": {
     "setupTitle": "Créer votre compte administrateur",
     "loginTitle": "Connexion",
