@@ -2,6 +2,7 @@
   "appName": "Tusklet",
   "common": {
     "back": "Kembali",
+    "backToTop": "Kembali ke atas",
     "loading": "Memuat",
     "close": "Tutup",
     "cancel": "Batal",

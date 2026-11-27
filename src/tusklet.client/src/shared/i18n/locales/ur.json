@@ -2,6 +2,7 @@
   "appName": "Tusklet",
   "common": {
     "back": "واپس",
+    "backToTop": "اوپر واپس جائیں",
     "loading": "لوڈ ہو رہا ہے",
     "close": "بند کریں",
     "cancel": "منسوخ کریں",

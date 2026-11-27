@@ -2,6 +2,7 @@
   "appName": "Tusklet",
   "common": {
     "back": "Назад",
+    "backToTop": "Наверх",
     "loading": "Загрузка",
     "close": "Закрыть",
     "cancel": "Отмена",

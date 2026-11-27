@@ -2,6 +2,7 @@
   "appName": "Tusklet",
   "common": {
     "back": "Retour",
+    "backToTop": "Retour en haut",
     "loading": "Chargement",
     "close": "Fermer",
     "cancel": "Annuler",

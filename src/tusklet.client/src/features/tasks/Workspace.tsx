@@ -13,6 +13,7 @@ import AccountPageLayout, {
 } from "../accounts/AccountPageLayout";
 import { useUserPreferences } from "../accounts/userPreferences";
 import CreateTaskDialog from "./CreateTaskDialog";
+import ScrollToTopButton from "./ScrollToTopButton";
 import TaskDetailsPanel from "./TaskDetailsPanel";
 import TaskGroup from "./TaskGroup";
 import TaskGroupNavigation from "./TaskGroupNavigation";
@@ -35,6 +36,7 @@ export default function Workspace(account: AccountPage) {
   const { preferences, changePreference } = useUserPreferences();
   const { taskGrouping: grouping, taskSorting: sorting } = preferences;
   const headerRef = useRef<HTMLElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
   const groupsRef = useRef<HTMLDivElement>(null);
   const [creating, setCreating] = useState(false);
   const [details, setDetails] = useState<{ task: TaskRow; open: boolean }>();
@@ -172,6 +174,8 @@ export default function Workspace(account: AccountPage) {
       {loading && <PageProgress />}
       <Typography
         component="h1"
+        ref={titleRef}
+        tabIndex={-1}
         sx={{
           position: "absolute",
           width: "1px",
@@ -242,6 +246,7 @@ export default function Workspace(account: AccountPage) {
               }
             />
           ))}
+          <ScrollToTopButton focusTarget={titleRef} />
         </Stack>
         <TaskDetailsPanel
           task={currentTask ?? details?.task}
