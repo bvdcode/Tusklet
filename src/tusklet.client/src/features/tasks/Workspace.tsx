@@ -2,6 +2,7 @@ import { Alert, Button, Stack, Typography } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { VirtuosoHandle } from "react-virtuoso";
 import PageProgress from "../../shared/PageProgress";
 import AccountPageLayout, {
   type AccountPage,
@@ -10,8 +11,8 @@ import { useUserPreferences } from "../accounts/userPreferences";
 import CreateTaskDialog from "./CreateTaskDialog";
 import ScrollToTopButton from "./ScrollToTopButton";
 import TaskDetailsPanel from "./TaskDetailsPanel";
-import TaskGroup from "./TaskGroup";
 import TaskGroupNavigation from "./TaskGroupNavigation";
+import TaskVirtualList from "./TaskVirtualList";
 import WorkspaceControls from "./WorkspaceControls";
 import {
   createTask,
@@ -35,6 +36,7 @@ export default function Workspace(account: AccountPage) {
   const headerRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const groupsRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<VirtuosoHandle>(null);
   const [creating, setCreating] = useState(false);
   const { taskId, closeDetails, toggleDetails } = useTaskDetailRoute();
   const ownerId = account.user.id;
@@ -48,7 +50,7 @@ export default function Workspace(account: AccountPage) {
   });
   const taskLists = lists.data ?? [];
   const active = taskLists.find((list) => list.id === selectedId);
-  const { rows, groups, groupHeadings, loading, failed } = useTaskWorkspaceRows(
+  const { rows, entries, headings, loading, failed } = useTaskWorkspaceRows(
     ownerId,
     taskLists,
     active,
@@ -58,8 +60,6 @@ export default function Workspace(account: AccountPage) {
   );
   const loadFailed = lists.isError || failed.length > 0;
   const currentTask = rows.find((task) => task.id === taskId);
-  const selectedGroup =
-    currentTask && groups.find((group) => group.tasks.includes(currentTask));
   const detailsOpen = currentTask !== undefined;
 
   const create = useMutation({
@@ -109,12 +109,13 @@ export default function Workspace(account: AccountPage) {
       expanded
       headerRef={headerRef}
       center={
-        groupHeadings.length > 0 ? (
+        headings.length > 0 ? (
           <TaskGroupNavigation
             key={`${grouping}:${selectedId}`}
-            groups={groupHeadings}
+            groups={headings}
             headerRef={headerRef}
             groupsRef={groupsRef}
+            listRef={listRef}
           />
         ) : (
           loading && grouping !== "none" && <span aria-hidden="true" />
@@ -203,20 +204,17 @@ export default function Workspace(account: AccountPage) {
           {completion.isError && (
             <Alert severity="error">{t("tasks.updateError")}</Alert>
           )}
-          {groups.map((group, index) => (
-            <TaskGroup
-              key={group.id}
-              groupId={group.id}
-              title={group.title}
-              hideHeading={index === 0}
-              tasks={group.tasks}
+          {entries.length > 0 && (
+            <TaskVirtualList
+              entries={entries}
+              listRef={listRef}
               showListName={!active && grouping !== "list"}
               changing={completion.isPending}
-              selectedTaskId={selectedGroup?.id === group.id ? taskId : null}
+              selectedTaskId={taskId}
               onTaskSelect={toggleDetails}
               onCompletionChange={changeCompletion}
             />
-          ))}
+          )}
           <ScrollToTopButton focusTarget={titleRef} />
         </Stack>
         <TaskDetailsPanel

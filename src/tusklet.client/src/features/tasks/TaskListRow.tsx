@@ -17,7 +17,8 @@ import type { TaskRow } from "./taskView";
 
 export default memo(function TaskListRow({
   task,
-  divider,
+  first,
+  last,
   selected,
   changing,
   showListName,
@@ -29,7 +30,8 @@ export default memo(function TaskListRow({
   onCompletionChange,
 }: {
   task: TaskRow;
-  divider: boolean;
+  first: boolean;
+  last: boolean;
   selected: boolean;
   changing: boolean;
   showListName: boolean;
@@ -42,12 +44,22 @@ export default memo(function TaskListRow({
 }) {
   return (
     <ListItem
-      divider={divider}
+      component="div"
       disablePadding
-      sx={{
+      sx={(theme) => ({
         pl: { xs: 1.5, sm: 2.5 },
-        bgcolor: selected ? "action.selected" : undefined,
-      }}
+        bgcolor: selected ? "action.selected" : "background.paper",
+        borderInlineWidth: 1,
+        borderInlineStyle: "solid",
+        borderTop: first ? 1 : 0,
+        borderBottom: 1,
+        borderColor: "divider",
+        borderStartStartRadius: first ? theme.shape.borderRadius : 0,
+        borderStartEndRadius: first ? theme.shape.borderRadius : 0,
+        borderEndStartRadius: last ? theme.shape.borderRadius : 0,
+        borderEndEndRadius: last ? theme.shape.borderRadius : 0,
+        overflow: "hidden",
+      })}
     >
       <ListItemIcon sx={{ minWidth: 0 }}>
         <Checkbox

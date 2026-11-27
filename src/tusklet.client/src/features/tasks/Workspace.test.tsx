@@ -20,6 +20,7 @@ test("shows tasks across lists and lets users sort, group and select a list", as
     "ResizeObserver",
     class {
       observe = vi.fn();
+      unobserve = vi.fn();
       disconnect = vi.fn();
     },
   );
@@ -97,6 +98,7 @@ test("shows tasks across lists and lets users sort, group and select a list", as
   const apple = screen.getByRole("button", { name: "Apple" });
   const star = within(apple).getByRole("img", { name: "Important" });
   expect(star.parentElement?.textContent).toContain("Apple");
+  const listRequests = fetchTasks.mock.calls.length;
   fireEvent.click(zebra);
   const details = await screen.findByRole("complementary", { name: "Zebra" });
   expect(within(details).getByText("To do")).toBeTruthy();
@@ -115,6 +117,7 @@ test("shows tasks across lists and lets users sort, group and select a list", as
   const reopened = await screen.findByRole("complementary", { name: "Zebra" });
   fireEvent.click(within(reopened).getByRole("button", { name: "Close" }));
   await waitFor(() => expect(screen.queryByRole("complementary")).toBeNull());
+  expect(fetchTasks).toHaveBeenCalledTimes(listRequests);
 
   fireEvent.click(filters);
   const taskList = screen.getByRole("combobox", { name: "Task list" });
@@ -139,7 +142,7 @@ test("shows tasks across lists and lets users sort, group and select a list", as
     key: "Escape",
   });
   await waitFor(() =>
-    expect(screen.getByRole("list", { name: "Personal" })).toBeTruthy(),
+    expect(screen.getByRole("heading", { name: "Personal" })).toBeTruthy(),
   );
   await waitFor(() =>
     expect(fetchTasks).toHaveBeenCalledWith(groupingEndpoint, {
@@ -159,10 +162,12 @@ test("shows tasks across lists and lets users sort, group and select a list", as
   fireEvent.keyDown(screen.getByRole("combobox", { name: "Group by" }), {
     key: "Escape",
   });
-  expect(await screen.findByRole("list", { name: "To do (2)" })).toBeTruthy();
-  const completedHeading = screen.getByRole("heading", {
-    name: "Completed (1)",
-  });
+  expect(
+    await within(header).findByRole("button", { name: "To do (2)" }),
+  ).toBeTruthy();
+  const completedEntries = screen
+    .getByRole("list", { name: "Tasks" })
+    .querySelectorAll('[data-task-group="completed"]');
   vi.spyOn(header, "getBoundingClientRect").mockReturnValue(
     new DOMRect(0, 0, 360, 61),
   );
@@ -170,8 +175,11 @@ test("shows tasks across lists and lets users sort, group and select a list", as
     2000,
   );
   let completedTop = 500;
-  vi.spyOn(completedHeading, "getBoundingClientRect").mockImplementation(
+  vi.spyOn(completedEntries[0], "getBoundingClientRect").mockImplementation(
     () => new DOMRect(0, completedTop, 300, 24),
+  );
+  vi.spyOn(completedEntries[1], "getBoundingClientRect").mockImplementation(
+    () => new DOMRect(0, completedTop + 24, 300, 65),
   );
   fireEvent.scroll(window);
   expect(
@@ -216,6 +224,6 @@ test("shows tasks across lists and lets users sort, group and select a list", as
     expect(screen.queryByRole("dialog", { name: "Filters" })).toBeNull(),
   );
   expect(screen.queryByText("Zebra")).toBeNull();
-  expect(screen.queryByRole("list", { name: "To do (2)" })).toBeNull();
-  expect(screen.getByRole("list", { name: "Completed (1)" })).toBeTruthy();
+  expect(within(header).queryByText("To do (2)")).toBeNull();
+  expect(within(header).getByText("Completed (1)")).toBeTruthy();
 });

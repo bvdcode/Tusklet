@@ -2,6 +2,7 @@ import ArrowUpwardRounded from "@mui/icons-material/ArrowUpwardRounded";
 import { Box, Fab, Slide, useMediaQuery } from "@mui/material";
 import { useSyncExternalStore, type RefObject } from "react";
 import { useTranslation } from "react-i18next";
+import { taskScrollBehavior } from "./taskScroll";
 
 function subscribeToScroll(update: () => void) {
   window.addEventListener("scroll", update, { passive: true });
@@ -50,7 +51,7 @@ export default function ScrollToTopButton({
             focusTarget.current?.focus({ preventScroll: true });
             window.scrollTo({
               top: 0,
-              behavior: reducedMotion ? "instant" : "smooth",
+              behavior: taskScrollBehavior(0, reducedMotion),
             });
           }}
           sx={{

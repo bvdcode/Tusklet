@@ -9,14 +9,15 @@ import {
 } from "@mui/material";
 import { keyframes } from "@mui/material/styles";
 import { useId, useState, type RefObject } from "react";
-import useActiveTaskGroup, {
-  type TaskGroupHeading,
-} from "./useActiveTaskGroup";
+import type { VirtuosoHandle } from "react-virtuoso";
+import type { TaskGroupHeading } from "./taskView";
+import useActiveTaskGroup from "./useActiveTaskGroup";
 
 type Props = {
   groups: TaskGroupHeading[];
   headerRef: RefObject<HTMLElement | null>;
   groupsRef: RefObject<HTMLDivElement | null>;
+  listRef: RefObject<VirtuosoHandle | null>;
 };
 
 const rollIn = keyframes`
@@ -43,10 +44,12 @@ export default function TaskGroupNavigation({
   groups,
   headerRef,
   groupsRef,
+  listRef,
 }: Props) {
   const { activeGroup: trackedGroup, scrollToGroup } = useActiveTaskGroup(
     headerRef,
     groupsRef,
+    listRef,
     groups,
   );
   const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
@@ -156,7 +159,7 @@ export default function TaskGroupNavigation({
             onClick={() => {
               setAnchor(null);
               if (id !== activeGroup.id) {
-                scrollToGroup(id, reducedMotion ? "instant" : "smooth");
+                scrollToGroup(id, reducedMotion);
               }
             }}
             sx={{ whiteSpace: "normal" }}

@@ -13,6 +13,43 @@ export type TaskSorting = (typeof sortingOptions)[number];
 
 export type TaskRow = TaskItem & { listId: string; listName: string };
 
+export type TaskListEntry =
+  | { kind: "heading"; groupId: string; title: string }
+  | {
+      kind: "task";
+      groupId: string;
+      task: TaskRow;
+      first: boolean;
+      last: boolean;
+    };
+
+export type TaskGroupHeading = { id: string; title: string; index: number };
+
+export function flattenTaskGroups(
+  groups: { id: string; title?: string; tasks: TaskRow[] }[],
+) {
+  const entries: TaskListEntry[] = [];
+  const headings: TaskGroupHeading[] = [];
+  groups.forEach(({ id, title, tasks }, groupIndex) => {
+    if (title) {
+      if (groupIndex > 0) {
+        entries.push({ kind: "heading", groupId: id, title });
+      }
+      headings.push({ id, title, index: entries.length });
+    }
+    tasks.forEach((task, index) => {
+      entries.push({
+        kind: "task",
+        groupId: id,
+        task,
+        first: index === 0,
+        last: index === tasks.length - 1,
+      });
+    });
+  });
+  return { entries, headings };
+}
+
 export function arrangeTasks(
   rows: TaskRow[],
   grouping: TaskGrouping,

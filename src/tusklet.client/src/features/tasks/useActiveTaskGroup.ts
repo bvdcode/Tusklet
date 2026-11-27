@@ -5,12 +5,9 @@ import {
   useState,
   type RefObject,
 } from "react";
-
-export type TaskGroupHeading = { id: string; title: string };
-
-function getHeadings(groups: HTMLDivElement) {
-  return Array.from(groups.querySelectorAll<HTMLElement>("[data-task-group]"));
-}
+import type { VirtuosoHandle } from "react-virtuoso";
+import { taskScrollBehavior } from "./taskScroll";
+import type { TaskGroupHeading } from "./taskView";
 
 function maximumScroll() {
   return Math.max(
@@ -22,6 +19,7 @@ function maximumScroll() {
 export default function useActiveTaskGroup(
   headerRef: RefObject<HTMLElement | null>,
   groupsRef: RefObject<HTMLDivElement | null>,
+  listRef: RefObject<VirtuosoHandle | null>,
   groups: TaskGroupHeading[],
 ) {
   const [activeGroup, setActiveGroup] = useState<{
@@ -44,7 +42,6 @@ export default function useActiveTaskGroup(
       return;
     }
 
-    const headings = getHeadings(list).slice(1);
     let frame: number | undefined;
     const update = () => {
       frame = undefined;
@@ -70,11 +67,16 @@ export default function useActiveTaskGroup(
       }
 
       let activeId: string | undefined = groups[0]?.id;
-      for (const heading of headings) {
-        if (heading.getBoundingClientRect().top > boundary) {
+      for (const entry of list.querySelectorAll<HTMLElement>(
+        "[data-task-group]",
+      )) {
+        if (entry.getBoundingClientRect().top > boundary) {
           break;
         }
-        activeId = heading.dataset.taskGroup;
+        activeId = entry.dataset.taskGroup;
+      }
+      if (jump?.id === activeId) {
+        limitedJump.current = undefined;
       }
       activate(activeId);
     };
@@ -85,12 +87,15 @@ export default function useActiveTaskGroup(
     const observer = new ResizeObserver(schedule);
     observer.observe(header);
     observer.observe(list);
+    const entriesObserver = new MutationObserver(schedule);
+    entriesObserver.observe(list, { childList: true, subtree: true });
     window.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", schedule);
     schedule();
 
     return () => {
       observer.disconnect();
+      entriesObserver.disconnect();
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
       if (frame !== undefined) {
@@ -99,40 +104,52 @@ export default function useActiveTaskGroup(
     };
   }, [activate, groups, groupsRef, headerRef]);
 
-  function scrollToGroup(id: string, behavior: ScrollBehavior) {
+  function scrollToGroup(id: string, reducedMotion: boolean) {
     const header = headerRef.current;
     const list = groupsRef.current;
-    if (!header || !list) {
+    const group = groups.find((heading) => heading.id === id);
+    if (!header || !list || !group) {
       return;
     }
-
-    const headings = getHeadings(list);
-    const heading = headings.find(
-      (element) => element.dataset.taskGroup === id,
-    );
-    if (!heading) {
+    if (group.index === 0) {
+      limitedJump.current = undefined;
+      window.scrollTo({
+        top: 0,
+        behavior: taskScrollBehavior(0, reducedMotion),
+      });
       return;
     }
 
     const scrollY = window.scrollY;
-    const top =
-      heading === headings[0]
-        ? 0
-        : Math.max(
-            0,
-            Math.ceil(
-              scrollY +
-                heading.getBoundingClientRect().bottom -
-                header.getBoundingClientRect().bottom,
-            ),
-          );
+    const boundary = header.getBoundingClientRect().bottom;
+    const start = list.querySelector<HTMLElement>(
+      `[data-index="${group.index}"][data-task-group]`,
+    );
+    if (!start) {
+      limitedJump.current = { id, scrollY };
+      listRef.current?.scrollToIndex({
+        index: group.index,
+        align: "start",
+        offset: -boundary,
+        behavior: "auto",
+      });
+      return;
+    }
+
+    const top = Math.max(
+      0,
+      Math.ceil(scrollY + start.getBoundingClientRect().top - boundary),
+    );
     const maximum = maximumScroll();
     limitedJump.current = top > maximum ? { id, scrollY } : undefined;
     const destination = Math.min(top, maximum);
     if (Math.abs(scrollY - destination) < 1) {
       activate(id);
     }
-    window.scrollTo({ top: destination, behavior });
+    window.scrollTo({
+      top: destination,
+      behavior: taskScrollBehavior(destination, reducedMotion),
+    });
   }
 
   return { activeGroup, scrollToGroup };

@@ -7,7 +7,12 @@ import {
   type TaskItem,
   type TaskList,
 } from "./tasksApi";
-import { arrangeTasks, type TaskGrouping, type TaskSorting } from "./taskView";
+import {
+  arrangeTasks,
+  flattenTaskGroups,
+  type TaskGrouping,
+  type TaskSorting,
+} from "./taskView";
 
 function combineItems(results: UseQueryResult<TaskItem[]>[]) {
   return {
@@ -75,10 +80,10 @@ export default function useTaskWorkspaceRows(
         })),
     [grouping, language, rows, sorting, t],
   );
-  const groupHeadings = useMemo(
-    () => groups.flatMap(({ id, title }) => (title ? [{ id, title }] : [])),
+  const { entries, headings } = useMemo(
+    () => flattenTaskGroups(groups),
     [groups],
   );
 
-  return { rows, groups, groupHeadings, loading, failed };
+  return { rows, entries, headings, loading, failed };
 }
