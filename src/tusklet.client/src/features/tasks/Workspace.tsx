@@ -2,10 +2,8 @@ import {
   Alert,
   Button,
   CircularProgress,
-  Fade,
   Stack,
   Typography,
-  useMediaQuery,
 } from "@mui/material";
 import {
   useMutation,
@@ -13,7 +11,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import AccountPageLayout, {
   type AccountPage,
@@ -22,6 +20,7 @@ import { useUserPreferences } from "../accounts/userPreferences";
 import CreateTaskDialog from "./CreateTaskDialog";
 import TaskDetailsPanel from "./TaskDetailsPanel";
 import TaskGroup from "./TaskGroup";
+import TaskGroupNavigation from "./TaskGroupNavigation";
 import WorkspaceControls from "./WorkspaceControls";
 import {
   createTask,
@@ -33,7 +32,6 @@ import {
   type CreateTaskInput,
 } from "./tasksApi";
 import { arrangeTasks, type TaskRow } from "./taskView";
-import useActiveTaskGroup from "./useActiveTaskGroup";
 
 export default function Workspace(account: AccountPage) {
   const { t, i18n } = useTranslation();
@@ -41,11 +39,8 @@ export default function Workspace(account: AccountPage) {
   const [selectedId, setSelectedId] = useState("");
   const { preferences, changePreference } = useUserPreferences();
   const { taskGrouping: grouping, taskSorting: sorting } = preferences;
-  const { headerRef, groupsRef, activeGroupId } = useActiveTaskGroup(
-    grouping,
-    selectedId,
-  );
-  const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const headerRef = useRef<HTMLElement>(null);
+  const groupsRef = useRef<HTMLDivElement>(null);
   const [creating, setCreating] = useState(false);
   const [details, setDetails] = useState<{ task: TaskRow; open: boolean }>();
   const ownerId = account.user.id;
@@ -90,8 +85,9 @@ export default function Workspace(account: AccountPage) {
             })
           : group.title,
     }));
-  const activeGroup =
-    groups.find((group) => group.id === activeGroupId) ?? groups[0];
+  const groupHeadings = groups.flatMap(({ id, title }) =>
+    title ? [{ id, title }] : [],
+  );
   const currentTask = rows.find((task) => task.id === details?.task.id);
   const detailsOpen = details?.open === true && currentTask !== undefined;
   const loading = lists.isPending || items.some((query) => query.isPending);
@@ -141,18 +137,13 @@ export default function Workspace(account: AccountPage) {
       expanded
       headerRef={headerRef}
       center={
-        activeGroup?.title && (
-          <Fade key={activeGroup.id} in timeout={reducedMotion ? 0 : 180}>
-            <Typography
-              component="div"
-              variant="subtitle2"
-              noWrap
-              title={activeGroup.title}
-              sx={{ fontSize: { xs: "0.8125rem", sm: "0.875rem" } }}
-            >
-              {activeGroup.title}
-            </Typography>
-          </Fade>
+        groupHeadings.length > 0 && (
+          <TaskGroupNavigation
+            key={`${grouping}:${selectedId}`}
+            groups={groupHeadings}
+            headerRef={headerRef}
+            groupsRef={groupsRef}
+          />
         )
       }
       actions={

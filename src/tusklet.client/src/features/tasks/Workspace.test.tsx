@@ -166,18 +166,47 @@ test("shows tasks across lists and lets users sort, group and select a list", as
   vi.spyOn(header, "getBoundingClientRect").mockReturnValue(
     new DOMRect(0, 0, 360, 61),
   );
+  vi.spyOn(document.documentElement, "scrollHeight", "get").mockReturnValue(
+    2000,
+  );
   let completedTop = 500;
   vi.spyOn(completedHeading, "getBoundingClientRect").mockImplementation(
     () => new DOMRect(0, completedTop, 300, 24),
   );
   fireEvent.scroll(window);
-  expect(await within(header).findByText("To do (2)")).toBeTruthy();
-  completedTop = 35;
+  expect(
+    await within(header).findByRole("button", { name: "To do (2)" }),
+  ).toBeTruthy();
+  completedTop = 60;
   fireEvent.scroll(window);
-  expect(await within(header).findByText("Completed (1)")).toBeTruthy();
+  expect(
+    await within(header).findByRole("button", { name: "Completed (1)" }),
+  ).toBeTruthy();
   completedTop = 200;
   fireEvent.scroll(window);
-  expect(await within(header).findByText("To do (2)")).toBeTruthy();
+  const groupButton = await within(header).findByRole("button", {
+    name: "To do (2)",
+  });
+
+  const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => {
+    completedTop = 37;
+    fireEvent.scroll(window);
+  });
+  fireEvent.click(groupButton);
+  const groupMenu = await screen.findByRole("menu", { name: "To do (2)" });
+  expect(
+    within(groupMenu)
+      .getByRole("menuitem", { name: "To do (2)" })
+      .getAttribute("aria-current"),
+  ).toBe("true");
+  fireEvent.click(
+    within(groupMenu).getByRole("menuitem", { name: "Completed (1)" }),
+  );
+  expect(scrollTo).toHaveBeenCalledWith({ top: 163, behavior: "smooth" });
+  expect(
+    await within(header).findByRole("button", { name: "Completed (1)" }),
+  ).toBeTruthy();
+  await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
 
   fireEvent.click(filters);
   const selector = screen.getByRole("combobox", { name: "Task list" });

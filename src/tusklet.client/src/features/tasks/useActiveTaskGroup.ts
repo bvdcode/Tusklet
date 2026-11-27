@@ -1,35 +1,82 @@
-import { useEffect, useRef, useState } from "react";
-import type { TaskGrouping } from "./taskView";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
+
+export type TaskGroupHeading = { id: string; title: string };
+
+function getHeadings(groups: HTMLDivElement) {
+  return Array.from(groups.querySelectorAll<HTMLElement>("[data-task-group]"));
+}
+
+function maximumScroll() {
+  return Math.max(
+    0,
+    document.documentElement.scrollHeight - window.innerHeight,
+  );
+}
 
 export default function useActiveTaskGroup(
-  grouping: TaskGrouping,
-  listId: string,
+  headerRef: RefObject<HTMLElement | null>,
+  groupsRef: RefObject<HTMLDivElement | null>,
+  groups: TaskGroupHeading[],
 ) {
-  const headerRef = useRef<HTMLElement>(null);
-  const groupsRef = useRef<HTMLDivElement>(null);
-  const [activeGroupId, setActiveGroupId] = useState<string>();
+  const [activeGroup, setActiveGroup] = useState<{
+    id: string;
+    previousId?: string;
+  }>();
+  const limitedJump = useRef<{ id: string; scrollY: number }>(undefined);
+  const activate = useCallback((id: string | undefined) => {
+    if (id !== undefined) {
+      setActiveGroup((current) =>
+        current?.id === id ? current : { id, previousId: current?.id },
+      );
+    }
+  }, []);
 
   useEffect(() => {
     const header = headerRef.current;
-    const groups = groupsRef.current;
-    if (!header || !groups || grouping === "none") {
+    const list = groupsRef.current;
+    if (!header || !list) {
       return;
     }
 
+    const headings = getHeadings(list).slice(1);
     let frame: number | undefined;
     const update = () => {
       frame = undefined;
       const boundary = header.getBoundingClientRect().bottom;
-      let activeId: string | undefined;
-      for (const group of groups.querySelectorAll<HTMLElement>(
-        "[data-task-group]",
-      )) {
-        if (group.getBoundingClientRect().bottom > boundary) {
+      const scrollY = window.scrollY;
+      const atEnd = Math.ceil(scrollY) >= maximumScroll();
+      const jump = limitedJump.current;
+      if (
+        jump &&
+        (scrollY < jump.scrollY || !groups.some(({ id }) => id === jump.id))
+      ) {
+        limitedJump.current = undefined;
+      } else if (jump) {
+        jump.scrollY = scrollY;
+      }
+      if (atEnd && limitedJump.current) {
+        activate(limitedJump.current.id);
+        return;
+      }
+      if (atEnd && scrollY > 0) {
+        activate(groups.at(-1)?.id);
+        return;
+      }
+
+      let activeId: string | undefined = groups[0]?.id;
+      for (const heading of headings) {
+        if (heading.getBoundingClientRect().top > boundary) {
           break;
         }
-        activeId = group.dataset.taskGroup;
+        activeId = heading.dataset.taskGroup;
       }
-      setActiveGroupId(activeId);
+      activate(activeId);
     };
     const schedule = () => {
       frame ??= window.requestAnimationFrame(update);
@@ -37,7 +84,7 @@ export default function useActiveTaskGroup(
 
     const observer = new ResizeObserver(schedule);
     observer.observe(header);
-    observer.observe(groups);
+    observer.observe(list);
     window.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", schedule);
     schedule();
@@ -50,7 +97,43 @@ export default function useActiveTaskGroup(
         window.cancelAnimationFrame(frame);
       }
     };
-  }, [grouping, listId]);
+  }, [activate, groups, groupsRef, headerRef]);
 
-  return { headerRef, groupsRef, activeGroupId };
+  function scrollToGroup(id: string, behavior: ScrollBehavior) {
+    const header = headerRef.current;
+    const list = groupsRef.current;
+    if (!header || !list) {
+      return;
+    }
+
+    const headings = getHeadings(list);
+    const heading = headings.find(
+      (element) => element.dataset.taskGroup === id,
+    );
+    if (!heading) {
+      return;
+    }
+
+    const scrollY = window.scrollY;
+    const top =
+      heading === headings[0]
+        ? 0
+        : Math.max(
+            0,
+            Math.ceil(
+              scrollY +
+                heading.getBoundingClientRect().bottom -
+                header.getBoundingClientRect().bottom,
+            ),
+          );
+    const maximum = maximumScroll();
+    limitedJump.current = top > maximum ? { id, scrollY } : undefined;
+    const destination = Math.min(top, maximum);
+    if (Math.abs(scrollY - destination) < 1) {
+      activate(id);
+    }
+    window.scrollTo({ top: destination, behavior });
+  }
+
+  return { activeGroup, scrollToGroup };
 }
