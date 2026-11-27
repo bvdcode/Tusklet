@@ -87,7 +87,16 @@ export default function App() {
             }
           >
             <Routes>
-              <Route path="/" element={<Workspace ownerId={user.id} />} />
+              <Route
+                path="/"
+                element={
+                  <Workspace
+                    key={user.id}
+                    ownerId={user.id}
+                    requestToken={requestToken}
+                  />
+                }
+              />
               <Route
                 path="/profile"
                 element={<ProfilePage session={session.data} user={user} />}

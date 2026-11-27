@@ -1,6 +1,6 @@
 # Tusklet
 
-Tusklet is a self-hosted task manager in early development. The current preview includes administrator setup, password and OpenID Connect sign-in, and task import from Microsoft To Do backups. A single ASP.NET Core 11 process hosts the API and React client.
+Tusklet is a self-hosted task manager in early development. The current preview supports creating and completing tasks, import from Microsoft To Do backups, and password and OpenID Connect sign-in. A single ASP.NET Core 11 process hosts the API and React client.
 
 [![CI](https://github.com/bvdcode/Tusklet/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/bvdcode/Tusklet/actions/workflows/ci.yml)
 [![Release](https://badgen.net/github/release/bvdcode/Tusklet)](https://github.com/bvdcode/Tusklet/releases/latest)
@@ -80,6 +80,8 @@ dotnet ef migrations add MigrationName --project src/Tusklet.Server \
 ```
 
 ## Task storage
+
+On the **Tasks** page, use **New task** to add a task to the selected list. The first task in an empty account creates an **Inbox**. The circle next to a task toggles its completion.
 
 Each task belongs to a list owned by a user. A task stores its title, priority, position, optional due date, completion time and one plain-text note. Checklist steps carry their own order and completion time. Attachments store the file name, media type and contents in separate PostgreSQL rows, so task lists can be read without loading file contents.
 

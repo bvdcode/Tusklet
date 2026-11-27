@@ -3,6 +3,7 @@
   "common": {
     "loading": "Loading",
     "close": "Close",
+    "cancel": "Cancel",
     "retry": "Retry",
     "save": "Save"
   },
@@ -72,8 +73,15 @@
     "title": "Tasks",
     "list": "Task list",
     "empty": "No tasks yet.",
-    "emptyList": "This list is empty.",
     "loadError": "Could not load tasks.",
+    "create": "New task",
+    "taskTitle": "Title",
+    "note": "Note",
+    "dueDate": "Due date",
+    "createError": "Could not create the task. Try again.",
+    "complete": "Complete {{title}}",
+    "reopen": "Reopen {{title}}",
+    "completionError": "Could not update the task. Try again.",
     "open": "To do",
     "completed": "Completed",
     "important": "Important"

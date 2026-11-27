@@ -21,6 +21,14 @@ export type TaskItem = {
   isCompleted: boolean;
 };
 
+export type CreateTaskInput = {
+  listId: string | null;
+  title: string;
+  note: string | null;
+  dueDate: string | null;
+  isImportant: boolean;
+};
+
 export const taskListsKey = ["task-lists"];
 export const taskItemsKey = ["task-items"];
 
@@ -41,6 +49,42 @@ export async function readTaskItems(
     throw new Error(String(response.status));
   }
   return response.json();
+}
+
+export async function createTask(
+  input: CreateTaskInput,
+  requestToken: string,
+): Promise<{ listId: string }> {
+  const response = await fetch("/api/tasks", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-Token": requestToken,
+    },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) {
+    throw new Error(String(response.status));
+  }
+  return response.json();
+}
+
+export async function setTaskCompletion(
+  id: string,
+  isCompleted: boolean,
+  requestToken: string,
+): Promise<void> {
+  const response = await fetch(`/api/tasks/${id}/completion`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-Token": requestToken,
+    },
+    body: JSON.stringify({ isCompleted }),
+  });
+  if (!response.ok) {
+    throw new Error(String(response.status));
+  }
 }
 
 export async function importTasks(

@@ -2,6 +2,7 @@ import CheckCircleOutlined from "@mui/icons-material/CheckCircleOutlined";
 import RadioButtonUnchecked from "@mui/icons-material/RadioButtonUnchecked";
 import StarBorderRounded from "@mui/icons-material/StarBorderRounded";
 import {
+  Checkbox,
   Chip,
   List,
   ListItem,
@@ -18,9 +19,13 @@ import type { TaskItem } from "./tasksApi";
 export default function TaskGroup({
   title,
   tasks,
+  changing,
+  onCompletionChange,
 }: {
   title: string;
   tasks: TaskItem[];
+  changing: boolean;
+  onCompletionChange: (id: string, isCompleted: boolean) => void;
 }) {
   const titleId = useId();
   const { t, i18n } = useTranslation();
@@ -42,17 +47,25 @@ export default function TaskGroup({
               divider={index < tasks.length - 1}
               sx={{ minHeight: 64, gap: 1, px: { xs: 1.5, sm: 2.5 } }}
             >
-              <ListItemIcon
-                sx={{
-                  minWidth: 24,
-                  color: task.isCompleted ? "success.main" : "text.secondary",
-                }}
-              >
-                {task.isCompleted ? (
-                  <CheckCircleOutlined fontSize="small" />
-                ) : (
-                  <RadioButtonUnchecked fontSize="small" />
-                )}
+              <ListItemIcon sx={{ minWidth: 0 }}>
+                <Checkbox
+                  color="success"
+                  checked={task.isCompleted}
+                  disabled={changing}
+                  icon={<RadioButtonUnchecked fontSize="small" />}
+                  checkedIcon={<CheckCircleOutlined fontSize="small" />}
+                  onChange={(_, checked) =>
+                    onCompletionChange(task.id, checked)
+                  }
+                  slotProps={{
+                    input: {
+                      "aria-label": t(
+                        task.isCompleted ? "tasks.reopen" : "tasks.complete",
+                        { title: task.title },
+                      ),
+                    },
+                  }}
+                />
               </ListItemIcon>
               <ListItemText
                 primary={task.title}
