@@ -23,18 +23,21 @@ namespace Tusklet.Tests
         private string? _challenge;
         private string? _code;
         private string _subject = "subject-123";
+        private string? _pictureUrl;
 
         public Exception? CallbackFailure { get; set; }
 
-        public string Authorize(Uri redirect, string callback, string subject = "subject-123")
+        public string Authorize(Uri redirect, string callback, string subject = "subject-123", string? pictureUrl = null)
         {
             Dictionary<string, Microsoft.Extensions.Primitives.StringValues> query = QueryHelpers.ParseQuery(redirect.Query);
             Assert.That(redirect.GetLeftPart(UriPartial.Path), Is.EqualTo($"{Issuer}/authorize"));
             Assert.That(query["redirect_uri"].ToString(), Is.EqualTo(callback));
             Assert.That(query["code_challenge_method"].ToString(), Is.EqualTo("S256"));
+            Assert.That(query["scope"].ToString().Split(' '), Does.Contain("profile"));
             _nonce = query["nonce"];
             _challenge = query["code_challenge"];
             _subject = subject;
+            _pictureUrl = pictureUrl;
             _code = Guid.NewGuid().ToString("N");
             return QueryHelpers.AddQueryString(callback, new Dictionary<string, string?>
             {
@@ -100,11 +103,16 @@ namespace Tusklet.Tests
             }
 
             _code = null;
+            Dictionary<string, object> claims = new() { ["sub"] = _subject, ["nonce"] = _nonce };
+            if (_pictureUrl is not null)
+            {
+                claims["picture"] = _pictureUrl;
+            }
             string token = _tokens.CreateToken(new SecurityTokenDescriptor
             {
                 Issuer = Issuer,
                 Audience = ClientId,
-                Claims = new Dictionary<string, object> { ["sub"] = _subject, ["nonce"] = _nonce },
+                Claims = claims,
                 SigningCredentials = new SigningCredentials(
                     new RsaSecurityKey(_rsa) { KeyId = "test-key" }, SecurityAlgorithms.RsaSha256),
             });

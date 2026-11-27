@@ -19,14 +19,16 @@ namespace Tusklet.Server.Handlers.Auth
             string? currentIssuer = provider?.Issuer;
             SessionUserDto? user = await db.Users
                 .Where(user => user.Id == request.UserId)
-                .Select(user => new SessionUserDto
-                {
-                    Id = user.Id,
-                    Username = user.Username,
-                    IsAdmin = user.IsAdmin,
-                    OpenIdLinked = db.ExternalIdentities.Any(
-                        link => link.UserId == user.Id && link.Issuer == currentIssuer),
-                })
+                .LeftJoin(db.ExternalIdentities.Where(link => link.Issuer == currentIssuer),
+                    user => user.Id, link => link.UserId,
+                    (user, link) => new SessionUserDto
+                    {
+                        Id = user.Id,
+                        Username = user.Username,
+                        IsAdmin = user.IsAdmin,
+                        OpenIdLinked = link != null,
+                        PictureUrl = link == null ? null : link.PictureUrl,
+                    })
                 .SingleOrDefaultAsync(ct);
 
             bool setupRequired = user is null && !await db.Users.AnyAsync(ct);

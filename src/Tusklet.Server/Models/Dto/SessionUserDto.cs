@@ -12,5 +12,7 @@ namespace Tusklet.Server.Models.Dto
         public required bool IsAdmin { get; init; }
 
         public required bool OpenIdLinked { get; init; }
+
+        public string? PictureUrl { get; init; }
     }
 }

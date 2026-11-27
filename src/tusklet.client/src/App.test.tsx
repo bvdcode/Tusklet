@@ -48,6 +48,7 @@ test("creates the initial admin and shows the workspace", async () => {
           username: "admin",
           isAdmin: true,
           openIdLinked: false,
+          pictureUrl: null,
         },
         requestToken: "signed-in-csrf",
       }),
@@ -154,6 +155,7 @@ test("opens profile and administration from the account menu", async () => {
       username: "admin",
       isAdmin: true,
       openIdLinked: false,
+      pictureUrl: null,
     },
     requestToken: "test-csrf",
   };
@@ -200,6 +202,7 @@ test("shows a linked OpenID account with an accessible check icon", async () => 
           username: "admin",
           isAdmin: true,
           openIdLinked: true,
+          pictureUrl: null,
         },
         requestToken: "test-csrf",
       }),

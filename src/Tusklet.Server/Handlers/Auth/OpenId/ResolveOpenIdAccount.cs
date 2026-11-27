@@ -9,7 +9,8 @@ using Npgsql;
 
 namespace Tusklet.Server.Handlers.Auth.OpenId
 {
-    internal record ResolveOpenIdAccount(Guid Revision, string Issuer, string Subject, Guid? LinkUserId)
+    internal record ResolveOpenIdAccount(Guid Revision, string Issuer, string Subject, Guid? LinkUserId,
+        string? PictureUrl)
         : IRequest<User?>;
 
     internal class ResolveOpenIdAccountHandler(TuskletDbContext db, ILogger<ResolveOpenIdAccountHandler> logger)
@@ -28,26 +29,39 @@ namespace Tusklet.Server.Handlers.Auth.OpenId
                 .SingleOrDefaultAsync(link => link.Issuer == request.Issuer && link.Subject == request.Subject, ct);
             if (identity is not null)
             {
-                return request.LinkUserId is null || request.LinkUserId == identity.UserId ? identity.User : null;
+                if (request.LinkUserId is not null && request.LinkUserId != identity.UserId)
+                {
+                    return null;
+                }
+                if (identity.PictureUrl == request.PictureUrl)
+                {
+                    return identity.User;
+                }
             }
-            if (request.LinkUserId is not Guid userId)
+            else
             {
-                return null;
+                if (request.LinkUserId is not Guid userId)
+                {
+                    return null;
+                }
+
+                User? user = await db.Users.FindAsync([userId], ct);
+                if (user is null || await db.ExternalIdentities.AnyAsync(
+                    link => link.UserId == userId && link.Issuer == request.Issuer, ct))
+                {
+                    return null;
+                }
+
+                identity = new ExternalIdentity
+                {
+                    User = user,
+                    Issuer = request.Issuer,
+                    Subject = request.Subject,
+                };
+                db.ExternalIdentities.Add(identity);
             }
 
-            User? user = await db.Users.FindAsync([userId], ct);
-            if (user is null || await db.ExternalIdentities.AnyAsync(
-                link => link.UserId == userId && link.Issuer == request.Issuer, ct))
-            {
-                return null;
-            }
-
-            db.ExternalIdentities.Add(new ExternalIdentity
-            {
-                UserId = user.Id,
-                Issuer = request.Issuer,
-                Subject = request.Subject,
-            });
+            identity.PictureUrl = request.PictureUrl;
             try
             {
                 await db.SaveChangesAsync(ct);
@@ -59,7 +73,12 @@ namespace Tusklet.Server.Handlers.Auth.OpenId
                 logger.LogInformation("Another request already linked an OpenID account");
                 return null;
             }
-            return user;
+            catch (DbUpdateConcurrencyException)
+            {
+                logger.LogInformation("Another request already removed the OpenID account link");
+                return null;
+            }
+            return identity.User;
         }
     }
 }

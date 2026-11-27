@@ -3,6 +3,7 @@ export type SessionUser = {
   username: string;
   isAdmin: boolean;
   openIdLinked: boolean;
+  pictureUrl: string | null;
 };
 
 export type SessionStatus = {

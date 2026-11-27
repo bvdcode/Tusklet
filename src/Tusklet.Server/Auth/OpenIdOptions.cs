@@ -54,6 +54,7 @@ namespace Tusklet.Server.Auth
             options.ClaimActions.Remove("iss");
             options.Scope.Clear();
             options.Scope.Add(OpenIdConnectScope.OpenId);
+            options.Scope.Add(OpenIdConnectScope.Profile);
             options.BackchannelTimeout = TimeSpan.FromSeconds(10);
             OpenIdConfiguration? configuration = Volatile.Read(ref _configuration);
             string? clientSecret = ReadSecret(configuration);

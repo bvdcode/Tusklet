@@ -47,6 +47,8 @@ export default function ProfilePage({ session, user }: Props) {
             sx={{ alignItems: "center", gap: 1.5, minWidth: 0 }}
           >
             <Avatar
+              src={user.pictureUrl ?? undefined}
+              slotProps={{ img: { alt: "", referrerPolicy: "no-referrer" } }}
               sx={{ width: 54, height: 54, fontSize: "1.3rem", flexShrink: 0 }}
               aria-hidden="true"
             >

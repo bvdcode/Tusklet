@@ -62,7 +62,8 @@ namespace Tusklet.Server.Auth
             }
 
             IMediator mediator = http.RequestServices.GetRequiredService<IMediator>();
-            User? user = await mediator.Send(new ResolveOpenIdAccount(revision, issuer, subject, linkUserId),
+            string? pictureUrl = ReadPictureUrl(identity?.FindFirstValue("picture"));
+            User? user = await mediator.Send(new ResolveOpenIdAccount(revision, issuer, subject, linkUserId, pictureUrl),
                 http.RequestAborted);
             if (user is null)
             {
@@ -75,6 +76,17 @@ namespace Tusklet.Server.Auth
                 await Session.SignInAsync(http, user);
             }
             context.Response.Redirect(linkUserId is null ? "/" : "/profile?openid=linked");
+        }
+
+        private static string? ReadPictureUrl(string? value)
+        {
+            if (value is null || value.Length > ExternalIdentity.PictureUrlMaxLength
+                || !Uri.TryCreate(value, UriKind.Absolute, out Uri? uri)
+                || uri.Scheme != Uri.UriSchemeHttps || uri.UserInfo.Length != 0)
+            {
+                return null;
+            }
+            return value;
         }
 
         public static Task FailAsync(RemoteFailureContext context)

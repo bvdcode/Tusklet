@@ -54,6 +54,8 @@ namespace Tusklet.Tests
         [Test]
         public async Task AdminCanConfigureLinkAndSignInWithOpenId()
         {
+            const string picture = "https://identity.test/avatars/original.png";
+            const string updatedPicture = "https://identity.test/avatars/updated.png";
             using TestOpenIdProvider provider = new();
             await using TuskletFactory factory = new(provider);
             using HttpClient browser = factory.CreateBrowser();
@@ -83,11 +85,12 @@ namespace Tusklet.Tests
 
             using HttpResponseMessage link = await StartOpenIdAsync(browser, await SessionAsync(browser), "link");
             using HttpResponseMessage linkResult = await browser.GetAsync(
-                provider.Authorize(link.Headers.Location!, Callback));
+                provider.Authorize(link.Headers.Location!, Callback, pictureUrl: picture));
             Assert.That(provider.CallbackFailure?.Message, Is.Null);
             Assert.That(linkResult.Headers.Location?.OriginalString, Is.EqualTo("/profile?openid=linked"));
             JsonElement linked = await SessionAsync(browser);
             Assert.That(linked.GetProperty("user").GetProperty("openIdLinked").GetBoolean(), Is.True);
+            Assert.That(linked.GetProperty("user").GetProperty("pictureUrl").GetString(), Is.EqualTo(picture));
             using HttpResponseMessage logout = await SendAsync(browser, linked, HttpMethod.Post, "/api/auth/logout");
             Assert.That(logout.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
 
@@ -103,22 +106,26 @@ namespace Tusklet.Tests
 
             using HttpResponseMessage login = await StartOpenIdAsync(replacementBrowser, signedOut, "login");
             using HttpResponseMessage loginResult = await replacementBrowser.GetAsync(
-                provider.Authorize(login.Headers.Location!, Callback));
+                provider.Authorize(login.Headers.Location!, Callback, pictureUrl: updatedPicture));
             Assert.That(loginResult.Headers.Location?.OriginalString, Is.EqualTo("/"));
             JsonElement signedIn = await SessionAsync(replacementBrowser);
             Assert.That(signedIn.GetProperty("user").GetProperty("username").GetString(), Is.EqualTo("admin"));
-
-            using HttpResponseMessage unlink = await SendAsync(
-                replacementBrowser, signedIn, HttpMethod.Delete, "/api/auth/openid/link");
-            Assert.That(unlink.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
-            JsonElement unlinked = await SessionAsync(replacementBrowser);
-            Assert.That(unlinked.GetProperty("user").GetProperty("openIdLinked").GetBoolean(), Is.False);
+            Assert.That(signedIn.GetProperty("user").GetProperty("pictureUrl").GetString(), Is.EqualTo(updatedPicture));
             using HttpResponseMessage secondLogout = await SendAsync(
-                replacementBrowser, unlinked, HttpMethod.Post, "/api/auth/logout");
+                replacementBrowser, signedIn, HttpMethod.Post, "/api/auth/logout");
             Assert.That(secondLogout.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
             using HttpResponseMessage passwordLogin = await SendAsync(replacementBrowser, await SessionAsync(replacementBrowser),
                 HttpMethod.Post, "/api/auth/login", new { username = "ADMIN", password = Password });
             Assert.That(passwordLogin.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+            JsonElement localSession = await SessionAsync(replacementBrowser);
+            Assert.That(localSession.GetProperty("user").GetProperty("pictureUrl").GetString(), Is.EqualTo(updatedPicture));
+
+            using HttpResponseMessage unlink = await SendAsync(
+                replacementBrowser, localSession, HttpMethod.Delete, "/api/auth/openid/link");
+            Assert.That(unlink.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+            JsonElement unlinked = await SessionAsync(replacementBrowser);
+            Assert.That(unlinked.GetProperty("user").GetProperty("openIdLinked").GetBoolean(), Is.False);
+            Assert.That(unlinked.GetProperty("user").GetProperty("pictureUrl").ValueKind, Is.EqualTo(JsonValueKind.Null));
         }
 
         private static Task<JsonElement> SessionAsync(HttpClient browser)

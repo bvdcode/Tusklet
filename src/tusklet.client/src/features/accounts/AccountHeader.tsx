@@ -96,7 +96,11 @@ export default function AccountHeader({ session, user, onLogout }: Props) {
             onClick={(event) => setAnchor(event.currentTarget)}
             sx={{ p: 0.5 }}
           >
-            <Avatar aria-hidden="true">
+            <Avatar
+              src={user.pictureUrl ?? undefined}
+              slotProps={{ img: { alt: "", referrerPolicy: "no-referrer" } }}
+              aria-hidden="true"
+            >
               {Array.from(user.username)[0]?.toLocaleUpperCase()}
             </Avatar>
           </IconButton>
