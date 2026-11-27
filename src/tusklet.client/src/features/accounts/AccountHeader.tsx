@@ -113,6 +113,7 @@ export default function AccountHeader({
             sx={{
               color: "inherit",
               textDecoration: "none",
+              WebkitTapHighlightColor: "transparent",
               borderRadius: 1,
               flexShrink: 0,
               justifySelf: "start",

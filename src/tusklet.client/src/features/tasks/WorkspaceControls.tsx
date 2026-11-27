@@ -1,6 +1,13 @@
 import AddRounded from "@mui/icons-material/AddRounded";
-import TuneRounded from "@mui/icons-material/TuneRounded";
-import { IconButton, Popover, Stack, TextField, useTheme } from "@mui/material";
+import FilterAltOutlined from "@mui/icons-material/FilterAltOutlined";
+import {
+  IconButton,
+  Popover,
+  Stack,
+  TextField,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TaskList } from "./tasksApi";
@@ -41,7 +48,10 @@ export default function WorkspaceControls({
 }: Props) {
   const { t } = useTranslation();
   const id = useId();
-  const edge = useTheme().direction === "rtl" ? "left" : "right";
+  const theme = useTheme();
+  const compact = useMediaQuery(theme.breakpoints.down("sm"));
+  const edge = theme.direction === "rtl" ? "left" : "right";
+  const menuAlignment = compact ? "center" : edge;
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const hasFilters =
     activeId !== "" || grouping !== "none" || sorting !== "listOrder";
@@ -54,7 +64,8 @@ export default function WorkspaceControls({
         minWidth: 0,
         justifyContent: "flex-end",
         alignItems: "center",
-        gap: { xs: 0.25, sm: 0.75 },
+        gap: { xs: 0, sm: 0.75 },
+        "& > .MuiIconButton-root": { p: { xs: 0.75, sm: 1 } },
       }}
     >
       <IconButton
@@ -66,7 +77,7 @@ export default function WorkspaceControls({
         color={hasFilters ? "primary" : "default"}
         onClick={(event) => setAnchor(event.currentTarget)}
       >
-        <TuneRounded />
+        <FilterAltOutlined />
       </IconButton>
       <IconButton
         aria-label={t("tasks.create")}
@@ -79,20 +90,25 @@ export default function WorkspaceControls({
       </IconButton>
       <Popover
         open={anchor !== null}
-        anchorEl={anchor}
+        elevation={compact ? 0 : undefined}
+        anchorEl={compact ? anchor?.closest("header") : anchor}
         onClose={() => setAnchor(null)}
-        anchorOrigin={{ vertical: "bottom", horizontal: edge }}
-        transformOrigin={{ vertical: "top", horizontal: edge }}
+        anchorOrigin={{ vertical: "bottom", horizontal: menuAlignment }}
+        transformOrigin={{ vertical: "top", horizontal: menuAlignment }}
         slotProps={{
           paper: {
             id,
             role: "dialog",
             "aria-label": t("tasks.filters"),
-            sx: { mt: 0.75 },
+            sx: {
+              mt: 0.75,
+              width: { xs: `calc(100% - ${theme.spacing(4)})`, sm: 272 },
+              ...(compact && { border: 1, borderColor: "divider" }),
+            },
           },
         }}
       >
-        <Stack spacing={2} sx={{ p: 2, width: 272, maxWidth: "100%" }}>
+        <Stack spacing={2} sx={{ p: 2 }}>
           <TextField
             select
             size="small"
