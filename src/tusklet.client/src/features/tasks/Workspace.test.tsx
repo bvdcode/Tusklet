@@ -78,11 +78,26 @@ test("shows tasks across lists and lets users sort, group and select a list", as
   expect(screen.getAllByRole("list")).toHaveLength(1);
   expect(screen.getAllByRole("listitem")[0].textContent).toContain("Zebra");
 
-  fireEvent.click(screen.getByRole("button", { name: "Zebra" }));
-  const details = await screen.findByRole("dialog", { name: "Zebra" });
+  const zebra = screen.getByRole("button", { name: "Zebra" });
+  const apple = screen.getByRole("button", { name: "Apple" });
+  fireEvent.click(zebra);
+  const details = await screen.findByRole("complementary", { name: "Zebra" });
   expect(within(details).getByText("To do")).toBeTruthy();
-  fireEvent.click(within(details).getByRole("button", { name: "Close" }));
-  await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  expect(zebra.getAttribute("aria-expanded")).toBe("true");
+
+  fireEvent.click(apple);
+  await screen.findByRole("complementary", { name: "Apple" });
+  expect(zebra.getAttribute("aria-expanded")).toBe("false");
+  expect(apple.getAttribute("aria-expanded")).toBe("true");
+
+  fireEvent.click(apple);
+  expect(apple.getAttribute("aria-expanded")).toBe("false");
+  await waitFor(() => expect(screen.queryByRole("complementary")).toBeNull());
+
+  fireEvent.click(zebra);
+  const reopened = await screen.findByRole("complementary", { name: "Zebra" });
+  fireEvent.click(within(reopened).getByRole("button", { name: "Close" }));
+  await waitFor(() => expect(screen.queryByRole("complementary")).toBeNull());
 
   fireEvent.click(filters);
   fireEvent.change(screen.getByRole("combobox", { name: "Sort by" }), {

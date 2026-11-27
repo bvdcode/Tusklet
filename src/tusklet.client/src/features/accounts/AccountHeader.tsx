@@ -87,7 +87,10 @@ export default function AccountHeader({
           sx={{
             justifyContent: "space-between",
             gap: { xs: 0.25, sm: 2 },
-            minHeight: { xs: 60, sm: "var(--tusklet-account-toolbar-height)" },
+            minHeight: {
+              xs: "var(--tusklet-account-toolbar-height)",
+              sm: "var(--tusklet-account-toolbar-height)",
+            },
           }}
         >
           <Box

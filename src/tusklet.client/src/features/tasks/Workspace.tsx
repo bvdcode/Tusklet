@@ -30,7 +30,7 @@ import {
   taskListsKey,
   type CreateTaskInput,
 } from "./tasksApi";
-import { arrangeTasks } from "./taskView";
+import { arrangeTasks, type TaskRow } from "./taskView";
 
 export default function Workspace(account: AccountPage) {
   const { t, i18n } = useTranslation();
@@ -39,7 +39,7 @@ export default function Workspace(account: AccountPage) {
   const { preferences, changePreference } = useUserPreferences();
   const { taskGrouping: grouping, taskSorting: sorting } = preferences;
   const [creating, setCreating] = useState(false);
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [details, setDetails] = useState<{ task: TaskRow; open: boolean }>();
   const ownerId = account.user.id;
   const requestToken = account.session.requestToken;
   const listsKey = [...taskListsKey, ownerId];
@@ -71,7 +71,8 @@ export default function Workspace(account: AccountPage) {
     open: t("tasks.open"),
     completed: t("tasks.completed"),
   });
-  const selectedTask = rows.find((task) => task.id === selectedTaskId);
+  const currentTask = rows.find((task) => task.id === details?.task.id);
+  const detailsOpen = details?.open === true && currentTask !== undefined;
   const loading = lists.isPending || items.some((query) => query.isPending);
   const loadFailed = lists.isError || items.some((query) => query.isError);
 
@@ -102,10 +103,21 @@ export default function Workspace(account: AccountPage) {
     }
   }
 
+  function closeDetails() {
+    setDetails((current) => current && { ...current, open: false });
+  }
+
+  function toggleDetails(task: TaskRow) {
+    setDetails((current) => ({
+      task,
+      open: !(current?.open && current.task.id === task.id),
+    }));
+  }
+
   return (
     <AccountPageLayout
       {...account}
-      expanded={selectedTask !== undefined}
+      expanded
       actions={
         <WorkspaceControls
           lists={taskLists}
@@ -115,7 +127,7 @@ export default function Workspace(account: AccountPage) {
           canCreate={lists.isSuccess && !create.isPending}
           onListChange={(id) => {
             setSelectedId(id);
-            setSelectedTaskId(null);
+            closeDetails();
           }}
           onGroupingChange={(value) =>
             changePreference({ key: "taskGrouping", value })
@@ -142,8 +154,18 @@ export default function Workspace(account: AccountPage) {
       >
         {t("tasks.title")}
       </Typography>
-      <Stack direction="row" sx={{ gap: 2 }}>
-        <Stack spacing={2} sx={{ flex: 1, minWidth: 0 }}>
+      <Stack direction="row">
+        <Stack
+          spacing={2}
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            mx: "auto",
+            maxWidth: (theme) =>
+              `calc(${theme.breakpoints.values.md}px - ${theme.spacing(6)})`,
+            containerType: "inline-size",
+          }}
+        >
           {loading && (
             <CircularProgress size={24} aria-label={t("common.loading")} />
           )}
@@ -174,20 +196,19 @@ export default function Workspace(account: AccountPage) {
                 tasks={group.tasks}
                 showListName={!active && grouping !== "list"}
                 changing={completion.isPending}
-                selectedTaskId={selectedTaskId}
-                onTaskSelect={setSelectedTaskId}
+                selectedTaskId={detailsOpen ? currentTask.id : null}
+                onTaskSelect={toggleDetails}
                 onCompletionChange={(id, isCompleted) =>
                   completion.mutate({ id, isCompleted })
                 }
               />
             ))}
         </Stack>
-        {selectedTask && (
-          <TaskDetailsPanel
-            task={selectedTask}
-            onClose={() => setSelectedTaskId(null)}
-          />
-        )}
+        <TaskDetailsPanel
+          task={currentTask ?? details?.task}
+          open={detailsOpen}
+          onClose={closeDetails}
+        />
       </Stack>
       {creating && (
         <CreateTaskDialog

@@ -32,7 +32,7 @@ export default function TaskGroup({
   showListName: boolean;
   changing: boolean;
   selectedTaskId: string | null;
-  onTaskSelect: (id: string) => void;
+  onTaskSelect: (task: TaskRow) => void;
   onCompletionChange: (id: string, isCompleted: boolean) => void;
 }) {
   const titleId = useId();
@@ -65,6 +65,10 @@ export default function TaskGroup({
                 pl: { xs: 1.5, sm: 2.5 },
                 bgcolor:
                   selectedTaskId === task.id ? "action.selected" : undefined,
+                "@container (max-width: 280px)": {
+                  alignItems: "flex-start",
+                  pl: 0.5,
+                },
               }}
             >
               <ListItemIcon sx={{ minWidth: 0 }}>
@@ -74,6 +78,7 @@ export default function TaskGroup({
                   disabled={changing}
                   icon={<RadioButtonUnchecked fontSize="small" />}
                   checkedIcon={<CheckCircleOutlined fontSize="small" />}
+                  sx={{ "@container (max-width: 280px)": { p: 0.75 } }}
                   onChange={(_, checked) =>
                     onCompletionChange(task.id, checked)
                   }
@@ -90,13 +95,20 @@ export default function TaskGroup({
               <ListItemButton
                 aria-label={task.title}
                 aria-expanded={selectedTaskId === task.id}
-                onClick={() => onTaskSelect(task.id)}
+                onClick={() => onTaskSelect(task)}
                 sx={{
                   minWidth: 0,
                   minHeight: 64,
                   gap: 1,
                   pl: 1,
                   pr: { xs: 1.5, sm: 2.5 },
+                  "@container (max-width: 280px)": {
+                    flexDirection: "column",
+                    alignItems: "stretch",
+                    gap: 0,
+                    pl: 0.5,
+                    pr: 1,
+                  },
                 }}
               >
                 <ListItemText
@@ -126,12 +138,19 @@ export default function TaskGroup({
                   }}
                 />
                 <Stack
-                  direction={{
-                    xs: "column",
-                    sm: "row",
-                    md: selectedTaskId ? "column" : "row",
+                  direction={{ xs: "column", sm: "row" }}
+                  sx={{
+                    alignItems: "flex-end",
+                    gap: 0.75,
+                    flexShrink: 0,
+                    "@container (max-width: 380px)": {
+                      flexDirection: "column",
+                    },
+                    "@container (max-width: 280px)": {
+                      alignItems: "flex-start",
+                      overflowWrap: "anywhere",
+                    },
                   }}
-                  sx={{ alignItems: "flex-end", gap: 0.75, flexShrink: 0 }}
                 >
                   {task.dueDate && (
                     <Typography
