@@ -47,3 +47,22 @@ export const taskListColumn = {
   minHeight: 0,
   position: "relative",
 } as const;
+
+export function taskListScrollSurface(theme: Theme) {
+  const { text, background } = (theme.vars ?? theme).palette;
+
+  return {
+    minHeight: 0,
+    overflowY: "auto",
+    overscrollBehaviorY: "contain",
+    "& .os-theme-tusklet": {
+      "--os-size": theme.spacing(1),
+      "--os-padding-perpendicular": theme.spacing(0.25),
+      "--os-padding-axis": theme.spacing(0.25),
+      "--os-handle-border-radius": theme.spacing(1),
+      "--os-handle-bg": `color-mix(in srgb, ${text.secondary} 75%, ${background.paper})`,
+      "--os-handle-bg-hover": text.secondary,
+      "--os-handle-bg-active": text.secondary,
+    },
+  } as const;
+}
