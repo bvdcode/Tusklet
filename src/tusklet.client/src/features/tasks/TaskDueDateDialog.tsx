@@ -63,7 +63,7 @@ export default function TaskDueDateDialog({
     >
       <DialogTitle id={title}>{t("tasks.dueDate")}</DialogTitle>
       <DialogContent sx={{ px: { xs: 1.5, sm: 3 } }}>
-        <Stack spacing={1}>
+        <Stack spacing={1} useFlexGap>
           {failed && <Alert severity="error">{t("tasks.updateError")}</Alert>}
           <LocalizationProvider
             dateAdapter={AdapterDayjs}
