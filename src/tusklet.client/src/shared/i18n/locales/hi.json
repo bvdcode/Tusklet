@@ -85,6 +85,11 @@
     "viewTasks": "कार्य देखें"
   },
   "tasks": {
+    "search": "कार्य खोजें",
+    "noSearchResults": "कोई मेल खाने वाला कार्य नहीं मिला।",
+    "markedComplete": "“{{title}}” पूरा किया गया",
+    "markedReopened": "“{{title}}” फिर से खोला गया",
+    "undo": "पूर्ववत करें",
     "allTasks": "सभी कार्य",
     "filters": "फ़िल्टर",
     "groupBy": "समूह बनाएँ",

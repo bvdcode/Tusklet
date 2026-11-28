@@ -11,6 +11,7 @@ import {
 import TaskListRow from "./TaskListRow";
 import { getLocalToday } from "./taskDueDate";
 import type { TaskListEntry } from "./taskView";
+import type { ChangeTaskCompletion } from "./useTaskCompletion";
 
 type ListContext = { label: string };
 
@@ -74,7 +75,7 @@ export default memo(function TaskVirtualList({
   changing: boolean;
   selectedTaskId: string | null;
   onTaskSelect: (id: string) => void;
-  onCompletionChange: (id: string, isCompleted: boolean) => void;
+  onCompletionChange: ChangeTaskCompletion;
 }) {
   const titleId = useId();
   const { t, i18n } = useTranslation();
@@ -107,7 +108,13 @@ export default memo(function TaskVirtualList({
                 component="h2"
                 variant="subtitle1"
                 align="center"
-                sx={{ pt: 2, pb: 1.25 }}
+                sx={{
+                  py: 1.25,
+                  bgcolor: "background.default",
+                  borderBlockStyle: "solid",
+                  borderBlockWidth: 1,
+                  borderColor: "divider",
+                }}
               >
                 {entry.title}
               </Typography>
@@ -116,8 +123,7 @@ export default memo(function TaskVirtualList({
             return (
               <TaskListRow
                 task={entry.task}
-                first={entry.first}
-                last={entry.last}
+                divider={!entry.last}
                 selected={selectedTaskId === entry.task.id}
                 changing={changing}
                 showListName={showListName}

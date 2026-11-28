@@ -3,6 +3,7 @@ import { useId, useState } from "react";
 import TaskDetailsContent from "./TaskDetailsContent";
 import type { TaskList, UpdateTaskInput } from "./tasksApi";
 import type { TaskRow } from "./taskView";
+import type { ChangeTaskCompletion } from "./useTaskCompletion";
 
 export default function TaskDetailsPanel({
   task,
@@ -10,12 +11,16 @@ export default function TaskDetailsPanel({
   open,
   onClose,
   onUpdate,
+  completionPending,
+  onCompletionChange,
 }: {
   task: TaskRow | undefined;
   lists: TaskList[];
   open: boolean;
   onClose: () => void;
   onUpdate: (id: string, input: UpdateTaskInput) => Promise<void>;
+  completionPending: boolean;
+  onCompletionChange: ChangeTaskCompletion;
 }) {
   const titleId = useId();
   const [lastTask, setLastTask] = useState(task);
@@ -51,6 +56,7 @@ export default function TaskDetailsPanel({
             minHeight: 0,
             paddingInlineStart: "var(--tusklet-details-gap)",
             overflow: "hidden",
+            display: "flex",
           },
         },
         paper: {
@@ -61,7 +67,7 @@ export default function TaskDetailsPanel({
             ? { width: "100%" }
             : {
                 position: "relative",
-                width: "min(100%, var(--tusklet-details-max-width))",
+                width: "100%",
                 border: 0,
                 borderRadius: 1,
               },
@@ -76,6 +82,8 @@ export default function TaskDetailsPanel({
           titleId={titleId}
           onClose={onClose}
           onUpdate={onUpdate}
+          completionPending={completionPending}
+          onCompletionChange={onCompletionChange}
           compact={compact}
         />
       )}

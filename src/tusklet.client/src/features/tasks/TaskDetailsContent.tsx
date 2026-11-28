@@ -23,10 +23,12 @@ import { useTranslation } from "react-i18next";
 import PageProgress from "../../shared/PageProgress";
 import TaskDetailsHeader from "./TaskDetailsHeader";
 import TaskMetadata from "./TaskMetadata";
+import TaskStatus from "./TaskStatus";
 import TaskTextEditDialog from "./TaskTextEditDialog";
 import { dueDateColor, getLocalToday } from "./taskDueDate";
 import type { TaskList, UpdateTaskInput } from "./tasksApi";
 import type { TaskRow } from "./taskView";
+import type { ChangeTaskCompletion } from "./useTaskCompletion";
 
 type EditField = "title" | "note" | "dueDate";
 const TaskDueDateDialog = lazy(() => import("./TaskDueDateDialog"));
@@ -37,6 +39,8 @@ export default function TaskDetailsContent({
   titleId,
   onClose,
   onUpdate,
+  completionPending,
+  onCompletionChange,
   compact,
 }: {
   task: TaskRow;
@@ -44,6 +48,8 @@ export default function TaskDetailsContent({
   titleId: string;
   onClose: () => void;
   onUpdate: (id: string, input: UpdateTaskInput) => Promise<void>;
+  completionPending: boolean;
+  onCompletionChange: ChangeTaskCompletion;
   compact: boolean;
 }) {
   const { t, i18n } = useTranslation();
@@ -60,9 +66,6 @@ export default function TaskDetailsContent({
     dateStyle: "medium",
     timeZone: "UTC",
   });
-  const status = task.isCompleted
-    ? "Completed"
-    : (task.progress ?? "NotStarted");
 
   function editField(next: EditField | null) {
     edit.reset();
@@ -114,12 +117,11 @@ export default function TaskDetailsContent({
             "& .MuiListItemText-secondary": { minWidth: 0, textAlign: "end" },
           }}
         >
-          <ListItem disableGutters>
-            <ListItemText
-              primary={t("tasks.status")}
-              secondary={t(`tasks.progress.${status}`)}
-            />
-          </ListItem>
+          <TaskStatus
+            task={task}
+            pending={completionPending}
+            onChange={onCompletionChange}
+          />
           <ListItem disablePadding>
             <ListItemButton
               id={listButtonId}

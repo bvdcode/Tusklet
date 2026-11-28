@@ -89,6 +89,11 @@
     "restored_many": "Восстановлены недостающие поля у {{count}} задач."
   },
   "tasks": {
+    "search": "Поиск задач",
+    "noSearchResults": "Задачи не найдены.",
+    "markedComplete": "Задача «{{title}}» завершена",
+    "markedReopened": "Задача «{{title}}» снова открыта",
+    "undo": "Отменить",
     "allTasks": "Все задачи",
     "filters": "Фильтры",
     "groupBy": "Группировать по",

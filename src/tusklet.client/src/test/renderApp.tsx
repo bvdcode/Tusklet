@@ -5,6 +5,7 @@ import { MemoryRouter } from "react-router-dom";
 import { VirtuosoMockContext } from "react-virtuoso";
 import App from "../App";
 import "../shared/i18n";
+import NotificationProvider from "../shared/NotificationProvider";
 import theme from "../shared/theme";
 
 export function renderApp(path = "/") {
@@ -16,7 +17,9 @@ export function renderApp(path = "/") {
           <VirtuosoMockContext.Provider
             value={{ viewportHeight: 640, itemHeight: 65 }}
           >
-            <App />
+            <NotificationProvider>
+              <App />
+            </NotificationProvider>
           </VirtuosoMockContext.Provider>
         </MemoryRouter>
       </QueryClientProvider>

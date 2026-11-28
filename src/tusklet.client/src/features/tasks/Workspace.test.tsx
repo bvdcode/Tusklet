@@ -27,7 +27,7 @@ test("shows tasks across lists and lets users sort, group and select a list", as
   const task: TaskItem = {
     id: "first",
     title: "Zebra",
-    note: null,
+    note: "Reserve the meeting room",
     dueDate: null,
     isImportant: false,
     isCompleted: false,
@@ -36,7 +36,14 @@ test("shows tasks across lists and lets users sort, group and select a list", as
     reminderAt: null,
     reminderEnabled: null,
     recurrence: null,
-    links: [],
+    links: [
+      {
+        id: "link",
+        url: "https://example.com",
+        displayName: "Agenda",
+        applicationName: null,
+      },
+    ],
   };
   const responses = {
     "/api/auth/session": {
@@ -55,12 +62,17 @@ test("shows tasks across lists and lets users sort, group and select a list", as
       { id: "inbox", name: "Inbox", isInbox: true },
       { id: "personal", name: "Personal", isInbox: false },
     ],
-    "/api/tasks/lists/inbox": [task, { ...task, id: "third", title: "Yak" }],
+    "/api/tasks/lists/inbox": [
+      task,
+      { ...task, id: "third", title: "Yak", note: null, links: [] },
+    ],
     "/api/tasks/lists/personal": [
       {
         ...task,
         id: "second",
         title: "Apple",
+        note: null,
+        links: [],
         isCompleted: true,
         isImportant: true,
       },
@@ -68,24 +80,50 @@ test("shows tasks across lists and lets users sort, group and select a list", as
   };
   const groupingEndpoint = "/api/auth/preferences/taskGrouping";
   const sortingEndpoint = "/api/auth/preferences/taskSorting";
+  const completionEndpoint = "/api/tasks/first/completion";
   const fetchTasks = vi.fn(
     (
       url:
         | keyof typeof responses
         | typeof groupingEndpoint
-        | typeof sortingEndpoint,
-    ) =>
-      Promise.resolve(
+        | typeof sortingEndpoint
+        | typeof completionEndpoint,
+      options?: RequestInit,
+    ) => {
+      if (url === completionEndpoint) {
+        task.isCompleted =
+          options?.body === JSON.stringify({ isCompleted: true });
+        return Promise.resolve(new Response(null, { status: 204 }));
+      }
+      return Promise.resolve(
         url === groupingEndpoint || url === sortingEndpoint
           ? new Response(null, { status: 204 })
           : Response.json(responses[url]),
-      ),
+      );
+    },
   );
   vi.stubGlobal("fetch", fetchTasks);
-  renderApp();
+  renderApp("/tasks/first");
 
-  await screen.findByText("Apple", {}, { timeout: 3000 });
+  const directDetails = await screen.findByRole(
+    "complementary",
+    { name: "Zebra" },
+    { timeout: 3000 },
+  );
+  const scroller = screen.getByRole("region", { name: "Tasks" });
+  const scrollTo = vi.fn();
+  Object.defineProperty(scroller, "scrollTo", { value: scrollTo });
+  scroller.scrollTop = 75;
+  fireEvent.click(within(directDetails).getByRole("button", { name: "Close" }));
+  await waitFor(() => expect(screen.queryByRole("complementary")).toBeNull());
+  expect(screen.getByRole("region", { name: "Tasks" })).toBe(scroller);
+  expect(scroller.scrollTop).toBe(75);
+  scroller.scrollTop = 0;
+
   const header = screen.getByRole("banner");
+  expect(
+    within(header).getByRole("link", { name: "Tusklet" }).getAttribute("href"),
+  ).toBe("/tasks");
   const filters = within(header).getByRole("button", { name: "Filters" });
   expect(
     within(header).queryByRole("combobox", { name: "Task list" }),
@@ -118,6 +156,34 @@ test("shows tasks across lists and lets users sort, group and select a list", as
   fireEvent.click(within(reopened).getByRole("button", { name: "Close" }));
   await waitFor(() => expect(screen.queryByRole("complementary")).toBeNull());
   expect(fetchTasks).toHaveBeenCalledTimes(listRequests);
+
+  const search = within(header).getByRole("button", { name: "Search tasks" });
+  fireEvent.click(search);
+  const searchBox = within(header).getByRole("searchbox", {
+    name: "Search tasks",
+  });
+  expect(document.activeElement).toBe(searchBox);
+  for (const term of ["zeb", "MEETING", "agenda"]) {
+    fireEvent.change(searchBox, { target: { value: term } });
+    expect(screen.getByRole("button", { name: "Zebra" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Apple" })).toBeNull();
+  }
+  fireEvent.change(searchBox, { target: { value: "unmatched" } });
+  expect(screen.getByText("No matching tasks.")).toBeTruthy();
+  fireEvent.keyDown(searchBox, { key: "Escape" });
+  expect(document.activeElement).toBe(search);
+  expect(screen.getByRole("button", { name: "Apple" })).toBeTruthy();
+  expect(fetchTasks).toHaveBeenCalledTimes(listRequests);
+
+  fireEvent.click(screen.getByRole("button", { name: "Zebra" }));
+  const card = await screen.findByRole("complementary", { name: "Zebra" });
+  fireEvent.click(within(card).getByRole("button", { name: "Complete Zebra" }));
+  await within(card).findByRole("button", { name: "Reopen Zebra" });
+  fireEvent.click(await screen.findByRole("button", { name: "Undo" }));
+  await within(card).findByRole("button", { name: "Complete Zebra" });
+  expect(task.isCompleted).toBe(false);
+  fireEvent.click(within(card).getByRole("button", { name: "Close" }));
+  await waitFor(() => expect(screen.queryByRole("complementary")).toBeNull());
 
   fireEvent.click(filters);
   const taskList = screen.getByRole("combobox", { name: "Task list" });
@@ -168,7 +234,6 @@ test("shows tasks across lists and lets users sort, group and select a list", as
   const completedEntries = screen
     .getByRole("list", { name: "Tasks" })
     .querySelectorAll('[data-task-group="completed"]');
-  const scroller = screen.getByRole("region", { name: "Tasks" });
   vi.spyOn(scroller, "getBoundingClientRect").mockReturnValue(
     new DOMRect(0, 61, 360, 500),
   );
@@ -196,11 +261,10 @@ test("shows tasks across lists and lets users sort, group and select a list", as
     name: "To do (2)",
   });
 
-  const scrollTo = vi.fn(() => {
+  scrollTo.mockImplementation(() => {
     completedTop = 37;
     fireEvent.scroll(scroller);
   });
-  Object.defineProperty(scroller, "scrollTo", { value: scrollTo });
   fireEvent.click(groupButton);
   const groupMenu = await screen.findByRole("menu", { name: "To do (2)" });
   expect(

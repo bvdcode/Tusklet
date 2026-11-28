@@ -85,6 +85,11 @@
     "viewTasks": "কাজ দেখুন"
   },
   "tasks": {
+    "search": "কাজ খুঁজুন",
+    "noSearchResults": "মিলে যায় এমন কোনো কাজ পাওয়া যায়নি।",
+    "markedComplete": "“{{title}}” সম্পন্ন হয়েছে",
+    "markedReopened": "“{{title}}” আবার খোলা হয়েছে",
+    "undo": "পূর্বাবস্থায় ফেরান",
     "allTasks": "সব কাজ",
     "filters": "ফিল্টার",
     "groupBy": "দলবদ্ধ করুন",
