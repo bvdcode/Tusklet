@@ -15,12 +15,14 @@ namespace Tusklet.Server
             builder.Services.AddHealthChecks();
             builder.Services.AddMediator();
             builder.Services.AddAccounts();
+            builder.Services.AddTaskRealtime();
             builder.Services.AddSingleton<CounterState>();
 
             WebApplication app = builder.Build();
             app.UseDefaultFiles();
             app.UseStaticFiles();
             app.UseRouting();
+            app.MapTaskRealtime();
             app.UseRateLimiter();
             app.UseAuthentication();
             app.UseAuthorization();

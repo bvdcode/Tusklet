@@ -6,12 +6,13 @@ using EasyExtensions.Mediator.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Tusklet.Server.Models.Requests;
+using Tusklet.Server.Realtime;
 
 namespace Tusklet.Server.Handlers.Tasks
 {
     internal record CreateTask(Guid OwnerId, CreateTaskInput Input) : IRequest<Guid?>;
 
-    internal class CreateTaskHandler(TuskletDbContext db, ILogger<CreateTaskHandler> logger)
+    internal class CreateTaskHandler(TuskletDbContext db, ILogger<CreateTaskHandler> logger, TaskWorkspacePublisher publisher)
         : IRequestHandler<CreateTask, Guid?>
     {
         public async Task<Guid?> Handle(CreateTask request, CancellationToken ct)
@@ -36,6 +37,7 @@ namespace Tusklet.Server.Handlers.Tasks
             TaskList? list = input.ListId is Guid listId
                 ? await lists.SingleOrDefaultAsync(list => list.Id == listId, ct)
                 : await lists.OrderBy(list => list.Position).ThenBy(list => list.Id).FirstOrDefaultAsync(ct);
+            bool listCreated = list is null;
             if (list is null)
             {
                 if (input.ListId.HasValue)
@@ -59,6 +61,7 @@ namespace Tusklet.Server.Handlers.Tasks
                 Position = (lastPosition ?? -1) + 1,
             });
             await db.SaveChangesAsync(ct);
+            await publisher.PublishAsync(request.OwnerId, listCreated);
             return list.Id;
         }
     }
