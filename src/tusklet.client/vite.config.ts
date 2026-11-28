@@ -13,7 +13,9 @@ export default defineConfig({
       injectRegister: false,
       workbox: {
         globPatterns: ["**/*.{css,html,js,png,svg,woff2}"],
-        navigateFallbackAllowlist: [/^\/(?:profile\/?|admin\/?)?(?:\?|$)/],
+        navigateFallbackAllowlist: [
+          /^\/(?:tasks(?:\/[^/?]+)?\/?|profile\/?|admin\/?)?(?:\?|$)/,
+        ],
       },
       manifest: {
         id: "/",

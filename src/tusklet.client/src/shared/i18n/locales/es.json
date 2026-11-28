@@ -87,6 +87,11 @@
     "restored_many": "Se restauraron los datos faltantes en {{count}} tareas."
   },
   "tasks": {
+    "search": "Buscar tareas",
+    "noSearchResults": "No se encontraron tareas.",
+    "markedComplete": "Se completó «{{title}}»",
+    "markedReopened": "Se reabrió «{{title}}»",
+    "undo": "Deshacer",
     "allTasks": "Todas las tareas",
     "filters": "Filtros",
     "groupBy": "Agrupar por",

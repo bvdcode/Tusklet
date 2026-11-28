@@ -1,6 +1,6 @@
-import { Alert, Box, Button, Stack, Typography } from "@mui/material";
+import { Alert, Box, Button, Paper, Stack, Typography } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useId, useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { VirtuosoHandle } from "react-virtuoso";
 import PageProgress from "../../shared/PageProgress";
@@ -12,18 +12,20 @@ import CreateTaskDialog from "./CreateTaskDialog";
 import ScrollToTopButton from "./ScrollToTopButton";
 import TaskDetailsPanel from "./TaskDetailsPanel";
 import TaskGroupNavigation from "./TaskGroupNavigation";
+import TaskSearchField from "./TaskSearchField";
 import TaskVirtualList from "./TaskVirtualList";
 import WorkspaceControls from "./WorkspaceControls";
 import {
   createTask,
   readTaskLists,
-  setTaskCompletion,
   taskItemsKey,
   taskListsKey,
   updateTask,
   type CreateTaskInput,
   type UpdateTaskInput,
 } from "./tasksApi";
+import { taskListSurface, taskWorkspaceLayout } from "./taskWorkspaceStyles";
+import useTaskCompletion from "./useTaskCompletion";
 import useTaskDetailRoute from "./useTaskDetailRoute";
 import useTaskWorkspaceRows from "./useTaskWorkspaceRows";
 
@@ -35,6 +37,9 @@ export default function Workspace(account: AccountPage) {
   const { taskGrouping: grouping, taskSorting: sorting } = preferences;
   const titleId = useId();
   const titleRef = useRef<HTMLHeadingElement>(null);
+  const searchId = useId();
+  const searchButtonRef = useRef<HTMLButtonElement>(null);
+  const [search, setSearch] = useState<string | null>(null);
   const [scroller, setScroller] = useState<HTMLDivElement | null>(null);
   const listRef = useRef<VirtuosoHandle>(null);
   const [creating, setCreating] = useState(false);
@@ -56,6 +61,7 @@ export default function Workspace(account: AccountPage) {
     active,
     grouping,
     sorting,
+    search ?? "",
     lists.isPending,
   );
   const loadFailed = lists.isError || failed.length > 0;
@@ -72,11 +78,15 @@ export default function Workspace(account: AccountPage) {
       ]);
     },
   });
-  const completion = useMutation({
-    mutationFn: ({ id, isCompleted }: { id: string; isCompleted: boolean }) =>
-      setTaskCompletion(id, isCompleted, requestToken),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: itemsKey }),
-  });
+  const completion = useTaskCompletion(ownerId, requestToken);
+
+  function changeSearch(value: string | null) {
+    scroller?.scrollTo({ top: 0, behavior: "instant" });
+    setSearch(value);
+    if (value === null) {
+      searchButtonRef.current?.focus();
+    }
+  }
 
   function retry() {
     if (lists.isError) {
@@ -86,14 +96,6 @@ export default function Workspace(account: AccountPage) {
       void refetch();
     }
   }
-
-  const { mutate: setCompletion } = completion;
-  const changeCompletion = useCallback(
-    (id: string, isCompleted: boolean) => {
-      setCompletion({ id, isCompleted });
-    },
-    [setCompletion],
-  );
 
   async function saveTask(id: string, input: UpdateTaskInput) {
     await updateTask(id, input, requestToken);
@@ -107,8 +109,16 @@ export default function Workspace(account: AccountPage) {
     <AccountPageLayout
       {...account}
       expanded
+      centerExpanded={search !== null}
       center={
-        headings.length > 0 ? (
+        search !== null ? (
+          <TaskSearchField
+            id={searchId}
+            value={search}
+            onChange={changeSearch}
+            onClose={() => changeSearch(null)}
+          />
+        ) : headings.length > 0 ? (
           <TaskGroupNavigation
             key={`${grouping}:${selectedId}`}
             groups={headings}
@@ -126,6 +136,10 @@ export default function Workspace(account: AccountPage) {
           grouping={grouping}
           sorting={sorting}
           canCreate={lists.isSuccess && !create.isPending}
+          searchOpen={search !== null}
+          searchId={searchId}
+          searchButtonRef={searchButtonRef}
+          onSearchToggle={() => changeSearch(search === null ? "" : null)}
           onListChange={(id) => {
             setSelectedId(id);
             closeDetails();
@@ -159,36 +173,7 @@ export default function Workspace(account: AccountPage) {
       >
         {t("tasks.title")}
       </Typography>
-      <Box
-        sx={(theme) => {
-          const maxListWidth = `calc(${theme.breakpoints.values.md}px - ${theme.spacing(6)})`;
-          const listWidth = detailsOpen
-            ? `clamp(${theme.spacing(44)}, calc(100% - 2 * (min(28%, var(--tusklet-details-max-width)) + var(--tusklet-details-gap))), ${maxListWidth})`
-            : `min(100%, ${maxListWidth})`;
-
-          return {
-            display: "flex",
-            flex: 1,
-            minHeight: 0,
-            "--tusklet-details-gap": theme.spacing(2),
-            "--tusklet-details-max-width": "448px",
-            [theme.breakpoints.up("md")]: {
-              display: "grid",
-              gridTemplateColumns: `minmax(0, 1fr) ${listWidth} minmax(0, 1fr)`,
-              gridTemplateRows: "minmax(0, 1fr)",
-              transition: theme.transitions.create("grid-template-columns", {
-                duration: detailsOpen
-                  ? theme.transitions.duration.enteringScreen
-                  : theme.transitions.duration.leavingScreen,
-                easing: detailsOpen
-                  ? theme.transitions.easing.easeOut
-                  : theme.transitions.easing.sharp,
-              }),
-              "@media (prefers-reduced-motion: reduce)": { transition: "none" },
-            },
-          };
-        }}
-      >
+      <Box sx={taskWorkspaceLayout(detailsOpen)}>
         <Stack
           spacing={2}
           sx={{
@@ -212,25 +197,22 @@ export default function Workspace(account: AccountPage) {
               {t("tasks.loadError")}
             </Alert>
           )}
-          {!loading && !loadFailed && rows.length === 0 && (
-            <Typography color="text.secondary">{t("tasks.empty")}</Typography>
+          {!loading && !loadFailed && entries.length === 0 && (
+            <Typography color="text.secondary">
+              {t(search?.trim() ? "tasks.noSearchResults" : "tasks.empty")}
+            </Typography>
           )}
           {completion.isError && (
             <Alert severity="error">{t("tasks.updateError")}</Alert>
           )}
-          <Box
+          <Paper
             ref={setScroller}
+            variant="outlined"
+            hidden={entries.length === 0}
             role="region"
             aria-labelledby={titleId}
             tabIndex={0}
-            sx={{
-              flex: 1,
-              minHeight: 0,
-              overflowY: "auto",
-              overscrollBehaviorY: "contain",
-              scrollbarGutter: "stable both-edges",
-              scrollbarWidth: "thin",
-            }}
+            sx={taskListSurface}
           >
             {scroller && entries.length > 0 && (
               <TaskVirtualList
@@ -241,10 +223,10 @@ export default function Workspace(account: AccountPage) {
                 changing={completion.isPending}
                 selectedTaskId={taskId}
                 onTaskSelect={toggleDetails}
-                onCompletionChange={changeCompletion}
+                onCompletionChange={completion.changeCompletion}
               />
             )}
-          </Box>
+          </Paper>
           <ScrollToTopButton scroller={scroller} focusTarget={titleRef} />
         </Stack>
         <TaskDetailsPanel
@@ -253,6 +235,8 @@ export default function Workspace(account: AccountPage) {
           open={detailsOpen}
           onClose={() => closeDetails()}
           onUpdate={saveTask}
+          completionPending={completion.isPending}
+          onCompletionChange={completion.changeCompletion}
         />
       </Box>
       {creating && (

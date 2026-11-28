@@ -85,6 +85,11 @@
     "viewTasks": "کام دیکھیں"
   },
   "tasks": {
+    "search": "کام تلاش کریں",
+    "noSearchResults": "کوئی مماثل کام نہیں ملا۔",
+    "markedComplete": "«{{title}}» مکمل کر دیا گیا",
+    "markedReopened": "«{{title}}» دوبارہ کھول دیا گیا",
+    "undo": "واپس کریں",
     "allTasks": "تمام کام",
     "filters": "فلٹرز",
     "groupBy": "گروپ بندی کی بنیاد",

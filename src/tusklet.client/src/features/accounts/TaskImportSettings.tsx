@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { tasksPath } from "../tasks/taskRoutes";
 import { importTasks, taskItemsKey, taskListsKey } from "../tasks/tasksApi";
 
 export default function TaskImportSettings({
@@ -125,7 +126,7 @@ export default function TaskImportSettings({
           {apply.isSuccess && (
             <Button
               component={Link}
-              to="/"
+              to={tasksPath}
               sx={{ alignSelf: { sm: "flex-end" } }}
             >
               {t("import.viewTasks")}

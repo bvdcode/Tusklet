@@ -87,6 +87,11 @@
     "restored_many": "Données manquantes restaurées pour {{count}} tâches."
   },
   "tasks": {
+    "search": "Rechercher des tâches",
+    "noSearchResults": "Aucune tâche trouvée.",
+    "markedComplete": "« {{title}} » a été terminée",
+    "markedReopened": "« {{title}} » a été rouverte",
+    "undo": "Annuler",
     "allTasks": "Toutes les tâches",
     "filters": "Filtres",
     "groupBy": "Regrouper par",

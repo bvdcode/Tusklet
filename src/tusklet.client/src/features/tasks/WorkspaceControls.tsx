@@ -1,5 +1,6 @@
 import AddRounded from "@mui/icons-material/AddRounded";
 import FilterAltOutlined from "@mui/icons-material/FilterAltOutlined";
+import SearchRounded from "@mui/icons-material/SearchRounded";
 import {
   IconButton,
   Popover,
@@ -8,7 +9,7 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { useId, useState } from "react";
+import { useId, useState, type Ref } from "react";
 import { useTranslation } from "react-i18next";
 import type { TaskList } from "./tasksApi";
 import {
@@ -24,6 +25,10 @@ type Props = {
   grouping: TaskGrouping;
   sorting: TaskSorting;
   canCreate: boolean;
+  searchOpen: boolean;
+  searchId: string;
+  searchButtonRef: Ref<HTMLButtonElement>;
+  onSearchToggle: () => void;
   onListChange: (id: string) => void;
   onGroupingChange: (value: TaskGrouping) => void;
   onSortingChange: (value: TaskSorting) => void;
@@ -41,6 +46,10 @@ export default function WorkspaceControls({
   grouping,
   sorting,
   canCreate,
+  searchOpen,
+  searchId,
+  searchButtonRef,
+  onSearchToggle,
   onListChange,
   onGroupingChange,
   onSortingChange,
@@ -68,6 +77,17 @@ export default function WorkspaceControls({
         "& > .MuiIconButton-root": { p: { xs: 0.75, sm: 1 } },
       }}
     >
+      <IconButton
+        ref={searchButtonRef}
+        aria-label={t("tasks.search")}
+        title={t("tasks.search")}
+        aria-expanded={searchOpen}
+        aria-controls={searchOpen ? searchId : undefined}
+        color={searchOpen ? "primary" : "default"}
+        onClick={onSearchToggle}
+      >
+        <SearchRounded />
+      </IconButton>
       <IconButton
         aria-label={t("tasks.filters")}
         title={t("tasks.filters")}

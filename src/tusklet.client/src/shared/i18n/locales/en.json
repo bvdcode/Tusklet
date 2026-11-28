@@ -85,6 +85,11 @@
     "viewTasks": "View tasks"
   },
   "tasks": {
+    "search": "Search tasks",
+    "noSearchResults": "No matching tasks.",
+    "markedComplete": "Completed “{{title}}”",
+    "markedReopened": "Reopened “{{title}}”",
+    "undo": "Undo",
     "allTasks": "All tasks",
     "filters": "Filters",
     "groupBy": "Group by",

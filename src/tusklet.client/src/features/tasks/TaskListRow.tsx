@@ -14,11 +14,11 @@ import type { TFunction } from "i18next";
 import { memo } from "react";
 import { dueDateColor } from "./taskDueDate";
 import type { TaskRow } from "./taskView";
+import type { ChangeTaskCompletion } from "./useTaskCompletion";
 
 export default memo(function TaskListRow({
   task,
-  first,
-  last,
+  divider,
   selected,
   changing,
   showListName,
@@ -30,8 +30,7 @@ export default memo(function TaskListRow({
   onCompletionChange,
 }: {
   task: TaskRow;
-  first: boolean;
-  last: boolean;
+  divider: boolean;
   selected: boolean;
   changing: boolean;
   showListName: boolean;
@@ -40,26 +39,18 @@ export default memo(function TaskListRow({
   today: number;
   t: TFunction;
   onTaskSelect: (id: string) => void;
-  onCompletionChange: (id: string, isCompleted: boolean) => void;
+  onCompletionChange: ChangeTaskCompletion;
 }) {
   return (
     <ListItem
       component="div"
       disablePadding
-      sx={(theme) => ({
+      divider={divider}
+      sx={{
         pl: { xs: 1.5, sm: 2.5 },
-        bgcolor: selected ? "action.selected" : "background.paper",
-        borderInlineWidth: 1,
-        borderInlineStyle: "solid",
-        borderTop: first ? 1 : 0,
-        borderBottom: 1,
-        borderColor: "divider",
-        borderStartStartRadius: first ? theme.shape.borderRadius : 0,
-        borderStartEndRadius: first ? theme.shape.borderRadius : 0,
-        borderEndStartRadius: last ? theme.shape.borderRadius : 0,
-        borderEndEndRadius: last ? theme.shape.borderRadius : 0,
+        bgcolor: selected ? "action.selected" : undefined,
         overflow: "hidden",
-      })}
+      }}
     >
       <ListItemIcon sx={{ minWidth: 0 }}>
         <Checkbox
@@ -68,7 +59,7 @@ export default memo(function TaskListRow({
           disabled={changing}
           icon={<RadioButtonUnchecked fontSize="small" />}
           checkedIcon={<CheckCircleOutlined fontSize="small" />}
-          onChange={(_, checked) => onCompletionChange(task.id, checked)}
+          onChange={(_, checked) => onCompletionChange(task, checked)}
           slotProps={{
             input: {
               "aria-label": t(

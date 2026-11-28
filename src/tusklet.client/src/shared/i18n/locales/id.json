@@ -85,6 +85,11 @@
     "viewTasks": "Lihat tugas"
   },
   "tasks": {
+    "search": "Cari tugas",
+    "noSearchResults": "Tidak ada tugas yang cocok.",
+    "markedComplete": "“{{title}}” telah diselesaikan",
+    "markedReopened": "“{{title}}” dibuka kembali",
+    "undo": "Urungkan",
     "allTasks": "Semua tugas",
     "filters": "Filter",
     "groupBy": "Kelompokkan menurut",

@@ -1,19 +1,20 @@
 import { useCallback, useLayoutEffect, useRef } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { taskPath, tasksPath } from "./taskRoutes";
 
-const taskParameter = "task";
 const fromList = "task-list";
 
 export default function useTaskDetailRoute() {
   const location = useLocation();
+  const { taskId } = useParams();
   const navigate = useNavigate();
-  const latestLocation = useRef(location);
+  const selection = useRef({ taskId, state: location.state });
   const returning = useRef(false);
 
   useLayoutEffect(() => {
-    latestLocation.current = location;
+    selection.current = { taskId, state: location.state };
     returning.current = false;
-  }, [location]);
+  }, [location, taskId]);
 
   useLayoutEffect(() => {
     const previous = window.history.scrollRestoration;
@@ -28,11 +29,9 @@ export default function useTaskDetailRoute() {
       if (returning.current) {
         return;
       }
-      const { search, hash, state } = latestLocation.current;
-      const params = new URLSearchParams(search);
-      const taskId = params.get(taskParameter);
+      const { taskId, state } = selection.current;
       if (
-        taskId === null ||
+        taskId === undefined ||
         (expectedId !== undefined && taskId !== expectedId)
       ) {
         return;
@@ -42,11 +41,7 @@ export default function useTaskDetailRoute() {
         void navigate(-1);
         return;
       }
-      params.delete(taskParameter);
-      void navigate(
-        { search: params.toString(), hash },
-        { replace: true, preventScrollReset: true },
-      );
+      void navigate(tasksPath, { replace: true });
     },
     [navigate],
   );
@@ -56,37 +51,24 @@ export default function useTaskDetailRoute() {
       if (returning.current) {
         return;
       }
-      const current = latestLocation.current;
-      const { search, hash, state } = current;
-      const params = new URLSearchParams(search);
-      const previousId = params.get(taskParameter);
+      const { taskId: previousId, state } = selection.current;
       if (previousId === taskId) {
         closeDetails();
         return;
       }
-      params.set(taskParameter, taskId);
-      const nextSearch = params.toString();
       const nextState =
-        previousId === null || state === fromList ? fromList : null;
-      latestLocation.current = {
-        ...current,
-        search: nextSearch,
+        previousId === undefined || state === fromList ? fromList : null;
+      selection.current = { taskId, state: nextState };
+      void navigate(taskPath(taskId), {
+        replace: previousId !== undefined,
         state: nextState,
-      };
-      void navigate(
-        { search: nextSearch, hash },
-        {
-          replace: previousId !== null,
-          state: nextState,
-          preventScrollReset: true,
-        },
-      );
+      });
     },
     [closeDetails, navigate],
   );
 
   return {
-    taskId: new URLSearchParams(location.search).get(taskParameter),
+    taskId: taskId ?? null,
     closeDetails,
     toggleDetails,
   };

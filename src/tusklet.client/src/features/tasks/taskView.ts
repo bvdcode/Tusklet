@@ -19,11 +19,28 @@ export type TaskListEntry =
       kind: "task";
       groupId: string;
       task: TaskRow;
-      first: boolean;
       last: boolean;
     };
 
 export type TaskGroupHeading = { id: string; title: string; index: number };
+
+export function searchTasks(
+  rows: TaskRow[],
+  query: string,
+  language: string | undefined,
+) {
+  const term = query.trim().toLocaleLowerCase(language);
+  if (!term) {
+    return rows;
+  }
+  return rows.filter((task) =>
+    [
+      task.title,
+      task.note,
+      ...task.links.flatMap(({ url, displayName }) => [url, displayName]),
+    ].some((text) => text?.toLocaleLowerCase(language).includes(term)),
+  );
+}
 
 export function flattenTaskGroups(
   groups: { id: string; title?: string; tasks: TaskRow[] }[],
@@ -42,7 +59,6 @@ export function flattenTaskGroups(
         kind: "task",
         groupId: id,
         task,
-        first: index === 0,
         last: index === tasks.length - 1,
       });
     });

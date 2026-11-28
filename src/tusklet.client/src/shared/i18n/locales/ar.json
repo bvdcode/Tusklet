@@ -93,6 +93,11 @@
     "restored_many": "تمت استعادة التفاصيل الناقصة لـ {{count}} من المهام."
   },
   "tasks": {
+    "search": "البحث عن المهام",
+    "noSearchResults": "لم يتم العثور على مهام مطابقة.",
+    "markedComplete": "تم إكمال «{{title}}»",
+    "markedReopened": "أُعيد فتح «{{title}}»",
+    "undo": "تراجع",
     "allTasks": "كل المهام",
     "filters": "عوامل التصفية",
     "groupBy": "التجميع حسب",

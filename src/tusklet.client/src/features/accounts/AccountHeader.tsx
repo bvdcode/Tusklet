@@ -24,6 +24,7 @@ import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import Brand from "../../shared/Brand";
+import { tasksPath } from "../tasks/taskRoutes";
 import { taskItemsKey, taskListsKey } from "../tasks/tasksApi";
 import {
   changeAccount,
@@ -38,6 +39,7 @@ type Props = {
   onLogout: () => void;
   actions?: ReactNode;
   center?: ReactNode;
+  centerExpanded?: boolean;
 };
 
 export default function AccountHeader({
@@ -46,6 +48,7 @@ export default function AccountHeader({
   onLogout,
   actions,
   center,
+  centerExpanded,
 }: Props) {
   const { t } = useTranslation();
   const menuEdge = useTheme().direction === "rtl" ? "left" : "right";
@@ -93,7 +96,9 @@ export default function AccountHeader({
             ...(center && {
               display: "grid",
               gridTemplateColumns: {
-                xs: "1fr minmax(0, auto) 1fr",
+                xs: centerExpanded
+                  ? "auto minmax(0, 1fr) auto"
+                  : "1fr minmax(0, auto) 1fr",
                 sm: "minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr)",
               },
             }),
@@ -105,7 +110,7 @@ export default function AccountHeader({
         >
           <Box
             component={Link}
-            to="/"
+            to={tasksPath}
             aria-label={t("appName")}
             sx={{
               color: "inherit",

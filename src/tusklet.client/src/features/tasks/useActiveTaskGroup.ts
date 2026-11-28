@@ -39,7 +39,7 @@ export default function useActiveTaskGroup(
     let frame: number | undefined;
     const update = () => {
       frame = undefined;
-      const boundary = scroller.getBoundingClientRect().top;
+      const boundary = scroller.getBoundingClientRect().top + scroller.clientTop;
       const { scrollTop } = scroller;
       const atEnd = Math.ceil(scrollTop) >= maximumScroll(scroller);
       const jump = limitedJump.current;
@@ -107,7 +107,7 @@ export default function useActiveTaskGroup(
     }
 
     const { scrollTop } = scroller;
-    const boundary = scroller.getBoundingClientRect().top;
+    const boundary = scroller.getBoundingClientRect().top + scroller.clientTop;
     const start = scroller.querySelector<HTMLElement>(
       `[data-index="${group.index}"][data-task-group]`,
     );

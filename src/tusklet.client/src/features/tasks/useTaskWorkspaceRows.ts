@@ -10,6 +10,7 @@ import {
 import {
   arrangeTasks,
   flattenTaskGroups,
+  searchTasks,
   type TaskGrouping,
   type TaskSorting,
 } from "./taskView";
@@ -30,6 +31,7 @@ export default function useTaskWorkspaceRows(
   active: TaskList | undefined,
   grouping: TaskGrouping,
   sorting: TaskSorting,
+  search: string,
   listsPending: boolean,
 ) {
   const { t, i18n } = useTranslation();
@@ -63,10 +65,16 @@ export default function useTaskWorkspaceRows(
   const language = i18n.resolvedLanguage;
   const groups = useMemo(
     () =>
-      arrangeTasks(rows, grouping, sorting, language, {
-        open: t("tasks.open"),
-        completed: t("tasks.completed"),
-      })
+      arrangeTasks(
+        searchTasks(rows, search, language),
+        grouping,
+        sorting,
+        language,
+        {
+          open: t("tasks.open"),
+          completed: t("tasks.completed"),
+        },
+      )
         .filter((group) => group.tasks.length > 0)
         .map((group) => ({
           ...group,
@@ -78,7 +86,7 @@ export default function useTaskWorkspaceRows(
                 })
               : group.title,
         })),
-    [grouping, language, rows, sorting, t],
+    [grouping, language, rows, search, sorting, t],
   );
   const { entries, headings } = useMemo(
     () => flattenTaskGroups(groups),
