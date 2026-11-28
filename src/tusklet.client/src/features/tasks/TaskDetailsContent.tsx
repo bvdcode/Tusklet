@@ -1,12 +1,10 @@
 import CalendarTodayOutlined from "@mui/icons-material/CalendarTodayOutlined";
-import EditOutlined from "@mui/icons-material/EditOutlined";
 import KeyboardArrowDownRounded from "@mui/icons-material/KeyboardArrowDownRounded";
 import StarBorderRounded from "@mui/icons-material/StarBorderRounded";
 import StarRounded from "@mui/icons-material/StarRounded";
 import {
   Alert,
   Box,
-  ButtonBase,
   List,
   ListItem,
   ListItemButton,
@@ -18,13 +16,14 @@ import {
   useTheme,
 } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
-import { useId, useState } from "react";
+import { useId, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import TaskDetailsHeader from "./TaskDetailsHeader";
+import TaskDetailsNote from "./TaskDetailsNote";
 import TaskDueDateDialog from "./TaskDueDateDialog";
 import TaskMetadata from "./TaskMetadata";
 import TaskStatus from "./TaskStatus";
-import TaskTextEditDialog from "./TaskTextEditDialog";
+import TaskTextEditor from "./TaskTextEditor";
 import { dueDateColor, getLocalToday } from "./taskDueDate";
 import type { TaskList, UpdateTaskInput } from "./tasksApi";
 import type { TaskRow } from "./taskView";
@@ -57,10 +56,15 @@ export default function TaskDetailsContent({
   const listButtonId = useId();
   const [field, setField] = useState<EditField | null>(null);
   const [listAnchor, setListAnchor] = useState<HTMLElement | null>(null);
+  const titleButton = useRef<HTMLButtonElement>(null);
+  const noteButton = useRef<HTMLButtonElement>(null);
+  const previousField = useRef(field);
   const edit = useMutation({
     mutationFn: (input: UpdateTaskInput) => onUpdate(task.id, input),
     onSuccess: () => setField(null),
   });
+  const editingText = field === "title" || field === "note";
+  const editDisabled = edit.isPending || editingText;
   const date = new Intl.DateTimeFormat(i18n.resolvedLanguage, {
     dateStyle: "medium",
     timeZone: "UTC",
@@ -76,19 +80,47 @@ export default function TaskDetailsContent({
     edit.mutate({ isImportant: !task.isImportant });
   }
 
+  useLayoutEffect(() => {
+    if (field === null) {
+      if (previousField.current === "title") {
+        titleButton.current?.focus({ preventScroll: true });
+      } else if (previousField.current === "note") {
+        noteButton.current?.focus({ preventScroll: true });
+      }
+    }
+    previousField.current = field;
+  }, [field]);
+
+  const textEditor = editingText && (
+    <TaskTextEditor
+      field={field}
+      value={field === "title" ? task.title : (task.note ?? "")}
+      saving={edit.isPending}
+      failed={edit.isError}
+      onSave={(value) =>
+        edit.mutate(
+          field === "title" ? { title: value } : { note: value || null },
+        )
+      }
+      onClose={() => editField(null)}
+    />
+  );
+
   return (
     <>
       <TaskDetailsHeader
         title={task.title}
         titleId={titleId}
         compact={compact}
-        saving={edit.isPending}
+        editDisabled={editDisabled}
+        editButtonRef={titleButton}
+        editor={field === "title" ? textEditor : undefined}
         onClose={onClose}
         onEdit={() => editField("title")}
       />
       <Box
         sx={{
-          px: 2,
+          px: 1,
           pb: 2,
           flex: 1,
           minHeight: 0,
@@ -112,7 +144,7 @@ export default function TaskDetailsContent({
               gap: 1,
               overflowWrap: "anywhere",
             },
-            "& .MuiListItemText-primary": { maxWidth: "45%" },
+            "& .MuiListItemText-primary": { maxWidth: "45%", flexShrink: 0 },
             "& .MuiListItemText-secondary": { minWidth: 0, textAlign: "end" },
           }}
         >
@@ -124,8 +156,7 @@ export default function TaskDetailsContent({
           <ListItem disablePadding>
             <ListItemButton
               id={listButtonId}
-              disableGutters
-              disabled={edit.isPending}
+              disabled={editDisabled}
               aria-haspopup="menu"
               aria-expanded={listAnchor !== null}
               aria-controls={listAnchor ? menuId : undefined}
@@ -152,8 +183,7 @@ export default function TaskDetailsContent({
           </ListItem>
           <ListItem disablePadding>
             <ListItemButton
-              disableGutters
-              disabled={edit.isPending}
+              disabled={editDisabled}
               onClick={() => editField("dueDate")}
             >
               <ListItemText
@@ -190,8 +220,7 @@ export default function TaskDetailsContent({
           </ListItem>
           <ListItem disablePadding>
             <ListItemButton
-              disableGutters
-              disabled={edit.isPending}
+              disabled={editDisabled}
               aria-pressed={task.isImportant}
               onClick={toggleImportance}
             >
@@ -209,43 +238,13 @@ export default function TaskDetailsContent({
           </ListItem>
           <TaskMetadata task={task} />
         </List>
-        <ButtonBase
-          disabled={edit.isPending}
-          onClick={() => editField("note")}
-          title={t("tasks.editNote")}
-          sx={{
-            display: "block",
-            width: "100%",
-            mt: 2,
-            borderRadius: 1,
-            textAlign: "start",
-          }}
-        >
-          <Stack
-            component="span"
-            direction="row"
-            sx={{ justifyContent: "space-between", alignItems: "center" }}
-          >
-            <Typography component="span" variant="subtitle2">
-              {t("tasks.note")}
-            </Typography>
-            <EditOutlined fontSize="small" color="action" />
-          </Stack>
-          {task.note && (
-            <Typography
-              component="span"
-              variant="body2"
-              sx={{
-                display: "block",
-                mt: 0.5,
-                whiteSpace: "pre-wrap",
-                overflowWrap: "anywhere",
-              }}
-            >
-              {task.note}
-            </Typography>
-          )}
-        </ButtonBase>
+        <TaskDetailsNote
+          note={task.note}
+          editor={field === "note" ? textEditor : undefined}
+          editDisabled={editDisabled}
+          editButtonRef={noteButton}
+          onEdit={() => editField("note")}
+        />
       </Box>
       <Menu
         anchorEl={listAnchor}
@@ -277,20 +276,6 @@ export default function TaskDetailsContent({
           saving={edit.isPending}
           failed={edit.isError}
           onSave={(dueDate) => edit.mutate({ dueDate })}
-          onClose={() => editField(null)}
-        />
-      )}
-      {(field === "title" || field === "note") && (
-        <TaskTextEditDialog
-          field={field}
-          value={field === "title" ? task.title : (task.note ?? "")}
-          saving={edit.isPending}
-          failed={edit.isError}
-          onSave={(value) =>
-            edit.mutate(
-              field === "title" ? { title: value } : { note: value || null },
-            )
-          }
           onClose={() => editField(null)}
         />
       )}
