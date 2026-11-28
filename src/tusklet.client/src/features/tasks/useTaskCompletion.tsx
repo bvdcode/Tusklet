@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import TaskCompletionSound from "./TaskCompletionSound";
 import { setTaskCompletion, taskItemsKey } from "./tasksApi";
 import type { TaskRow } from "./taskView";
+import useTaskRequest from "./useTaskRequest";
 
 export type ChangeTaskCompletion = (
   task: TaskRow,
@@ -18,6 +19,7 @@ export default function useTaskCompletion(
 ) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const taskRequest = useTaskRequest(requestToken);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const notices = useRef(new Map<string, SnackbarKey>());
   const sound = useRef(new TaskCompletionSound());
@@ -46,7 +48,7 @@ export default function useTaskCompletion(
       task: TaskRow;
       isCompleted: boolean;
       undo: boolean;
-    }) => setTaskCompletion(task.id, isCompleted, requestToken),
+    }) => setTaskCompletion(task.id, isCompleted, taskRequest()),
     onSuccess: (_, { task, isCompleted, undo }) => {
       const itemsKey = [...taskItemsKey, ownerId];
       if (mounted.current && !undo) {

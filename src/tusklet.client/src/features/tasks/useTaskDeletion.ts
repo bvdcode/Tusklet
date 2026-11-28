@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { deleteTask, taskItemsKey, type TaskItem } from "./tasksApi";
 import type { TaskRow } from "./taskView";
+import useTaskRequest from "./useTaskRequest";
 
 export default function useTaskDeletion(
   ownerId: string,
@@ -9,9 +10,10 @@ export default function useTaskDeletion(
   onDeleted: (id: string) => void,
 ) {
   const queryClient = useQueryClient();
+  const taskRequest = useTaskRequest(requestToken);
   const [task, setTask] = useState<TaskRow | null>(null);
   const deletion = useMutation({
-    mutationFn: (target: TaskRow) => deleteTask(target.id, requestToken),
+    mutationFn: (target: TaskRow) => deleteTask(target.id, taskRequest()),
     onSuccess: async (_, target) => {
       const queryKey = [...taskItemsKey, ownerId];
       await queryClient.cancelQueries({ queryKey });

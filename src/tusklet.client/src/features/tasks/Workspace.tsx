@@ -35,6 +35,7 @@ import {
 import useTaskCompletion from "./useTaskCompletion";
 import useTaskDeletion from "./useTaskDeletion";
 import useTaskDetailRoute from "./useTaskDetailRoute";
+import useTaskRequest from "./useTaskRequest";
 import useTaskWorkspaceRows from "./useTaskWorkspaceRows";
 import useTaskWorkspaceShortcuts from "./useTaskWorkspaceShortcuts";
 
@@ -58,6 +59,7 @@ export default function Workspace(account: AccountPage) {
     useTaskDetailRoute();
   const ownerId = account.user.id;
   const requestToken = account.session.requestToken;
+  const taskRequest = useTaskRequest(requestToken);
   const listsKey = [...taskListsKey, ownerId];
   const itemsKey = [...taskItemsKey, ownerId];
   const lists = useQuery({
@@ -81,7 +83,7 @@ export default function Workspace(account: AccountPage) {
   const detailsOpen = currentTask !== undefined;
 
   const create = useMutation({
-    mutationFn: (input: CreateTaskInput) => createTask(input, requestToken),
+    mutationFn: (input: CreateTaskInput) => createTask(input, taskRequest()),
     onSuccess: async () => {
       setCreating(false);
       await Promise.all([
@@ -140,7 +142,7 @@ export default function Workspace(account: AccountPage) {
   }
 
   async function saveTask(id: string, input: UpdateTaskInput) {
-    await updateTask(id, input, requestToken);
+    await updateTask(id, input, taskRequest());
     if (active && input.listId && input.listId !== active.id) {
       closeDetails(id);
     }

@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { tasksPath } from "../tasks/taskRoutes";
 import { importTasks, taskItemsKey, taskListsKey } from "../tasks/tasksApi";
+import useTaskRequest from "../tasks/useTaskRequest";
 
 export default function TaskImportSettings({
   requestToken,
@@ -14,13 +15,14 @@ export default function TaskImportSettings({
 }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const taskRequest = useTaskRequest(requestToken);
   const input = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const preview = useMutation({
-    mutationFn: (backup: File) => importTasks(backup, requestToken, true),
+    mutationFn: (backup: File) => importTasks(backup, taskRequest(), true),
   });
   const apply = useMutation({
-    mutationFn: (backup: File) => importTasks(backup, requestToken, false),
+    mutationFn: (backup: File) => importTasks(backup, taskRequest(), false),
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: taskListsKey }),

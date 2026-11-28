@@ -54,7 +54,7 @@ export default defineConfig({
   ],
   server: {
     proxy: {
-      "/api": apiAddress,
+      "/api": { target: apiAddress, ws: true },
       "/health": apiAddress,
     },
   },
