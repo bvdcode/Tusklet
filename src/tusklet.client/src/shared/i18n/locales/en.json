@@ -85,6 +85,10 @@
     "viewTasks": "View tasks"
   },
   "tasks": {
+    "deleteTitle": "Delete task?",
+    "deleteConfirm": "“{{title}}” will be permanently deleted.",
+    "deleteAction": "Delete",
+    "deleteError": "Could not delete the task.",
     "search": "Search tasks",
     "noSearchResults": "No matching tasks.",
     "markedComplete": "Completed “{{title}}”",

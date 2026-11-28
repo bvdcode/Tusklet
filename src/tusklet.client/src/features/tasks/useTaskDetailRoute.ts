@@ -69,6 +69,7 @@ export default function useTaskDetailRoute() {
 
   return {
     taskId: taskId ?? null,
+    getSelectedTaskId: () => selection.current.taskId,
     closeDetails,
     toggleDetails,
   };

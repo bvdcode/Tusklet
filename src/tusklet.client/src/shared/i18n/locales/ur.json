@@ -85,6 +85,10 @@
     "viewTasks": "کام دیکھیں"
   },
   "tasks": {
+    "deleteTitle": "کام حذف کریں؟",
+    "deleteConfirm": "«{{title}}» مستقل طور پر حذف ہو جائے گا۔",
+    "deleteAction": "حذف کریں",
+    "deleteError": "کام حذف نہیں ہو سکا۔",
     "search": "کام تلاش کریں",
     "noSearchResults": "کوئی مماثل کام نہیں ملا۔",
     "markedComplete": "«{{title}}» مکمل کر دیا گیا",

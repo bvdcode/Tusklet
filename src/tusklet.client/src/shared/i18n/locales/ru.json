@@ -89,6 +89,10 @@
     "restored_many": "Восстановлены недостающие поля у {{count}} задач."
   },
   "tasks": {
+    "deleteTitle": "Удалить задачу?",
+    "deleteConfirm": "Задача «{{title}}» будет удалена навсегда.",
+    "deleteAction": "Удалить",
+    "deleteError": "Не удалось удалить задачу.",
     "search": "Поиск задач",
     "noSearchResults": "Задачи не найдены.",
     "markedComplete": "Задача «{{title}}» завершена",

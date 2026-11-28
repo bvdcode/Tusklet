@@ -1,5 +1,13 @@
 import type { Theme } from "@mui/material/styles";
 
+export const taskWorkspaceHeading = {
+  position: "absolute",
+  width: "1px",
+  height: "1px",
+  clipPath: "inset(50%)",
+  overflow: "hidden",
+} as const;
+
 export function taskWorkspaceLayout(detailsOpen: boolean) {
   return (theme: Theme) => {
     const maxListWidth = `calc(${theme.breakpoints.values.md}px - ${theme.spacing(6)})`;
@@ -29,6 +37,15 @@ export function taskWorkspaceLayout(detailsOpen: boolean) {
     };
   };
 }
+
+export const taskListColumn = {
+  flex: 1,
+  gridColumn: 2,
+  gridRow: 1,
+  minWidth: 0,
+  minHeight: 0,
+  position: "relative",
+} as const;
 
 export function taskListSurface(theme: Theme) {
   const { text, background } = (theme.vars ?? theme).palette;

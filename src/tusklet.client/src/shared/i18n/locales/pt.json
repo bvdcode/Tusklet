@@ -87,6 +87,10 @@
     "restored_many": "Dados ausentes restaurados em {{count}} tarefas."
   },
   "tasks": {
+    "deleteTitle": "Excluir tarefa?",
+    "deleteConfirm": "“{{title}}” será excluída permanentemente.",
+    "deleteAction": "Excluir",
+    "deleteError": "Não foi possível excluir a tarefa.",
     "search": "Pesquisar tarefas",
     "noSearchResults": "Nenhuma tarefa encontrada.",
     "markedComplete": "“{{title}}” foi concluída",

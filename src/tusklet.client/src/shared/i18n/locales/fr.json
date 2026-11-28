@@ -87,6 +87,10 @@
     "restored_many": "Données manquantes restaurées pour {{count}} tâches."
   },
   "tasks": {
+    "deleteTitle": "Supprimer la tâche ?",
+    "deleteConfirm": "« {{title}} » sera supprimée définitivement.",
+    "deleteAction": "Supprimer",
+    "deleteError": "Impossible de supprimer la tâche.",
     "search": "Rechercher des tâches",
     "noSearchResults": "Aucune tâche trouvée.",
     "markedComplete": "« {{title}} » a été terminée",

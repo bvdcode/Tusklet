@@ -121,6 +121,28 @@ namespace Tusklet.Tests
                 Assert.That(await db.TaskItems.AnyAsync(item => item.TaskListId == selected.Id && item.Title == "In the selected list"), Is.True);
                 Assert.That(await db.TaskItems.AnyAsync(item => item.Id == task.Id && item.CompletedAt == null), Is.True);
             }
+
+            db.TaskSteps.Add(new TaskStep { TaskItemId = task.Id, Title = "Proofread" });
+            db.TaskAttachments.Add(new TaskAttachment { TaskItemId = task.Id, FileName = "draft.txt", ContentType = "text/plain", Content = [1] });
+            db.TaskLinks.Add(new TaskLink { TaskItemId = task.Id, Url = "https://example.com" });
+            await db.SaveChangesAsync();
+
+            using HttpResponseMessage missingToken = await browser.DeleteAsync(taskPath);
+            using HttpResponseMessage forbiddenDelete = await SendAsync(browser, HttpMethod.Delete, $"/api/tasks/{otherTask.Id}", token);
+            using HttpResponseMessage deleted = await SendAsync(browser, HttpMethod.Delete, taskPath, token);
+            using HttpResponseMessage deletedAgain = await SendAsync(browser, HttpMethod.Delete, taskPath, token);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(missingToken.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+                Assert.That(forbiddenDelete.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+                Assert.That(deleted.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+                Assert.That(deletedAgain.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+                Assert.That(await db.TaskItems.AnyAsync(item => item.Id == otherTask.Id), Is.True);
+                Assert.That(await db.TaskItems.AnyAsync(item => item.Id == task.Id), Is.False);
+                Assert.That(await db.TaskSteps.AnyAsync(item => item.TaskItemId == task.Id), Is.False);
+                Assert.That(await db.TaskAttachments.AnyAsync(item => item.TaskItemId == task.Id), Is.False);
+                Assert.That(await db.TaskLinks.AnyAsync(item => item.TaskItemId == task.Id), Is.False);
+            }
         }
 
         private static async Task<string> GetRequestTokenAsync(HttpClient browser)
@@ -129,9 +151,13 @@ namespace Tusklet.Tests
             return session.GetProperty("requestToken").GetString()!;
         }
 
-        private static async Task<HttpResponseMessage> SendAsync(HttpClient browser, HttpMethod method, string path, string token, object body)
+        private static async Task<HttpResponseMessage> SendAsync(HttpClient browser, HttpMethod method, string path, string token, object? body = null)
         {
-            using HttpRequestMessage request = new(method, path) { Content = JsonContent.Create(body) };
+            using HttpRequestMessage request = new(method, path);
+            if (body is not null)
+            {
+                request.Content = JsonContent.Create(body);
+            }
             request.Headers.Add("X-CSRF-Token", token);
             return await browser.SendAsync(request);
         }

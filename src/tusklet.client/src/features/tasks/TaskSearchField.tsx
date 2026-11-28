@@ -1,33 +1,33 @@
 import { InputBase } from "@mui/material";
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, type RefObject } from "react";
 import { useTranslation } from "react-i18next";
 
 export default function TaskSearchField({
   id,
   active,
+  inputRef,
   value,
   onChange,
   onClose,
 }: {
   id: string;
   active: boolean;
+  inputRef: RefObject<HTMLInputElement | null>;
   value: string;
   onChange: (value: string) => void;
   onClose: () => void;
 }) {
   const { t } = useTranslation();
-  const input = useRef<HTMLInputElement>(null);
-
   useLayoutEffect(() => {
     if (active) {
-      input.current?.focus();
+      inputRef.current?.focus();
     }
-  }, [active]);
+  }, [active, inputRef]);
 
   return (
     <InputBase
       id={id}
-      inputRef={input}
+      inputRef={inputRef}
       autoComplete="off"
       type="search"
       fullWidth

@@ -9,6 +9,7 @@ import AccountPageLayout, {
 } from "../accounts/AccountPageLayout";
 import { useUserPreferences } from "../accounts/userPreferences";
 import CreateTaskDialog from "./CreateTaskDialog";
+import DeleteTaskDialog from "./DeleteTaskDialog";
 import ScrollToTopButton from "./ScrollToTopButton";
 import TaskDetailsPanel from "./TaskDetailsPanel";
 import TaskGroupNavigation from "./TaskGroupNavigation";
@@ -25,10 +26,17 @@ import {
   type CreateTaskInput,
   type UpdateTaskInput,
 } from "./tasksApi";
-import { taskListSurface, taskWorkspaceLayout } from "./taskWorkspaceStyles";
+import {
+  taskListColumn,
+  taskListSurface,
+  taskWorkspaceHeading,
+  taskWorkspaceLayout,
+} from "./taskWorkspaceStyles";
 import useTaskCompletion from "./useTaskCompletion";
+import useTaskDeletion from "./useTaskDeletion";
 import useTaskDetailRoute from "./useTaskDetailRoute";
 import useTaskWorkspaceRows from "./useTaskWorkspaceRows";
+import useTaskWorkspaceShortcuts from "./useTaskWorkspaceShortcuts";
 
 export default function Workspace(account: AccountPage) {
   const { t } = useTranslation();
@@ -40,12 +48,14 @@ export default function Workspace(account: AccountPage) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const searchId = useId();
   const searchButtonRef = useRef<HTMLButtonElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [scroller, setScroller] = useState<HTMLDivElement | null>(null);
   const listRef = useRef<VirtuosoHandle>(null);
   const [creating, setCreating] = useState(false);
-  const { taskId, closeDetails, toggleDetails } = useTaskDetailRoute();
+  const { taskId, getSelectedTaskId, closeDetails, toggleDetails } =
+    useTaskDetailRoute();
   const ownerId = account.user.id;
   const requestToken = account.session.requestToken;
   const listsKey = [...taskListsKey, ownerId];
@@ -81,6 +91,8 @@ export default function Workspace(account: AccountPage) {
     },
   });
   const completion = useTaskCompletion(ownerId, requestToken);
+  const deletion = useTaskDeletion(ownerId, requestToken, closeDetails);
+  const canCreate = lists.isSuccess && !create.isPending;
 
   function changeSearch(value: string) {
     scroller?.scrollTo({ top: 0, behavior: "instant" });
@@ -93,14 +105,32 @@ export default function Workspace(account: AccountPage) {
     searchButtonRef.current?.focus();
   }
 
-  function toggleSearch() {
+  function openSearch() {
     if (searchOpen) {
-      closeSearch();
+      searchInputRef.current?.focus();
       return;
     }
     changeSearch("");
     setSearchOpen(true);
   }
+
+  function openCreateTask() {
+    create.reset();
+    setCreating(true);
+  }
+
+  useTaskWorkspaceShortcuts({
+    entries,
+    rows,
+    getSelectedTaskId,
+    scroller,
+    listRef,
+    dialogOpen: creating || deletion.task !== null,
+    onOpenSearch: openSearch,
+    onCreate: canCreate ? openCreateTask : undefined,
+    onSelect: toggleDetails,
+    onDelete: deletion.open,
+  });
 
   function retry() {
     if (lists.isError) {
@@ -140,6 +170,7 @@ export default function Workspace(account: AccountPage) {
             <TaskSearchField
               id={searchId}
               active={searchOpen}
+              inputRef={searchInputRef}
               value={search}
               onChange={changeSearch}
               onClose={closeSearch}
@@ -153,11 +184,11 @@ export default function Workspace(account: AccountPage) {
           activeId={active?.id ?? ""}
           grouping={grouping}
           sorting={sorting}
-          canCreate={lists.isSuccess && !create.isPending}
+          canCreate={canCreate}
           searchOpen={searchOpen}
           searchId={searchId}
           searchButtonRef={searchButtonRef}
-          onSearchToggle={toggleSearch}
+          onSearchToggle={searchOpen ? closeSearch : openSearch}
           onListChange={(id) => {
             setSelectedId(id);
             closeDetails();
@@ -168,10 +199,7 @@ export default function Workspace(account: AccountPage) {
           onSortingChange={(value) =>
             changePreference({ key: "taskSorting", value })
           }
-          onCreate={() => {
-            create.reset();
-            setCreating(true);
-          }}
+          onCreate={openCreateTask}
         />
       }
     >
@@ -181,28 +209,12 @@ export default function Workspace(account: AccountPage) {
         id={titleId}
         ref={titleRef}
         tabIndex={-1}
-        sx={{
-          position: "absolute",
-          width: "1px",
-          height: "1px",
-          clipPath: "inset(50%)",
-          overflow: "hidden",
-        }}
+        sx={taskWorkspaceHeading}
       >
         {t("tasks.title")}
       </Typography>
       <Box sx={taskWorkspaceLayout(detailsOpen)}>
-        <Stack
-          spacing={2}
-          sx={{
-            flex: 1,
-            gridColumn: 2,
-            gridRow: 1,
-            minWidth: 0,
-            minHeight: 0,
-            position: "relative",
-          }}
-        >
+        <Stack spacing={2} sx={taskListColumn}>
           {loadFailed && (
             <Alert
               severity="error"
@@ -233,6 +245,7 @@ export default function Workspace(account: AccountPage) {
             hidden={entries.length === 0}
             role="region"
             aria-labelledby={titleId}
+            aria-keyshortcuts="ArrowUp ArrowDown Delete"
             tabIndex={0}
             sx={taskListSurface}
           >
@@ -261,6 +274,15 @@ export default function Workspace(account: AccountPage) {
           onCompletionChange={completion.changeCompletion}
         />
       </Box>
+      {deletion.task && (
+        <DeleteTaskDialog
+          title={deletion.task.title}
+          saving={deletion.saving}
+          failed={deletion.failed}
+          onCancel={deletion.close}
+          onConfirm={deletion.confirm}
+        />
+      )}
       {creating && (
         <CreateTaskDialog
           listId={
