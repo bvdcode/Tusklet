@@ -46,6 +46,16 @@ test("shows tasks across lists and lets users sort, group and select a list", as
       },
     ],
   };
+  const personalTask: TaskItem = {
+    ...task,
+    id: "second",
+    listId: "personal",
+    title: "Apple",
+    note: null,
+    links: [],
+    isCompleted: true,
+    isImportant: true,
+  };
   const responses = {
     "/api/auth/session": {
       setupRequired: false,
@@ -66,17 +76,9 @@ test("shows tasks across lists and lets users sort, group and select a list", as
     "/api/tasks": [
       task,
       { ...task, id: "third", title: "Yak", note: null, links: [] },
-      {
-        ...task,
-        id: "second",
-        listId: "personal",
-        title: "Apple",
-        note: null,
-        links: [],
-        isCompleted: true,
-        isImportant: true,
-      },
+      personalTask,
     ],
+    "/api/tasks?listId=personal": [personalTask],
   };
   const groupingEndpoint = "/api/auth/preferences/taskGrouping";
   const sortingEndpoint = "/api/auth/preferences/taskSorting";
@@ -299,8 +301,13 @@ test("shows tasks across lists and lets users sort, group and select a list", as
   );
   expect(screen.queryByText("Zebra")).toBeNull();
   expect(within(header).queryByText("To do (2)")).toBeNull();
-  expect(within(header).getByText("Completed (1)")).toBeTruthy();
+  expect(await within(header).findByText("Completed (1)")).toBeTruthy();
   expect(
     fetchTasks.mock.calls.filter(([url]) => url === "/api/tasks"),
   ).toHaveLength(taskReads);
+  expect(
+    fetchTasks.mock.calls.filter(
+      ([url]) => url === "/api/tasks?listId=personal",
+    ),
+  ).toHaveLength(1);
 });
