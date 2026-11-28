@@ -28,6 +28,8 @@ docker run -d --name tusklet -p 127.0.0.1:8080:8080 \
 
 PostgreSQL stores accounts, OpenID settings, and the keys that protect sessions and the OpenID client secret. Use HTTPS when publishing the application behind a reverse proxy.
 
+Task changes sync across connected devices signed in to the same account. If you use a reverse proxy, pass through WebSocket upgrades on `/api/tasks/live` and preserve the public `Host` header.
+
 Install Tusklet from the browser’s app menu when served over HTTPS. The installed app connects to your server for sign-in and tasks. When an update is ready, Tusklet lets you choose when to reload.
 
 ## OpenID Connect
@@ -94,6 +96,8 @@ Each task belongs to a list owned by a user. A task stores its title, priority, 
 ## API
 
 - `GET /api/auth/session` reads the setup status, current account and CSRF token.
+- `GET /api/tasks` reads tasks for the current account. Pass `listId` to read a single list.
+- `/api/tasks/live` is the authenticated SignalR endpoint for task changes.
 - `GET /health` checks server health.
 - `GET /api/counter` reads the current count.
 - `POST /api/counter` increments the count and returns the new value.

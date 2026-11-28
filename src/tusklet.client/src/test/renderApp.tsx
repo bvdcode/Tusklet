@@ -1,12 +1,18 @@
 import { ThemeProvider } from "@mui/material";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render } from "@testing-library/react";
+import type { ReactNode } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { VirtuosoMockContext } from "react-virtuoso";
+import { vi } from "vitest";
 import App from "../App";
 import "../shared/i18n";
 import NotificationProvider from "../shared/NotificationProvider";
 import theme from "../shared/theme";
+
+vi.mock("../features/tasks/TaskRealtimeProvider", () => ({
+  default: ({ children }: { children: ReactNode }) => children,
+}));
 
 export function renderApp(path = "/") {
   const queryClient = new QueryClient();

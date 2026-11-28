@@ -4,12 +4,13 @@
 using EasyExtensions.Mediator;
 using EasyExtensions.Mediator.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Tusklet.Server.Realtime;
 
 namespace Tusklet.Server.Handlers.Tasks
 {
     internal record DeleteTask(Guid OwnerId, Guid TaskId) : IRequest<bool>;
 
-    internal class DeleteTaskHandler(TuskletDbContext db) : IRequestHandler<DeleteTask, bool>
+    internal class DeleteTaskHandler(TuskletDbContext db, TaskWorkspacePublisher publisher) : IRequestHandler<DeleteTask, bool>
     {
         public async Task<bool> Handle(DeleteTask request, CancellationToken ct)
         {
@@ -28,6 +29,7 @@ namespace Tusklet.Server.Handlers.Tasks
             db.TaskLinks.RemoveRange(task.Links);
             db.TaskItems.Remove(task);
             await db.SaveChangesAsync(ct);
+            await publisher.PublishAsync(request.OwnerId);
             return true;
         }
     }

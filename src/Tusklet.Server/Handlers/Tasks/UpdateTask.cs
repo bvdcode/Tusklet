@@ -5,12 +5,13 @@ using EasyExtensions.Mediator;
 using EasyExtensions.Mediator.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Tusklet.Server.Models.Requests;
+using Tusklet.Server.Realtime;
 
 namespace Tusklet.Server.Handlers.Tasks
 {
     internal record UpdateTask(Guid OwnerId, Guid TaskId, UpdateTaskInput Input) : IRequest<bool>;
 
-    internal class UpdateTaskHandler(TuskletDbContext db) : IRequestHandler<UpdateTask, bool>
+    internal class UpdateTaskHandler(TuskletDbContext db, TaskWorkspacePublisher publisher) : IRequestHandler<UpdateTask, bool>
     {
         public async Task<bool> Handle(UpdateTask request, CancellationToken ct)
         {
@@ -51,7 +52,10 @@ namespace Tusklet.Server.Handlers.Tasks
                 task.Priority = important ? TaskPriority.High : TaskPriority.Normal;
             }
 
-            await db.SaveChangesAsync(ct);
+            if (await db.SaveChangesAsync(ct) > 0)
+            {
+                await publisher.PublishAsync(request.OwnerId);
+            }
             return true;
         }
     }

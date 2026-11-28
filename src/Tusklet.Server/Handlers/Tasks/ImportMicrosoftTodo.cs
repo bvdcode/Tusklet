@@ -8,13 +8,14 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Tusklet.Server.Models;
 using Tusklet.Server.Models.Dto;
+using Tusklet.Server.Realtime;
 using Tusklet.Server.Services;
 
 namespace Tusklet.Server.Handlers.Tasks
 {
     internal record ImportMicrosoftTodo(Guid OwnerId, Stream Archive, bool Preview) : IRequest<TaskImportReport>;
 
-    internal class ImportMicrosoftTodoHandler(TuskletDbContext db, ILogger<ImportMicrosoftTodoHandler> logger)
+    internal class ImportMicrosoftTodoHandler(TuskletDbContext db, ILogger<ImportMicrosoftTodoHandler> logger, TaskWorkspacePublisher publisher)
         : IRequestHandler<ImportMicrosoftTodo, TaskImportReport>
     {
         public async Task<TaskImportReport> Handle(ImportMicrosoftTodo request, CancellationToken ct)
@@ -71,6 +72,7 @@ namespace Tusklet.Server.Handlers.Tasks
                 db.TaskAttachments.AddRange(batch.Attachments.Where(file => newTaskIds.Contains(file.TaskItemId)));
                 db.TaskLinks.AddRange(newLinks);
                 await db.SaveChangesAsync(ct);
+                await publisher.PublishAsync(ownerId, newLists.Count > 0);
             }
 
             return new TaskImportReport(batch.Lists.Count, batch.Tasks.Count,

@@ -4,12 +4,13 @@
 using EasyExtensions.Mediator;
 using EasyExtensions.Mediator.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Tusklet.Server.Realtime;
 
 namespace Tusklet.Server.Handlers.Tasks
 {
     internal record SetTaskCompletion(Guid OwnerId, Guid TaskId, bool IsCompleted) : IRequest<bool>;
 
-    internal class SetTaskCompletionHandler(TuskletDbContext db) : IRequestHandler<SetTaskCompletion, bool>
+    internal class SetTaskCompletionHandler(TuskletDbContext db, TaskWorkspacePublisher publisher) : IRequestHandler<SetTaskCompletion, bool>
     {
         public async Task<bool> Handle(SetTaskCompletion request, CancellationToken ct)
         {
@@ -23,6 +24,7 @@ namespace Tusklet.Server.Handlers.Tasks
             {
                 task.CompletedAt = request.IsCompleted ? DateTime.UtcNow : null;
                 await db.SaveChangesAsync(ct);
+                await publisher.PublishAsync(request.OwnerId);
             }
             return true;
         }

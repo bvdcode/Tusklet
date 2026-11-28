@@ -83,8 +83,23 @@ export type UpdateTaskInput = Partial<Omit<CreateTaskInput, "listId">> & {
   listId?: string;
 };
 
+export type TaskRequest = {
+  requestToken: string;
+  connectionId: string | null;
+};
+
 export const taskListsKey = ["task-lists"];
 export const taskItemsKey = ["task-items"];
+
+function mutationHeaders(request: TaskRequest, json = false) {
+  return {
+    "X-CSRF-Token": request.requestToken,
+    ...(request.connectionId && {
+      "X-Tusklet-Connection-Id": request.connectionId,
+    }),
+    ...(json && { "Content-Type": "application/json" }),
+  };
+}
 
 export async function readTaskLists(signal: AbortSignal): Promise<TaskList[]> {
   const response = await fetch("/api/tasks/lists", { signal });
@@ -110,14 +125,11 @@ export async function readTaskItems(
 
 export async function createTask(
   input: CreateTaskInput,
-  requestToken: string,
+  request: TaskRequest,
 ): Promise<{ listId: string }> {
   const response = await fetch("/api/tasks", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-Token": requestToken,
-    },
+    headers: mutationHeaders(request, true),
     body: JSON.stringify(input),
   });
   if (!response.ok) {
@@ -129,14 +141,11 @@ export async function createTask(
 export async function setTaskCompletion(
   id: string,
   isCompleted: boolean,
-  requestToken: string,
+  request: TaskRequest,
 ): Promise<void> {
   const response = await fetch(`/api/tasks/${id}/completion`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-Token": requestToken,
-    },
+    headers: mutationHeaders(request, true),
     body: JSON.stringify({ isCompleted }),
   });
   if (!response.ok) {
@@ -147,14 +156,11 @@ export async function setTaskCompletion(
 export async function updateTask(
   id: string,
   input: UpdateTaskInput,
-  requestToken: string,
+  request: TaskRequest,
 ): Promise<void> {
   const response = await fetch(`/api/tasks/${id}`, {
     method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-Token": requestToken,
-    },
+    headers: mutationHeaders(request, true),
     body: JSON.stringify(input),
   });
   if (!response.ok) {
@@ -164,11 +170,11 @@ export async function updateTask(
 
 export async function deleteTask(
   id: string,
-  requestToken: string,
+  request: TaskRequest,
 ): Promise<void> {
   const response = await fetch(`/api/tasks/${id}`, {
     method: "DELETE",
-    headers: { "X-CSRF-Token": requestToken },
+    headers: mutationHeaders(request),
   });
   if (!response.ok) {
     throw new Error(String(response.status));
@@ -177,14 +183,14 @@ export async function deleteTask(
 
 export async function importTasks(
   file: File,
-  requestToken: string,
+  request: TaskRequest,
   preview: boolean,
 ): Promise<TaskImportReport> {
   const body = new FormData();
   body.set("file", file);
   const response = await fetch(`/api/tasks/import?preview=${preview}`, {
     method: "POST",
-    headers: { "X-CSRF-Token": requestToken },
+    headers: mutationHeaders(request),
     body,
   });
   if (!response.ok) {

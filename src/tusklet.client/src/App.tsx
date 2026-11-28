@@ -17,6 +17,7 @@ import ProfilePage from "./features/accounts/ProfilePage";
 import SignInForm from "./features/accounts/SignInForm";
 import UserPreferencesProvider from "./features/accounts/UserPreferencesProvider";
 import { tasksPath } from "./features/tasks/taskRoutes";
+import TaskRealtimeProvider from "./features/tasks/TaskRealtimeProvider";
 import Workspace from "./features/tasks/Workspace";
 import PageProgress from "./shared/PageProgress";
 
@@ -84,35 +85,37 @@ export default function App() {
     };
     return (
       <UserPreferencesProvider key={user.id} user={user}>
-        <Routes>
-          <Route path="/" element={<Navigate to={tasksPath} replace />} />
-          <Route
-            path={`${tasksPath}/:taskId?`}
-            element={<Workspace {...account} />}
-          />
-          <Route
-            element={
-              <AccountPageLayout {...account}>
-                <Outlet />
-              </AccountPageLayout>
-            }
-          >
+        <TaskRealtimeProvider ownerId={user.id}>
+          <Routes>
+            <Route path="/" element={<Navigate to={tasksPath} replace />} />
             <Route
-              path="/profile"
-              element={<ProfilePage session={session.data} user={user} />}
+              path={`${tasksPath}/:taskId?`}
+              element={<Workspace {...account} />}
             />
             <Route
-              path="/admin"
               element={
-                user.isAdmin ? (
-                  <AdminPage requestToken={requestToken} />
-                ) : (
-                  <Navigate to={tasksPath} replace />
-                )
+                <AccountPageLayout {...account}>
+                  <Outlet />
+                </AccountPageLayout>
               }
-            />
-          </Route>
-        </Routes>
+            >
+              <Route
+                path="/profile"
+                element={<ProfilePage session={session.data} user={user} />}
+              />
+              <Route
+                path="/admin"
+                element={
+                  user.isAdmin ? (
+                    <AdminPage requestToken={requestToken} />
+                  ) : (
+                    <Navigate to={tasksPath} replace />
+                  )
+                }
+              />
+            </Route>
+          </Routes>
+        </TaskRealtimeProvider>
       </UserPreferencesProvider>
     );
   }
