@@ -19,13 +19,11 @@ export default function AccountPageLayout({
   notice,
   actions,
   center,
-  centerExpanded,
   expanded,
   children,
 }: AccountPage & {
   actions?: ReactNode;
   center?: ReactNode;
-  centerExpanded?: boolean;
   expanded?: boolean;
   children: ReactNode;
 }) {
@@ -40,7 +38,6 @@ export default function AccountPageLayout({
         onLogout={onLogout}
         actions={actions}
         center={center}
-        centerExpanded={centerExpanded}
       />
       <Container
         component="main"
