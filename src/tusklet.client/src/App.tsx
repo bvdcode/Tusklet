@@ -14,6 +14,7 @@ import AccountPageLayout from "./features/accounts/AccountPageLayout";
 import AccountLayout from "./features/accounts/AccountLayout";
 import SignInForm from "./features/accounts/SignInForm";
 import UserPreferencesProvider from "./features/accounts/UserPreferencesProvider";
+import { tasksPath } from "./features/tasks/taskRoutes";
 import PageProgress from "./shared/PageProgress";
 
 const Workspace = lazy(() => import("./features/tasks/Workspace"));
@@ -86,7 +87,11 @@ export default function App() {
       <UserPreferencesProvider key={user.id} user={user}>
         <Suspense fallback={<PageProgress />}>
           <Routes>
-            <Route path="/" element={<Workspace {...account} />} />
+            <Route path="/" element={<Navigate to={tasksPath} replace />} />
+            <Route
+              path={`${tasksPath}/:taskId?`}
+              element={<Workspace {...account} />}
+            />
             <Route
               element={
                 <AccountPageLayout {...account}>
@@ -106,7 +111,7 @@ export default function App() {
                   user.isAdmin ? (
                     <AdminPage requestToken={requestToken} />
                   ) : (
-                    <Navigate to="/" replace />
+                    <Navigate to={tasksPath} replace />
                   )
                 }
               />
