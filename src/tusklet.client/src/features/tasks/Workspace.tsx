@@ -4,7 +4,6 @@ import { useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { VirtuosoHandle } from "react-virtuoso";
 import PageProgress from "../../shared/PageProgress";
-import { pageScrollSurface } from "../../shared/pageLayout";
 import AccountPageLayout, {
   type AccountPage,
 } from "../accounts/AccountPageLayout";
@@ -29,6 +28,7 @@ import {
 } from "./tasksApi";
 import {
   taskListColumn,
+  taskListScrollSurface,
   taskWorkspaceHeading,
   taskWorkspaceLayout,
 } from "./taskWorkspaceStyles";
@@ -239,13 +239,14 @@ export default function Workspace(account: AccountPage) {
           )}
           <Paper
             ref={setScroller}
+            data-overlayscrollbars-initialize=""
             variant="outlined"
             hidden={entries.length === 0}
             role="region"
             aria-labelledby={titleId}
             aria-keyshortcuts="ArrowUp ArrowDown Delete"
             tabIndex={0}
-            sx={[pageScrollSurface, { scrollbarGutter: "stable both-edges" }]}
+            sx={taskListScrollSurface}
           >
             {scroller && entries.length > 0 && (
               <TaskVirtualList

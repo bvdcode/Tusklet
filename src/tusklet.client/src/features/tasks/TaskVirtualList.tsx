@@ -1,5 +1,7 @@
 import { List, Typography } from "@mui/material";
-import { memo, useId, useMemo, type Ref } from "react";
+import { OverlayScrollbars } from "overlayscrollbars";
+import "overlayscrollbars/overlayscrollbars.css";
+import { memo, useId, useLayoutEffect, useMemo, type Ref } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Virtuoso,
@@ -89,6 +91,14 @@ export default memo(function TaskVirtualList({
     [language],
   );
   const today = getLocalToday();
+
+  useLayoutEffect(() => {
+    const scrollbar = OverlayScrollbars(
+      { target: scroller, elements: { viewport: scroller } },
+      { overflow: { x: "hidden" }, scrollbars: { theme: "os-theme-tusklet" } },
+    );
+    return () => scrollbar.destroy();
+  }, [scroller]);
 
   return (
     <Virtuoso

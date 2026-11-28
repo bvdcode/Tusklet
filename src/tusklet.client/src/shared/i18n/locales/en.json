@@ -8,7 +8,8 @@
     "cancel": "Cancel",
     "retry": "Retry",
     "create": "Create",
-    "save": "Save"
+    "save": "Save",
+    "saved": "Saved"
   },
   "pwa": {
     "updateAvailable": "A new version of Tusklet is available.",
@@ -164,8 +165,6 @@
     "createError": "Could not create the task. Try again.",
     "complete": "Complete {{title}}",
     "reopen": "Reopen {{title}}",
-    "editTitle": "Edit title",
-    "editNote": "Edit note",
     "clearDueDate": "Clear date",
     "calendar": {
       "previousMonth": "Previous month",

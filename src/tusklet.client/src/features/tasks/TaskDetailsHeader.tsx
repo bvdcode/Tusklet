@@ -1,29 +1,21 @@
 import ArrowBackRounded from "@mui/icons-material/ArrowBackRounded";
-import CloseRounded from "@mui/icons-material/CloseRounded";
-import EditOutlined from "@mui/icons-material/EditOutlined";
-import { Box, ButtonBase, IconButton, Stack, Typography } from "@mui/material";
-import type { ReactNode, Ref } from "react";
+import { Box, IconButton, Stack, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
+import TaskTextEditor from "./TaskTextEditor";
 import { taskWorkspaceHeading } from "./taskWorkspaceStyles";
 
 export default function TaskDetailsHeader({
   title,
   titleId,
   compact,
-  editDisabled,
-  editButtonRef,
-  editor,
   onClose,
-  onEdit,
+  onSave,
 }: {
   title: string;
   titleId: string;
   compact: boolean;
-  editDisabled: boolean;
-  editButtonRef: Ref<HTMLButtonElement>;
-  editor?: ReactNode;
   onClose: () => void;
-  onEdit: () => void;
+  onSave: (title: string) => Promise<void>;
 }) {
   const { t } = useTranslation();
 
@@ -47,54 +39,11 @@ export default function TaskDetailsHeader({
         </IconButton>
       )}
       <Box sx={{ minWidth: 0, flex: 1, alignSelf: "center" }}>
-        <Typography
-          id={titleId}
-          component="h2"
-          sx={editor ? taskWorkspaceHeading : undefined}
-        >
-          {editor ? (
-            title
-          ) : (
-            <ButtonBase
-              ref={editButtonRef}
-              disabled={editDisabled}
-              onClick={onEdit}
-              title={t("tasks.editTitle")}
-              sx={{
-                gap: 1,
-                borderRadius: 1,
-                textAlign: "start",
-                justifyContent: "space-between",
-                width: "100%",
-              }}
-            >
-              <Typography
-                component="span"
-                variant="h6"
-                sx={{ minWidth: 0, overflowWrap: "anywhere" }}
-              >
-                {title}
-              </Typography>
-              <EditOutlined
-                fontSize="small"
-                color="action"
-                sx={{ flexShrink: 0 }}
-              />
-            </ButtonBase>
-          )}
+        <Typography id={titleId} component="h2" sx={taskWorkspaceHeading}>
+          {title}
         </Typography>
-        {editor}
+        <TaskTextEditor field="title" value={title} onSave={onSave} />
       </Box>
-      {!compact && (
-        <IconButton
-          onClick={onClose}
-          aria-label={t("common.close")}
-          size="small"
-          sx={{ flexShrink: 0 }}
-        >
-          <CloseRounded />
-        </IconButton>
-      )}
     </Stack>
   );
 }

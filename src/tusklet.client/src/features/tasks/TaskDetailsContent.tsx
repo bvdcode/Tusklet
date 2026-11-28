@@ -16,10 +16,9 @@ import {
   useTheme,
 } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
-import { useId, useLayoutEffect, useRef, useState } from "react";
+import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import TaskDetailsHeader from "./TaskDetailsHeader";
-import TaskDetailsNote from "./TaskDetailsNote";
 import TaskDueDateDialog from "./TaskDueDateDialog";
 import TaskMetadata from "./TaskMetadata";
 import TaskStatus from "./TaskStatus";
@@ -28,8 +27,6 @@ import { dueDateColor, getLocalToday } from "./taskDueDate";
 import type { TaskList, UpdateTaskInput } from "./tasksApi";
 import type { TaskRow } from "./taskView";
 import type { ChangeTaskCompletion } from "./useTaskCompletion";
-
-type EditField = "title" | "note" | "dueDate";
 
 export default function TaskDetailsContent({
   task,
@@ -54,25 +51,20 @@ export default function TaskDetailsContent({
   const edge = useTheme().direction === "rtl" ? "left" : "right";
   const menuId = useId();
   const listButtonId = useId();
-  const [field, setField] = useState<EditField | null>(null);
+  const [editingDueDate, setEditingDueDate] = useState(false);
   const [listAnchor, setListAnchor] = useState<HTMLElement | null>(null);
-  const titleButton = useRef<HTMLButtonElement>(null);
-  const noteButton = useRef<HTMLButtonElement>(null);
-  const previousField = useRef(field);
   const edit = useMutation({
     mutationFn: (input: UpdateTaskInput) => onUpdate(task.id, input),
-    onSuccess: () => setField(null),
+    onSuccess: () => setEditingDueDate(false),
   });
-  const editingText = field === "title" || field === "note";
-  const editDisabled = edit.isPending || editingText;
   const date = new Intl.DateTimeFormat(i18n.resolvedLanguage, {
     dateStyle: "medium",
     timeZone: "UTC",
   });
 
-  function editField(next: EditField | null) {
+  function editDueDate(open: boolean) {
     edit.reset();
-    setField(next);
+    setEditingDueDate(open);
   }
 
   function toggleImportance() {
@@ -80,43 +72,14 @@ export default function TaskDetailsContent({
     edit.mutate({ isImportant: !task.isImportant });
   }
 
-  useLayoutEffect(() => {
-    if (field === null) {
-      if (previousField.current === "title") {
-        titleButton.current?.focus({ preventScroll: true });
-      } else if (previousField.current === "note") {
-        noteButton.current?.focus({ preventScroll: true });
-      }
-    }
-    previousField.current = field;
-  }, [field]);
-
-  const textEditor = editingText && (
-    <TaskTextEditor
-      field={field}
-      value={field === "title" ? task.title : (task.note ?? "")}
-      saving={edit.isPending}
-      failed={edit.isError}
-      onSave={(value) =>
-        edit.mutate(
-          field === "title" ? { title: value } : { note: value || null },
-        )
-      }
-      onClose={() => editField(null)}
-    />
-  );
-
   return (
     <>
       <TaskDetailsHeader
         title={task.title}
         titleId={titleId}
         compact={compact}
-        editDisabled={editDisabled}
-        editButtonRef={titleButton}
-        editor={field === "title" ? textEditor : undefined}
         onClose={onClose}
-        onEdit={() => editField("title")}
+        onSave={(title) => onUpdate(task.id, { title })}
       />
       <Box
         sx={{
@@ -128,7 +91,7 @@ export default function TaskDetailsContent({
           scrollbarWidth: "thin",
         }}
       >
-        {edit.isError && field === null && (
+        {edit.isError && !editingDueDate && (
           <Alert severity="error" onClose={() => edit.reset()} sx={{ mb: 1 }}>
             {t("tasks.updateError")}
           </Alert>
@@ -156,7 +119,7 @@ export default function TaskDetailsContent({
           <ListItem disablePadding>
             <ListItemButton
               id={listButtonId}
-              disabled={editDisabled}
+              disabled={edit.isPending}
               aria-haspopup="menu"
               aria-expanded={listAnchor !== null}
               aria-controls={listAnchor ? menuId : undefined}
@@ -183,8 +146,8 @@ export default function TaskDetailsContent({
           </ListItem>
           <ListItem disablePadding>
             <ListItemButton
-              disabled={editDisabled}
-              onClick={() => editField("dueDate")}
+              disabled={edit.isPending}
+              onClick={() => editDueDate(true)}
             >
               <ListItemText
                 primary={t("tasks.dueDate")}
@@ -220,7 +183,7 @@ export default function TaskDetailsContent({
           </ListItem>
           <ListItem disablePadding>
             <ListItemButton
-              disabled={editDisabled}
+              disabled={edit.isPending}
               aria-pressed={task.isImportant}
               onClick={toggleImportance}
             >
@@ -238,12 +201,10 @@ export default function TaskDetailsContent({
           </ListItem>
           <TaskMetadata task={task} />
         </List>
-        <TaskDetailsNote
-          note={task.note}
-          editor={field === "note" ? textEditor : undefined}
-          editDisabled={editDisabled}
-          editButtonRef={noteButton}
-          onEdit={() => editField("note")}
+        <TaskTextEditor
+          field="note"
+          value={task.note ?? ""}
+          onSave={(note) => onUpdate(task.id, { note: note || null })}
         />
       </Box>
       <Menu
@@ -270,13 +231,13 @@ export default function TaskDetailsContent({
           </MenuItem>
         ))}
       </Menu>
-      {field === "dueDate" && (
+      {editingDueDate && (
         <TaskDueDateDialog
           value={task.dueDate}
           saving={edit.isPending}
           failed={edit.isError}
           onSave={(dueDate) => edit.mutate({ dueDate })}
-          onClose={() => editField(null)}
+          onClose={() => editDueDate(false)}
         />
       )}
     </>
