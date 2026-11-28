@@ -1,6 +1,14 @@
-export function taskScrollBehavior(top: number, reducedMotion: boolean) {
-  const distance = Math.abs(top - window.scrollY);
-  return reducedMotion || distance > window.innerHeight * 3
-    ? "instant"
-    : "smooth";
+export function scrollTasks(
+  scroller: HTMLElement,
+  top: number,
+  reducedMotion: boolean,
+) {
+  const distance = Math.abs(top - scroller.scrollTop);
+  scroller.scrollTo({
+    top,
+    behavior:
+      reducedMotion || distance > scroller.clientHeight * 3
+        ? "instant"
+        : "smooth",
+  });
 }

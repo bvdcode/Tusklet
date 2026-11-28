@@ -4,8 +4,6 @@ import TaskDetailsContent from "./TaskDetailsContent";
 import type { TaskList, UpdateTaskInput } from "./tasksApi";
 import type { TaskRow } from "./taskView";
 
-const panelWidth = { md: 360, lg: 400 };
-
 export default function TaskDetailsPanel({
   task,
   lists,
@@ -28,16 +26,11 @@ export default function TaskDetailsPanel({
   const theme = useTheme();
   const compact = useMediaQuery(theme.breakpoints.down("md"));
   const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
-  const { duration, easing } = theme.transitions;
   const slideDuration = reducedMotion
     ? 0
     : compact
-      ? duration.shortest
+      ? theme.transitions.duration.shortest
       : undefined;
-  const transition = theme.transitions.create("width", {
-    duration: open ? duration.enteringScreen : duration.leavingScreen,
-    easing: open ? easing.easeOut : easing.sharp,
-  });
 
   return (
     <Drawer
@@ -52,9 +45,12 @@ export default function TaskDetailsPanel({
         transition: { unmountOnExit: true },
         docked: {
           sx: {
-            width: open ? panelWidth : 0,
-            transition,
-            "@media (prefers-reduced-motion: reduce)": { transition: "none" },
+            gridColumn: 3,
+            gridRow: 1,
+            minWidth: 0,
+            minHeight: 0,
+            paddingInlineStart: "var(--tusklet-details-gap)",
+            overflow: "hidden",
           },
         },
         paper: {
@@ -64,10 +60,10 @@ export default function TaskDetailsPanel({
           sx: compact
             ? { width: "100%" }
             : {
-                width: panelWidth,
-                top: "calc(var(--tusklet-account-toolbar-height) + 1px)",
-                bottom: 0,
-                height: "auto",
+                position: "relative",
+                width: "min(100%, var(--tusklet-details-max-width))",
+                border: 0,
+                borderRadius: 1,
               },
         },
       }}

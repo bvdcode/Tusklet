@@ -1,36 +1,42 @@
 import ArrowUpwardRounded from "@mui/icons-material/ArrowUpwardRounded";
 import { Box, Fab, Slide, useMediaQuery } from "@mui/material";
-import { useSyncExternalStore, type RefObject } from "react";
+import { useCallback, useSyncExternalStore, type RefObject } from "react";
 import { useTranslation } from "react-i18next";
-import { taskScrollBehavior } from "./taskScroll";
-
-function subscribeToScroll(update: () => void) {
-  window.addEventListener("scroll", update, { passive: true });
-  window.addEventListener("resize", update);
-  return () => {
-    window.removeEventListener("scroll", update);
-    window.removeEventListener("resize", update);
-  };
-}
-
-function canScrollToTop() {
-  return window.scrollY >= window.innerHeight * 2;
-}
+import { scrollTasks } from "./taskScroll";
 
 export default function ScrollToTopButton({
+  scroller,
   focusTarget,
 }: {
+  scroller: HTMLElement | null;
   focusTarget: RefObject<HTMLHeadingElement | null>;
 }) {
   const { t } = useTranslation();
-  const visible = useSyncExternalStore(subscribeToScroll, canScrollToTop);
   const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const subscribe = useCallback(
+    (update: () => void) => {
+      scroller?.addEventListener("scroll", update, { passive: true });
+      window.addEventListener("resize", update);
+      return () => {
+        scroller?.removeEventListener("scroll", update);
+        window.removeEventListener("resize", update);
+      };
+    },
+    [scroller],
+  );
+  const visible = useSyncExternalStore(
+    subscribe,
+    () =>
+      scroller !== null &&
+      scroller.clientHeight > 0 &&
+      scroller.scrollTop >= scroller.clientHeight * 2,
+  );
 
   return (
     <Box
       sx={{
-        position: "fixed",
-        alignSelf: "flex-end",
+        position: "absolute",
+        insetInlineEnd: (theme) => theme.spacing(2.5),
         bottom: (theme) =>
           `calc(${theme.spacing(2)} + env(safe-area-inset-bottom, 0px))`,
         zIndex: "fab",
@@ -48,16 +54,12 @@ export default function ScrollToTopButton({
           aria-label={t("common.backToTop")}
           tabIndex={visible ? 0 : -1}
           onClick={() => {
-            focusTarget.current?.focus({ preventScroll: true });
-            window.scrollTo({
-              top: 0,
-              behavior: taskScrollBehavior(0, reducedMotion),
-            });
+            if (scroller) {
+              focusTarget.current?.focus({ preventScroll: true });
+              scrollTasks(scroller, 0, reducedMotion);
+            }
           }}
           sx={{
-            position: "absolute",
-            bottom: 0,
-            insetInlineEnd: (theme) => ({ xs: 0, md: theme.spacing(2) }),
             bgcolor: "background.paper",
             color: "text.secondary",
             border: 1,

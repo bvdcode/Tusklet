@@ -15,8 +15,7 @@ import useActiveTaskGroup from "./useActiveTaskGroup";
 
 type Props = {
   groups: TaskGroupHeading[];
-  headerRef: RefObject<HTMLElement | null>;
-  groupsRef: RefObject<HTMLDivElement | null>;
+  scroller: HTMLElement | null;
   listRef: RefObject<VirtuosoHandle | null>;
 };
 
@@ -42,13 +41,11 @@ const rollTiming = "160ms ease-out both";
 
 export default function TaskGroupNavigation({
   groups,
-  headerRef,
-  groupsRef,
+  scroller,
   listRef,
 }: Props) {
   const { activeGroup: trackedGroup, scrollToGroup } = useActiveTaskGroup(
-    headerRef,
-    groupsRef,
+    scroller,
     listRef,
     groups,
   );

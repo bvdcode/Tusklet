@@ -1,6 +1,6 @@
-import { Alert, Button, Stack, Typography } from "@mui/material";
+import { Alert, Box, Button, Stack, Typography } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { VirtuosoHandle } from "react-virtuoso";
 import PageProgress from "../../shared/PageProgress";
@@ -33,9 +33,9 @@ export default function Workspace(account: AccountPage) {
   const [selectedId, setSelectedId] = useState("");
   const { preferences, changePreference } = useUserPreferences();
   const { taskGrouping: grouping, taskSorting: sorting } = preferences;
-  const headerRef = useRef<HTMLElement>(null);
+  const titleId = useId();
   const titleRef = useRef<HTMLHeadingElement>(null);
-  const groupsRef = useRef<HTMLDivElement>(null);
+  const [scroller, setScroller] = useState<HTMLDivElement | null>(null);
   const listRef = useRef<VirtuosoHandle>(null);
   const [creating, setCreating] = useState(false);
   const { taskId, closeDetails, toggleDetails } = useTaskDetailRoute();
@@ -107,14 +107,12 @@ export default function Workspace(account: AccountPage) {
     <AccountPageLayout
       {...account}
       expanded
-      headerRef={headerRef}
       center={
         headings.length > 0 ? (
           <TaskGroupNavigation
             key={`${grouping}:${selectedId}`}
             groups={headings}
-            headerRef={headerRef}
-            groupsRef={groupsRef}
+            scroller={scroller}
             listRef={listRef}
           />
         ) : (
@@ -148,6 +146,7 @@ export default function Workspace(account: AccountPage) {
       {loading && <PageProgress />}
       <Typography
         component="h1"
+        id={titleId}
         ref={titleRef}
         tabIndex={-1}
         sx={{
@@ -160,22 +159,24 @@ export default function Workspace(account: AccountPage) {
       >
         {t("tasks.title")}
       </Typography>
-      <Stack direction="row" sx={{ mx: { md: -3 } }}>
-        <Stack
-          ref={groupsRef}
-          spacing={2}
-          sx={{
+      <Box
+        sx={(theme) => {
+          const maxListWidth = `calc(${theme.breakpoints.values.md}px - ${theme.spacing(6)})`;
+          const listWidth = detailsOpen
+            ? `clamp(${theme.spacing(44)}, calc(100% - 2 * (min(28%, var(--tusklet-details-max-width)) + var(--tusklet-details-gap))), ${maxListWidth})`
+            : `min(100%, ${maxListWidth})`;
+
+          return {
+            display: "flex",
             flex: 1,
-            minWidth: 0,
-            mx: "auto",
-            maxWidth: (theme) => ({
-              xs: `calc(${theme.breakpoints.values.md}px - ${theme.spacing(6)})`,
-              md: detailsOpen
-                ? "100%"
-                : `calc(${theme.breakpoints.values.md}px - ${theme.spacing(6)})`,
-            }),
-            transition: (theme) =>
-              theme.transitions.create("max-width", {
+            minHeight: 0,
+            "--tusklet-details-gap": theme.spacing(2),
+            "--tusklet-details-max-width": "448px",
+            [theme.breakpoints.up("md")]: {
+              display: "grid",
+              gridTemplateColumns: `minmax(0, 1fr) ${listWidth} minmax(0, 1fr)`,
+              gridTemplateRows: "minmax(0, 1fr)",
+              transition: theme.transitions.create("grid-template-columns", {
                 duration: detailsOpen
                   ? theme.transitions.duration.enteringScreen
                   : theme.transitions.duration.leavingScreen,
@@ -183,7 +184,20 @@ export default function Workspace(account: AccountPage) {
                   ? theme.transitions.easing.easeOut
                   : theme.transitions.easing.sharp,
               }),
-            "@media (prefers-reduced-motion: reduce)": { transition: "none" },
+              "@media (prefers-reduced-motion: reduce)": { transition: "none" },
+            },
+          };
+        }}
+      >
+        <Stack
+          spacing={2}
+          sx={{
+            flex: 1,
+            gridColumn: 2,
+            gridRow: 1,
+            minWidth: 0,
+            minHeight: 0,
+            position: "relative",
           }}
         >
           {loadFailed && (
@@ -204,18 +218,34 @@ export default function Workspace(account: AccountPage) {
           {completion.isError && (
             <Alert severity="error">{t("tasks.updateError")}</Alert>
           )}
-          {entries.length > 0 && (
-            <TaskVirtualList
-              entries={entries}
-              listRef={listRef}
-              showListName={!active && grouping !== "list"}
-              changing={completion.isPending}
-              selectedTaskId={taskId}
-              onTaskSelect={toggleDetails}
-              onCompletionChange={changeCompletion}
-            />
-          )}
-          <ScrollToTopButton focusTarget={titleRef} />
+          <Box
+            ref={setScroller}
+            role="region"
+            aria-labelledby={titleId}
+            tabIndex={0}
+            sx={{
+              flex: 1,
+              minHeight: 0,
+              overflowY: "auto",
+              overscrollBehaviorY: "contain",
+              scrollbarGutter: "stable both-edges",
+              scrollbarWidth: "thin",
+            }}
+          >
+            {scroller && entries.length > 0 && (
+              <TaskVirtualList
+                entries={entries}
+                listRef={listRef}
+                scroller={scroller}
+                showListName={!active && grouping !== "list"}
+                changing={completion.isPending}
+                selectedTaskId={taskId}
+                onTaskSelect={toggleDetails}
+                onCompletionChange={changeCompletion}
+              />
+            )}
+          </Box>
+          <ScrollToTopButton scroller={scroller} focusTarget={titleRef} />
         </Stack>
         <TaskDetailsPanel
           task={currentTask}
@@ -224,7 +254,7 @@ export default function Workspace(account: AccountPage) {
           onClose={() => closeDetails()}
           onUpdate={saveTask}
         />
-      </Stack>
+      </Box>
       {creating && (
         <CreateTaskDialog
           listId={

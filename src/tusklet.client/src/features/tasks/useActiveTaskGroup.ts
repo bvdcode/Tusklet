@@ -6,19 +6,15 @@ import {
   type RefObject,
 } from "react";
 import type { VirtuosoHandle } from "react-virtuoso";
-import { taskScrollBehavior } from "./taskScroll";
+import { scrollTasks } from "./taskScroll";
 import type { TaskGroupHeading } from "./taskView";
 
-function maximumScroll() {
-  return Math.max(
-    0,
-    document.documentElement.scrollHeight - window.innerHeight,
-  );
+function maximumScroll(scroller: HTMLElement) {
+  return Math.max(0, scroller.scrollHeight - scroller.clientHeight);
 }
 
 export default function useActiveTaskGroup(
-  headerRef: RefObject<HTMLElement | null>,
-  groupsRef: RefObject<HTMLDivElement | null>,
+  scroller: HTMLElement | null,
   listRef: RefObject<VirtuosoHandle | null>,
   groups: TaskGroupHeading[],
 ) {
@@ -26,7 +22,7 @@ export default function useActiveTaskGroup(
     id: string;
     previousId?: string;
   }>();
-  const limitedJump = useRef<{ id: string; scrollY: number }>(undefined);
+  const limitedJump = useRef<{ id: string; scrollTop: number }>(undefined);
   const activate = useCallback((id: string | undefined) => {
     if (id !== undefined) {
       setActiveGroup((current) =>
@@ -36,38 +32,36 @@ export default function useActiveTaskGroup(
   }, []);
 
   useEffect(() => {
-    const header = headerRef.current;
-    const list = groupsRef.current;
-    if (!header || !list) {
+    if (!scroller) {
       return;
     }
 
     let frame: number | undefined;
     const update = () => {
       frame = undefined;
-      const boundary = header.getBoundingClientRect().bottom;
-      const scrollY = window.scrollY;
-      const atEnd = Math.ceil(scrollY) >= maximumScroll();
+      const boundary = scroller.getBoundingClientRect().top;
+      const { scrollTop } = scroller;
+      const atEnd = Math.ceil(scrollTop) >= maximumScroll(scroller);
       const jump = limitedJump.current;
       if (
         jump &&
-        (scrollY < jump.scrollY || !groups.some(({ id }) => id === jump.id))
+        (scrollTop < jump.scrollTop || !groups.some(({ id }) => id === jump.id))
       ) {
         limitedJump.current = undefined;
       } else if (jump) {
-        jump.scrollY = scrollY;
+        jump.scrollTop = scrollTop;
       }
       if (atEnd && limitedJump.current) {
         activate(limitedJump.current.id);
         return;
       }
-      if (atEnd && scrollY > 0) {
+      if (atEnd && scrollTop > 0) {
         activate(groups.at(-1)?.id);
         return;
       }
 
       let activeId: string | undefined = groups[0]?.id;
-      for (const entry of list.querySelectorAll<HTMLElement>(
+      for (const entry of scroller.querySelectorAll<HTMLElement>(
         "[data-task-group]",
       )) {
         if (entry.getBoundingClientRect().top > boundary) {
@@ -85,52 +79,43 @@ export default function useActiveTaskGroup(
     };
 
     const observer = new ResizeObserver(schedule);
-    observer.observe(header);
-    observer.observe(list);
+    observer.observe(scroller);
     const entriesObserver = new MutationObserver(schedule);
-    entriesObserver.observe(list, { childList: true, subtree: true });
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
+    entriesObserver.observe(scroller, { childList: true, subtree: true });
+    scroller.addEventListener("scroll", schedule, { passive: true });
     schedule();
 
     return () => {
       observer.disconnect();
       entriesObserver.disconnect();
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
+      scroller.removeEventListener("scroll", schedule);
       if (frame !== undefined) {
         window.cancelAnimationFrame(frame);
       }
     };
-  }, [activate, groups, groupsRef, headerRef]);
+  }, [activate, groups, scroller]);
 
   function scrollToGroup(id: string, reducedMotion: boolean) {
-    const header = headerRef.current;
-    const list = groupsRef.current;
     const group = groups.find((heading) => heading.id === id);
-    if (!header || !list || !group) {
+    if (!scroller || !group) {
       return;
     }
     if (group.index === 0) {
       limitedJump.current = undefined;
-      window.scrollTo({
-        top: 0,
-        behavior: taskScrollBehavior(0, reducedMotion),
-      });
+      scrollTasks(scroller, 0, reducedMotion);
       return;
     }
 
-    const scrollY = window.scrollY;
-    const boundary = header.getBoundingClientRect().bottom;
-    const start = list.querySelector<HTMLElement>(
+    const { scrollTop } = scroller;
+    const boundary = scroller.getBoundingClientRect().top;
+    const start = scroller.querySelector<HTMLElement>(
       `[data-index="${group.index}"][data-task-group]`,
     );
     if (!start) {
-      limitedJump.current = { id, scrollY };
+      limitedJump.current = { id, scrollTop };
       listRef.current?.scrollToIndex({
         index: group.index,
         align: "start",
-        offset: -boundary,
         behavior: "auto",
       });
       return;
@@ -138,18 +123,15 @@ export default function useActiveTaskGroup(
 
     const top = Math.max(
       0,
-      Math.ceil(scrollY + start.getBoundingClientRect().top - boundary),
+      Math.ceil(scrollTop + start.getBoundingClientRect().top - boundary),
     );
-    const maximum = maximumScroll();
-    limitedJump.current = top > maximum ? { id, scrollY } : undefined;
+    const maximum = maximumScroll(scroller);
+    limitedJump.current = top > maximum ? { id, scrollTop } : undefined;
     const destination = Math.min(top, maximum);
-    if (Math.abs(scrollY - destination) < 1) {
+    if (Math.abs(scrollTop - destination) < 1) {
       activate(id);
     }
-    window.scrollTo({
-      top: destination,
-      behavior: taskScrollBehavior(destination, reducedMotion),
-    });
+    scrollTasks(scroller, destination, reducedMotion);
   }
 
   return { activeGroup, scrollToGroup };

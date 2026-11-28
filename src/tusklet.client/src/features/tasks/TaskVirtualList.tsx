@@ -60,6 +60,7 @@ function entryKey(_: number, entry: TaskListEntry) {
 export default memo(function TaskVirtualList({
   entries,
   listRef,
+  scroller,
   showListName,
   changing,
   selectedTaskId,
@@ -68,6 +69,7 @@ export default memo(function TaskVirtualList({
 }: {
   entries: TaskListEntry[];
   listRef: Ref<VirtuosoHandle>;
+  scroller: HTMLElement;
   showListName: boolean;
   changing: boolean;
   selectedTaskId: string | null;
@@ -90,7 +92,7 @@ export default memo(function TaskVirtualList({
   return (
     <Virtuoso
       ref={listRef}
-      useWindowScroll
+      customScrollParent={scroller}
       data={entries}
       components={components}
       context={{ label: t("tasks.title") }}

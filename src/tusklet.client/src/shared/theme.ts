@@ -68,6 +68,10 @@ const options: ThemeOptions = {
     MuiCssBaseline: {
       styleOverrides: (theme) => ({
         "html, body": { height: "100%" },
+        html: {
+          scrollbarColor: `${(theme.vars ?? theme).palette.text.secondary} transparent`,
+          scrollbarWidth: "thin",
+        },
         "#root": {
           "--tusklet-account-toolbar-height": "60px",
           [theme.breakpoints.up("sm")]: {

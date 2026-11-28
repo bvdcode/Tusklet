@@ -1,5 +1,5 @@
-import { Alert, Button, Container } from "@mui/material";
-import type { ReactNode, Ref } from "react";
+import { Alert, Button, Container, Stack } from "@mui/material";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import AccountHeader from "./AccountHeader";
 import type { SessionStatus, SessionUser } from "./accountsApi";
@@ -19,13 +19,11 @@ export default function AccountPageLayout({
   notice,
   actions,
   center,
-  headerRef,
   expanded,
   children,
 }: AccountPage & {
   actions?: ReactNode;
   center?: ReactNode;
-  headerRef?: Ref<HTMLElement>;
   expanded?: boolean;
   children: ReactNode;
 }) {
@@ -33,19 +31,29 @@ export default function AccountPageLayout({
   const { saveFailed, retry } = useUserPreferences();
 
   return (
-    <>
+    <Stack sx={{ position: "fixed", inset: 0 }}>
       <AccountHeader
         session={session}
         user={user}
         onLogout={onLogout}
         actions={actions}
         center={center}
-        headerRef={headerRef}
       />
       <Container
         component="main"
         maxWidth={expanded ? false : "md"}
-        sx={{ py: actions ? { xs: 1.5, sm: 3, md: 2 } : { xs: 3, md: 5 } }}
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          py: actions ? { xs: 1.5, sm: 3, md: 2 } : { xs: 3, md: 5 },
+          ...(expanded
+            ? { display: "flex", flexDirection: "column", overflow: "hidden" }
+            : {
+                overflowY: "auto",
+                scrollbarGutter: "stable both-edges",
+                scrollbarWidth: "thin",
+              }),
+        }}
       >
         {notice}
         {saveFailed && (
@@ -63,6 +71,6 @@ export default function AccountPageLayout({
         )}
         {children}
       </Container>
-    </>
+    </Stack>
   );
 }

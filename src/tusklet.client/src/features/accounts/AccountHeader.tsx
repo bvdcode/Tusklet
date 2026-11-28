@@ -20,7 +20,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, type ReactNode, type Ref } from "react";
+import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import Brand from "../../shared/Brand";
@@ -38,7 +38,6 @@ type Props = {
   onLogout: () => void;
   actions?: ReactNode;
   center?: ReactNode;
-  headerRef?: Ref<HTMLElement>;
 };
 
 export default function AccountHeader({
@@ -47,7 +46,6 @@ export default function AccountHeader({
   onLogout,
   actions,
   center,
-  headerRef,
 }: Props) {
   const { t } = useTranslation();
   const menuEdge = useTheme().direction === "rtl" ? "left" : "right";
@@ -77,7 +75,6 @@ export default function AccountHeader({
 
   return (
     <AppBar
-      ref={headerRef}
       position="sticky"
       color="inherit"
       elevation={0}

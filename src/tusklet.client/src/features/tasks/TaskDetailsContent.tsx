@@ -84,7 +84,16 @@ export default function TaskDetailsContent({
         onClose={onClose}
         onEdit={() => editField("title")}
       />
-      <Box sx={{ px: 2, pb: 2, flex: 1, minHeight: 0, overflowY: "auto" }}>
+      <Box
+        sx={{
+          px: 2,
+          pb: 2,
+          flex: 1,
+          minHeight: 0,
+          overflowY: "auto",
+          scrollbarWidth: "thin",
+        }}
+      >
         {edit.isError && field === null && (
           <Alert severity="error" onClose={() => edit.reset()} sx={{ mb: 1 }}>
             {t("tasks.updateError")}
