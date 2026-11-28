@@ -62,8 +62,6 @@ export default function WorkspaceControls({
   const edge = theme.direction === "rtl" ? "left" : "right";
   const menuAlignment = compact ? "center" : edge;
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
-  const hasFilters =
-    activeId !== "" || grouping !== "none" || sorting !== "listOrder";
 
   return (
     <Stack
@@ -73,8 +71,6 @@ export default function WorkspaceControls({
         minWidth: 0,
         justifyContent: "flex-end",
         alignItems: "center",
-        gap: { xs: 0, sm: 0.75 },
-        "& > .MuiIconButton-root": { p: { xs: 0.75, sm: 1 } },
       }}
     >
       <IconButton
@@ -83,7 +79,8 @@ export default function WorkspaceControls({
         title={t("tasks.search")}
         aria-expanded={searchOpen}
         aria-controls={searchOpen ? searchId : undefined}
-        color={searchOpen ? "primary" : "default"}
+        color="primary"
+        size="small"
         onClick={onSearchToggle}
       >
         <SearchRounded />
@@ -94,7 +91,8 @@ export default function WorkspaceControls({
         aria-expanded={anchor !== null}
         aria-haspopup="dialog"
         aria-controls={anchor ? id : undefined}
-        color={hasFilters ? "primary" : "default"}
+        color="primary"
+        size="small"
         onClick={(event) => setAnchor(event.currentTarget)}
       >
         <FilterAltOutlined />
@@ -103,6 +101,7 @@ export default function WorkspaceControls({
         aria-label={t("tasks.create")}
         title={t("tasks.create")}
         color="primary"
+        size="small"
         disabled={!canCreate}
         onClick={onCreate}
       >

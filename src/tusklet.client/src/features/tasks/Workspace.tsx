@@ -12,6 +12,7 @@ import CreateTaskDialog from "./CreateTaskDialog";
 import ScrollToTopButton from "./ScrollToTopButton";
 import TaskDetailsPanel from "./TaskDetailsPanel";
 import TaskGroupNavigation from "./TaskGroupNavigation";
+import TaskHeaderCenter from "./TaskHeaderCenter";
 import TaskSearchField from "./TaskSearchField";
 import TaskVirtualList from "./TaskVirtualList";
 import WorkspaceControls from "./WorkspaceControls";
@@ -39,7 +40,8 @@ export default function Workspace(account: AccountPage) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const searchId = useId();
   const searchButtonRef = useRef<HTMLButtonElement>(null);
-  const [search, setSearch] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [scroller, setScroller] = useState<HTMLDivElement | null>(null);
   const listRef = useRef<VirtuosoHandle>(null);
   const [creating, setCreating] = useState(false);
@@ -61,7 +63,7 @@ export default function Workspace(account: AccountPage) {
     active,
     grouping,
     sorting,
-    search ?? "",
+    searchOpen ? search : "",
     lists.isPending,
   );
   const loadFailed = lists.isError || failed.length > 0;
@@ -80,12 +82,24 @@ export default function Workspace(account: AccountPage) {
   });
   const completion = useTaskCompletion(ownerId, requestToken);
 
-  function changeSearch(value: string | null) {
+  function changeSearch(value: string) {
     scroller?.scrollTo({ top: 0, behavior: "instant" });
     setSearch(value);
-    if (value === null) {
-      searchButtonRef.current?.focus();
+  }
+
+  function closeSearch() {
+    scroller?.scrollTo({ top: 0, behavior: "instant" });
+    setSearchOpen(false);
+    searchButtonRef.current?.focus();
+  }
+
+  function toggleSearch() {
+    if (searchOpen) {
+      closeSearch();
+      return;
     }
+    changeSearch("");
+    setSearchOpen(true);
   }
 
   function retry() {
@@ -109,25 +123,29 @@ export default function Workspace(account: AccountPage) {
     <AccountPageLayout
       {...account}
       expanded
-      centerExpanded={search !== null}
       center={
-        search !== null ? (
-          <TaskSearchField
-            id={searchId}
-            value={search}
-            onChange={changeSearch}
-            onClose={() => changeSearch(null)}
-          />
-        ) : headings.length > 0 ? (
-          <TaskGroupNavigation
-            key={`${grouping}:${selectedId}`}
-            groups={headings}
-            scroller={scroller}
-            listRef={listRef}
-          />
-        ) : (
-          loading && grouping !== "none" && <span aria-hidden="true" />
-        )
+        <TaskHeaderCenter
+          searching={searchOpen}
+          group={
+            headings.length > 0 && (
+              <TaskGroupNavigation
+                key={`${grouping}:${selectedId}`}
+                groups={headings}
+                scroller={scroller}
+                listRef={listRef}
+              />
+            )
+          }
+          search={
+            <TaskSearchField
+              id={searchId}
+              active={searchOpen}
+              value={search}
+              onChange={changeSearch}
+              onClose={closeSearch}
+            />
+          }
+        />
       }
       actions={
         <WorkspaceControls
@@ -136,10 +154,10 @@ export default function Workspace(account: AccountPage) {
           grouping={grouping}
           sorting={sorting}
           canCreate={lists.isSuccess && !create.isPending}
-          searchOpen={search !== null}
+          searchOpen={searchOpen}
           searchId={searchId}
           searchButtonRef={searchButtonRef}
-          onSearchToggle={() => changeSearch(search === null ? "" : null)}
+          onSearchToggle={toggleSearch}
           onListChange={(id) => {
             setSelectedId(id);
             closeDetails();
@@ -199,7 +217,11 @@ export default function Workspace(account: AccountPage) {
           )}
           {!loading && !loadFailed && entries.length === 0 && (
             <Typography color="text.secondary">
-              {t(search?.trim() ? "tasks.noSearchResults" : "tasks.empty")}
+              {t(
+                searchOpen && search.trim()
+                  ? "tasks.noSearchResults"
+                  : "tasks.empty",
+              )}
             </Typography>
           )}
           {completion.isError && (

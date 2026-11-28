@@ -172,6 +172,9 @@ test("shows tasks across lists and lets users sort, group and select a list", as
   expect(screen.getByText("No matching tasks.")).toBeTruthy();
   fireEvent.keyDown(searchBox, { key: "Escape" });
   expect(document.activeElement).toBe(search);
+  fireEvent.click(search);
+  expect(document.activeElement).toBe(within(header).getByRole("searchbox"));
+  fireEvent.click(search);
   expect(screen.getByRole("button", { name: "Apple" })).toBeTruthy();
   expect(fetchTasks).toHaveBeenCalledTimes(listRequests);
 

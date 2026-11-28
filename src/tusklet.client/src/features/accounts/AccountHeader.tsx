@@ -39,7 +39,6 @@ type Props = {
   onLogout: () => void;
   actions?: ReactNode;
   center?: ReactNode;
-  centerExpanded?: boolean;
 };
 
 export default function AccountHeader({
@@ -48,7 +47,6 @@ export default function AccountHeader({
   onLogout,
   actions,
   center,
-  centerExpanded,
 }: Props) {
   const { t } = useTranslation();
   const menuEdge = useTheme().direction === "rtl" ? "left" : "right";
@@ -92,14 +90,12 @@ export default function AccountHeader({
           disableGutters
           sx={{
             justifyContent: "space-between",
-            gap: { xs: 0.25, sm: 2 },
+            gap: { xs: 0.5, sm: 1 },
             ...(center && {
               display: "grid",
               gridTemplateColumns: {
-                xs: centerExpanded
-                  ? "auto minmax(0, 1fr) auto"
-                  : "1fr minmax(0, auto) 1fr",
-                sm: "minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr)",
+                xs: "auto minmax(0, 1fr) auto",
+                sm: "minmax(max-content, 1fr) minmax(0, 2fr) minmax(max-content, 1fr)",
               },
             }),
             minHeight: {
@@ -137,7 +133,6 @@ export default function AccountHeader({
               alignItems: "center",
               justifySelf: "end",
               flexShrink: 0,
-              gap: { xs: 0.25, sm: 2 },
             }}
           >
             {actions}
@@ -149,7 +144,7 @@ export default function AccountHeader({
               aria-controls={open ? "account-menu" : undefined}
               aria-expanded={open}
               onClick={(event) => setAnchor(event.currentTarget)}
-              sx={{ p: 0.5, flexShrink: 0 }}
+              sx={{ p: 0.25, flexShrink: 0 }}
             >
               <Avatar
                 src={user.pictureUrl ?? undefined}
