@@ -28,6 +28,7 @@ import {
 } from "./tasksApi";
 import {
   taskListColumn,
+  taskListNotice,
   taskListScrollSurface,
   taskWorkspaceHeading,
   taskWorkspaceLayout,
@@ -214,10 +215,11 @@ export default function Workspace(account: AccountPage) {
         {t("tasks.title")}
       </Typography>
       <Box sx={taskWorkspaceLayout(detailsOpen)}>
-        <Stack spacing={2} sx={taskListColumn}>
+        <Stack spacing={2} useFlexGap sx={taskListColumn}>
           {loadFailed && (
             <Alert
               severity="error"
+              sx={taskListNotice}
               action={
                 <Button color="inherit" onClick={retry}>
                   {t("common.retry")}
@@ -228,7 +230,7 @@ export default function Workspace(account: AccountPage) {
             </Alert>
           )}
           {!loading && !loadFailed && entries.length === 0 && (
-            <Typography color="text.secondary">
+            <Typography color="text.secondary" sx={taskListNotice}>
               {t(
                 searchOpen && search.trim()
                   ? "tasks.noSearchResults"
@@ -237,7 +239,9 @@ export default function Workspace(account: AccountPage) {
             </Typography>
           )}
           {completion.isError && (
-            <Alert severity="error">{t("tasks.updateError")}</Alert>
+            <Alert severity="error" sx={taskListNotice}>
+              {t("tasks.updateError")}
+            </Alert>
           )}
           <Paper
             ref={setScroller}

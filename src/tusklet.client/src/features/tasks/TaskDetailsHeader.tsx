@@ -22,13 +22,27 @@ export default function TaskDetailsHeader({
   return (
     <Stack
       direction="row"
-      sx={{ alignItems: "flex-start", px: 3, py: 2, gap: 1, flexShrink: 0 }}
+      sx={{
+        alignItems: "flex-start",
+        pl: { xs: 1, sm: 3 },
+        pr: 3,
+        py: { xs: 1, sm: 2 },
+        gap: { xs: 0.5, sm: 1 },
+        flexShrink: 0,
+      }}
     >
       {compact && (
         <IconButton
           onClick={onClose}
           aria-label={t("common.back")}
-          sx={{ flexShrink: 0 }}
+          sx={(theme) => ({
+            flexShrink: 0,
+            [theme.breakpoints.down("sm")]: {
+              width: theme.spacing(5),
+              height: theme.spacing(5),
+              "& svg": { fontSize: theme.typography.pxToRem(20) },
+            },
+          })}
         >
           <ArrowBackRounded
             sx={{

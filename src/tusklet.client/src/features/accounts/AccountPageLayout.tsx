@@ -1,4 +1,4 @@
-import { Alert, Button, Container, Stack } from "@mui/material";
+import { Alert, Box, Button, Container, Stack } from "@mui/material";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { pageMaxWidth, pagePadding } from "../../shared/pageLayout";
@@ -46,25 +46,38 @@ export default function AccountPageLayout({
         sx={{
           flex: 1,
           minHeight: 0,
-          p: pagePadding,
+          p: expanded ? { ...pagePadding, xs: 0 } : pagePadding,
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
         }}
       >
-        {notice}
-        {saveFailed && (
-          <Alert
-            severity="error"
-            sx={{ mb: 2 }}
-            action={
-              <Button color="inherit" onClick={retry}>
-                {t("common.retry")}
-              </Button>
+        {(notice || saveFailed) && (
+          <Box
+            sx={
+              expanded
+                ? {
+                    px: { xs: pagePadding.xs, sm: 0 },
+                    pt: { xs: pagePadding.xs, sm: 0 },
+                  }
+                : undefined
             }
           >
-            {t("profile.preferencesSaveError")}
-          </Alert>
+            {notice}
+            {saveFailed && (
+              <Alert
+                severity="error"
+                sx={{ mb: 2 }}
+                action={
+                  <Button color="inherit" onClick={retry}>
+                    {t("common.retry")}
+                  </Button>
+                }
+              >
+                {t("profile.preferencesSaveError")}
+              </Alert>
+            )}
+          </Box>
         )}
         {children}
       </Container>

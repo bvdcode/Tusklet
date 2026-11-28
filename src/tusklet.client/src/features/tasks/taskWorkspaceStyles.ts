@@ -1,5 +1,5 @@
-import type { Theme } from "@mui/material/styles";
-import { pageContentWidth } from "../../shared/pageLayout";
+import type { SxProps, Theme } from "@mui/material/styles";
+import { pageContentWidth, pagePadding } from "../../shared/pageLayout";
 
 export const taskWorkspaceHeading = {
   position: "absolute",
@@ -48,6 +48,11 @@ export const taskListColumn = {
   position: "relative",
 } as const;
 
+export const taskListNotice = {
+  mx: { xs: pagePadding.xs, sm: 0 },
+  mt: { xs: pagePadding.xs, sm: 0 },
+} as const;
+
 export function taskListScrollSurface(theme: Theme) {
   const { text, background } = (theme.vars ?? theme).palette;
 
@@ -55,6 +60,11 @@ export function taskListScrollSurface(theme: Theme) {
     minHeight: 0,
     overflowY: "auto",
     overscrollBehaviorY: "contain",
+    [theme.breakpoints.down("sm")]: {
+      flex: 1,
+      border: 0,
+      borderRadius: 0,
+    },
     "& .os-theme-tusklet": {
       "--os-size": theme.spacing(1),
       "--os-padding-perpendicular": theme.spacing(0.25),
@@ -64,5 +74,5 @@ export function taskListScrollSurface(theme: Theme) {
       "--os-handle-bg-hover": text.secondary,
       "--os-handle-bg-active": text.secondary,
     },
-  } as const;
+  } satisfies SxProps<Theme>;
 }
