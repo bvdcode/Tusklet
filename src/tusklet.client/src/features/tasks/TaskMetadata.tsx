@@ -104,7 +104,7 @@ export default function TaskMetadata({ task }: { task: TaskRow }) {
   return (
     <>
       {task.startsAt && (
-        <ListItem disableGutters>
+        <ListItem>
           <ListItemText
             primary={t("tasks.startDate")}
             secondary={dateTime.format(new Date(task.startsAt))}
@@ -112,7 +112,7 @@ export default function TaskMetadata({ task }: { task: TaskRow }) {
         </ListItem>
       )}
       {(task.reminderEnabled !== null || reminderTime) && (
-        <ListItem disableGutters>
+        <ListItem>
           <ListItemText
             primary={t("tasks.reminder")}
             secondary={[
@@ -127,7 +127,7 @@ export default function TaskMetadata({ task }: { task: TaskRow }) {
         </ListItem>
       )}
       {recurrence && (
-        <ListItem disableGutters>
+        <ListItem>
           <ListItemText
             primary={t("tasks.repeat")}
             secondary={[repeat, dates, rangeEnd].filter(Boolean).join(" · ")}
@@ -135,7 +135,7 @@ export default function TaskMetadata({ task }: { task: TaskRow }) {
         </ListItem>
       )}
       {task.links.map((link) => (
-        <ListItem key={link.id} disableGutters>
+        <ListItem key={link.id}>
           <ListItemText
             sx={{ overflowWrap: "anywhere" }}
             primary={

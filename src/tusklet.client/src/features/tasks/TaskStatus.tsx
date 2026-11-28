@@ -24,7 +24,7 @@ export default function TaskStatus({
   const Icon = task.isCompleted ? UndoRounded : DoneRounded;
 
   return (
-    <ListItem disableGutters>
+    <ListItem>
       <ListItemText
         primary={t("tasks.status")}
         secondary={
