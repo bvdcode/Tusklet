@@ -9,6 +9,7 @@ import {
   ListItemText,
   Stack,
   Typography,
+  listItemButtonClasses,
 } from "@mui/material";
 import type { TFunction } from "i18next";
 import { memo } from "react";
@@ -49,6 +50,9 @@ export default memo(function TaskListRow({
       sx={{
         bgcolor: selected ? "action.selected" : undefined,
         overflow: "hidden",
+        [`&:has(> .${listItemButtonClasses.focusVisible})`]: {
+          bgcolor: selected ? undefined : "action.focus",
+        },
       }}
     >
       <ListItemIcon
@@ -90,6 +94,9 @@ export default memo(function TaskListRow({
           gap: 1,
           pl: 0,
           pr: { xs: 1.5, sm: 2.5 },
+          [`&.${listItemButtonClasses.focusVisible}`]: {
+            bgcolor: "transparent",
+          },
         }}
       >
         <ListItemText
