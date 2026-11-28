@@ -6,8 +6,9 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  buttonClasses,
 } from "@mui/material";
-import { useId, useRef } from "react";
+import { useId, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 
 export default function DeleteTaskDialog({
@@ -26,7 +27,6 @@ export default function DeleteTaskDialog({
   const { t } = useTranslation();
   const headingId = useId();
   const messageId = useId();
-  const confirmButton = useRef<HTMLButtonElement>(null);
 
   return (
     <Dialog
@@ -34,11 +34,23 @@ export default function DeleteTaskDialog({
       fullWidth
       maxWidth="xs"
       onClose={onCancel}
-      onTransitionEnter={() => {
-        window.requestAnimationFrame(() => confirmButton.current?.focus());
-      }}
       aria-labelledby={headingId}
       aria-describedby={messageId}
+      slotProps={{
+        paper: {
+          onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => {
+            if (
+              event.key === "Enter" &&
+              event.target === event.currentTarget &&
+              !event.repeat &&
+              !saving
+            ) {
+              event.preventDefault();
+              onConfirm();
+            }
+          },
+        },
+      }}
     >
       <DialogTitle id={headingId}>{t("tasks.deleteTitle")}</DialogTitle>
       <DialogContent>
@@ -51,14 +63,25 @@ export default function DeleteTaskDialog({
           </Alert>
         )}
       </DialogContent>
-      <DialogActions>
-        <Button color="inherit" disabled={saving} onClick={onCancel}>
+      <DialogActions
+        sx={{
+          [`& .${buttonClasses.focusVisible}`]: {
+            textDecoration: "underline",
+          },
+        }}
+      >
+        <Button
+          color="inherit"
+          disabled={saving}
+          disableFocusRipple
+          onClick={onCancel}
+        >
           {t("common.cancel")}
         </Button>
         <Button
-          ref={confirmButton}
           color="error"
           variant="contained"
+          disableFocusRipple
           loading={saving}
           onClick={onConfirm}
         >

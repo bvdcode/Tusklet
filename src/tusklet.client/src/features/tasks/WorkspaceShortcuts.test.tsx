@@ -116,9 +116,8 @@ test("uses workspace shortcuts, skips group headings and requires confirmation f
 
   fireEvent.keyDown(scroller, remove);
   const dialog = await screen.findByRole("dialog", { name: "Delete task?" });
-  const confirm = within(dialog).getByRole("button", { name: "Delete" });
-  await waitFor(() => expect(document.activeElement).toBe(confirm));
-  fireEvent.keyDown(confirm, { key: "Escape" });
+  expect(document.activeElement).toBe(dialog);
+  fireEvent.keyDown(dialog, { key: "Escape" });
   await waitFor(() =>
     expect(screen.queryByRole("dialog", { name: "Delete task?" })).toBeNull(),
   );
@@ -128,7 +127,8 @@ test("uses workspace shortcuts, skips group headings and requires confirmation f
   expect(screen.getByRole("complementary", { name: "Book room" })).toBeTruthy();
 
   fireEvent.keyDown(scroller, remove);
-  fireEvent.click(await screen.findByRole("button", { name: "Delete" }));
+  const reopened = await screen.findByRole("dialog", { name: "Delete task?" });
+  fireEvent.keyDown(reopened, { key: "Enter" });
   await waitFor(() =>
     expect(screen.queryByRole("button", { name: "Book room" })).toBeNull(),
   );
