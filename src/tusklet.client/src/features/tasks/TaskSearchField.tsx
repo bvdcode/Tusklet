@@ -35,8 +35,13 @@ export default function TaskSearchField({
       value={value}
       slotProps={{ input: { "aria-label": t("tasks.search") } }}
       sx={{
-        px: 1,
-        "& input::placeholder": { color: "text.secondary", opacity: 1 },
+        px: { xs: 0, sm: 1 },
+        "& input": { textAlign: "center" },
+        "& input::placeholder": {
+          color: "text.secondary",
+          fontSize: { xs: "body2.fontSize", sm: "inherit" },
+          opacity: 1,
+        },
       }}
       onChange={(event) => onChange(event.target.value)}
       onKeyDown={(event) => {
