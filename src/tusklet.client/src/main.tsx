@@ -8,6 +8,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
+import AppErrorBoundary from "./shared/AppErrorBoundary";
 import "./shared/i18n";
 import LocaleThemeProvider from "./shared/LocaleThemeProvider";
 
@@ -22,11 +23,13 @@ const queryClient = new QueryClient();
 createRoot(root).render(
   <StrictMode>
     <LocaleThemeProvider>
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </QueryClientProvider>
+      <AppErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </QueryClientProvider>
+      </AppErrorBoundary>
     </LocaleThemeProvider>
   </StrictMode>,
 );

@@ -1,6 +1,8 @@
 {
   "appName": "Tusklet",
   "common": {
+    "renderError": "यह पेज दिखाया नहीं जा सका।",
+    "reload": "फिर से लोड करें",
     "back": "वापस",
     "backToTop": "ऊपर लौटें",
     "loading": "लोड हो रहा है",
