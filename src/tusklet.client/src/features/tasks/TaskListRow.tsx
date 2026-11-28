@@ -47,14 +47,20 @@ export default memo(function TaskListRow({
       disablePadding
       divider={divider}
       sx={{
-        pl: { xs: 1.5, sm: 2.5 },
         bgcolor: selected ? "action.selected" : undefined,
         overflow: "hidden",
       }}
     >
-      <ListItemIcon sx={{ minWidth: 0 }}>
+      <ListItemIcon
+        sx={(theme) => ({
+          minWidth: { xs: theme.spacing(7), sm: theme.spacing(8) },
+          flexShrink: 0,
+          justifyContent: "center",
+        })}
+      >
         <Checkbox
           color="success"
+          sx={{ p: 1.5 }}
           checked={task.isCompleted}
           disabled={changing}
           icon={<RadioButtonUnchecked fontSize="small" />}
@@ -81,7 +87,7 @@ export default memo(function TaskListRow({
           minWidth: 0,
           minHeight: 64,
           gap: 1,
-          pl: 1,
+          pl: 0,
           pr: { xs: 1.5, sm: 2.5 },
         }}
       >
