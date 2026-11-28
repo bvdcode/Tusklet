@@ -94,6 +94,16 @@ const options: ThemeOptions = {
     },
     MuiOutlinedInput: {
       styleOverrides: {
+        input: ({ theme }) => {
+          const { background, text } = (theme.vars ?? theme).palette;
+          return {
+            "&&:is(:autofill, :-webkit-autofill)": {
+              boxShadow: `inset 0 0 0 1000px ${background.paper}`,
+              WebkitTextFillColor: text.primary,
+              caretColor: text.primary,
+            },
+          };
+        },
         notchedOutline: ({ theme }) => ({
           borderColor: (theme.vars || theme).palette.brand.fieldBorder,
         }),
