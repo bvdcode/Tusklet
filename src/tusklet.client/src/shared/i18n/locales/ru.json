@@ -1,6 +1,8 @@
 {
   "appName": "Tusklet",
   "common": {
+    "renderError": "Не удалось отобразить страницу.",
+    "reload": "Перезагрузить",
     "back": "Назад",
     "backToTop": "Наверх",
     "loading": "Загрузка",

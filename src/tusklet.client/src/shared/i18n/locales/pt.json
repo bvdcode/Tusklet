@@ -1,6 +1,8 @@
 {
   "appName": "Tusklet",
   "common": {
+    "renderError": "Não foi possível exibir a página.",
+    "reload": "Recarregar",
     "back": "Voltar",
     "backToTop": "Voltar ao topo",
     "loading": "Carregando",
