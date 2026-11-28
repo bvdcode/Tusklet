@@ -158,6 +158,19 @@ export async function updateTask(
   }
 }
 
+export async function deleteTask(
+  id: string,
+  requestToken: string,
+): Promise<void> {
+  const response = await fetch(`/api/tasks/${id}`, {
+    method: "DELETE",
+    headers: { "X-CSRF-Token": requestToken },
+  });
+  if (!response.ok) {
+    throw new Error(String(response.status));
+  }
+}
+
 export async function importTasks(
   file: File,
   requestToken: string,

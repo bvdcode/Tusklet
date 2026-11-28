@@ -60,6 +60,7 @@ export default function TaskDetailsPanel({
           },
         },
         paper: {
+          id: "task-details-panel",
           role: compact ? "dialog" : "complementary",
           "aria-labelledby": visibleTask ? titleId : undefined,
           inert: !open,

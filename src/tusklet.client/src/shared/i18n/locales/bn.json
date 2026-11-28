@@ -85,6 +85,10 @@
     "viewTasks": "কাজ দেখুন"
   },
   "tasks": {
+    "deleteTitle": "কাজ মুছে ফেলবেন?",
+    "deleteConfirm": "“{{title}}” স্থায়ীভাবে মুছে ফেলা হবে।",
+    "deleteAction": "মুছে ফেলুন",
+    "deleteError": "কাজটি মুছে ফেলা যায়নি।",
     "search": "কাজ খুঁজুন",
     "noSearchResults": "মিলে যায় এমন কোনো কাজ পাওয়া যায়নি।",
     "markedComplete": "“{{title}}” সম্পন্ন হয়েছে",

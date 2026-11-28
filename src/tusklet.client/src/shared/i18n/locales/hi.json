@@ -85,6 +85,10 @@
     "viewTasks": "कार्य देखें"
   },
   "tasks": {
+    "deleteTitle": "कार्य हटाएँ?",
+    "deleteConfirm": "“{{title}}” स्थायी रूप से हटा दिया जाएगा।",
+    "deleteAction": "हटाएँ",
+    "deleteError": "कार्य हटाया नहीं जा सका।",
     "search": "कार्य खोजें",
     "noSearchResults": "कोई मेल खाने वाला कार्य नहीं मिला।",
     "markedComplete": "“{{title}}” पूरा किया गया",

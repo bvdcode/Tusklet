@@ -93,6 +93,10 @@
     "restored_many": "تمت استعادة التفاصيل الناقصة لـ {{count}} من المهام."
   },
   "tasks": {
+    "deleteTitle": "حذف المهمة؟",
+    "deleteConfirm": "ستُحذف «{{title}}» نهائيًا.",
+    "deleteAction": "حذف",
+    "deleteError": "تعذّر حذف المهمة.",
     "search": "البحث عن المهام",
     "noSearchResults": "لم يتم العثور على مهام مطابقة.",
     "markedComplete": "تم إكمال «{{title}}»",

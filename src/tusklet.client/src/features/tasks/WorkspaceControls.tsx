@@ -77,6 +77,7 @@ export default function WorkspaceControls({
         ref={searchButtonRef}
         aria-label={t("tasks.search")}
         title={t("tasks.search")}
+        aria-keyshortcuts="Control+F"
         aria-expanded={searchOpen}
         aria-controls={searchOpen ? searchId : undefined}
         color="primary"
@@ -100,6 +101,7 @@ export default function WorkspaceControls({
       <IconButton
         aria-label={t("tasks.create")}
         title={t("tasks.create")}
+        aria-keyshortcuts="Control+N"
         color="primary"
         size="small"
         disabled={!canCreate}

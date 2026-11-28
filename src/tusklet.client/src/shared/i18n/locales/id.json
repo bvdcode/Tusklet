@@ -85,6 +85,10 @@
     "viewTasks": "Lihat tugas"
   },
   "tasks": {
+    "deleteTitle": "Hapus tugas?",
+    "deleteConfirm": "“{{title}}” akan dihapus secara permanen.",
+    "deleteAction": "Hapus",
+    "deleteError": "Tugas tidak dapat dihapus.",
     "search": "Cari tugas",
     "noSearchResults": "Tidak ada tugas yang cocok.",
     "markedComplete": "“{{title}}” telah diselesaikan",

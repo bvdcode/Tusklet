@@ -77,6 +77,7 @@ export default memo(function TaskListRow({
         />
       </ListItemIcon>
       <ListItemButton
+        data-task-id={task.id}
         aria-label={task.title}
         aria-describedby={
           task.isImportant ? `${titleId}-important-${task.id}` : undefined

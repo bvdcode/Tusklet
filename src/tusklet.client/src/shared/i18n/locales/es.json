@@ -87,6 +87,10 @@
     "restored_many": "Se restauraron los datos faltantes en {{count}} tareas."
   },
   "tasks": {
+    "deleteTitle": "¿Eliminar tarea?",
+    "deleteConfirm": "«{{title}}» se eliminará permanentemente.",
+    "deleteAction": "Eliminar",
+    "deleteError": "No se pudo eliminar la tarea.",
     "search": "Buscar tareas",
     "noSearchResults": "No se encontraron tareas.",
     "markedComplete": "Se completó «{{title}}»",
