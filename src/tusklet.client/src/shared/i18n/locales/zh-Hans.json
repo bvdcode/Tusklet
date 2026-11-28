@@ -8,7 +8,8 @@
     "cancel": "取消",
     "retry": "重试",
     "create": "创建",
-    "save": "保存"
+    "save": "保存",
+    "saved": "已保存"
   },
   "pwa": {
     "updateAvailable": "Tusklet 有新版本可用。",
@@ -164,8 +165,6 @@
     "createError": "无法创建任务。请重试。",
     "complete": "完成「{{title}}」",
     "reopen": "重新打开「{{title}}」",
-    "editTitle": "编辑标题",
-    "editNote": "编辑备注",
     "clearDueDate": "清除日期",
     "calendar": {
       "previousMonth": "上个月",

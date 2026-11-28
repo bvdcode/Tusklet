@@ -1,82 +1,121 @@
-import { Alert, Button, Stack, TextField } from "@mui/material";
-import type { FormEvent, KeyboardEvent } from "react";
+import { Box, InputBase, Stack, Typography } from "@mui/material";
+import { useMutation } from "@tanstack/react-query";
+import { useSnackbar } from "notistack";
+import { useId, useRef, useState, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
+import SaveStatusIndicator from "../../shared/SaveStatusIndicator";
 
 export default function TaskTextEditor({
   field,
   value,
-  saving,
-  failed,
   onSave,
-  onClose,
 }: {
   field: "title" | "note";
   value: string;
-  saving: boolean;
-  failed: boolean;
-  onSave: (value: string) => void;
-  onClose: () => void;
+  onSave: (value: string) => Promise<void>;
 }) {
   const { t } = useTranslation();
+  const { enqueueSnackbar } = useSnackbar();
   const isTitle = field === "title";
+  const inputId = useId();
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const cancelling = useRef(false);
+  const [draft, setDraft] = useState<string | null>(null);
+  const save = useMutation({
+    mutationFn: onSave,
+    onSuccess: () => setDraft(null),
+    onError: () =>
+      enqueueSnackbar(t("tasks.updateError"), { variant: "error" }),
+  });
 
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const next = String(
-      new FormData(event.currentTarget).get("value") ?? "",
-    ).trim();
-    if (!saving && (!isTitle || next.length > 0)) {
-      onSave(next);
+  function saveOnBlur() {
+    if (cancelling.current || save.isPending || draft === null) {
+      return;
+    }
+    const next = draft.trim();
+    if (next === value || (isTitle && next.length === 0)) {
+      setDraft(null);
+      return;
+    }
+    save.mutate(next);
+  }
+
+  function handleKeyDown(event: KeyboardEvent) {
+    if (event.nativeEvent.isComposing) {
+      return;
+    }
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      if (!save.isPending) {
+        setDraft(null);
+        cancelling.current = true;
+        inputRef.current?.blur();
+        cancelling.current = false;
+      }
+    } else if (
+      event.key === "Enter" &&
+      (isTitle || event.ctrlKey || event.metaKey)
+    ) {
+      event.preventDefault();
+      inputRef.current?.blur();
     }
   }
 
-  function cancelOnEscape(event: KeyboardEvent) {
-    if (event.key === "Escape" && !event.nativeEvent.isComposing) {
-      event.stopPropagation();
-      if (!saving) {
-        onClose();
-      }
-    }
+  const indicator = (
+    <SaveStatusIndicator savedAt={save.isSuccess ? save.submittedAt : 0} />
+  );
+  const input = (
+    <InputBase
+      id={inputId}
+      inputRef={inputRef}
+      fullWidth
+      multiline
+      value={draft ?? value}
+      readOnly={save.isPending}
+      slotProps={{
+        input: {
+          "aria-label": isTitle ? t("tasks.taskTitle") : undefined,
+          "aria-busy": save.isPending,
+          maxLength: isTitle ? 255 : undefined,
+        },
+      }}
+      onChange={(event) => {
+        if (save.isSuccess) {
+          save.reset();
+        }
+        const next = event.target.value;
+        setDraft(isTitle ? next.replace(/[\r\n]+/g, " ") : next);
+      }}
+      onBlur={saveOnBlur}
+      onKeyDown={handleKeyDown}
+      sx={{
+        p: 0,
+        minWidth: 0,
+        typography: isTitle ? "h6" : "body2",
+        "& .MuiInputBase-input": { overflowWrap: "anywhere" },
+      }}
+    />
+  );
+
+  if (isTitle) {
+    return (
+      <Box sx={{ position: "relative" }}>
+        {input}
+        {indicator}
+      </Box>
+    );
   }
 
   return (
-    <Stack
-      component="form"
-      spacing={1}
-      onSubmit={submit}
-      onKeyDown={cancelOnEscape}
-      aria-busy={saving}
-    >
-      {failed && <Alert severity="error">{t("tasks.updateError")}</Alert>}
-      <TextField
-        name="value"
-        label={t(isTitle ? "tasks.taskTitle" : "tasks.note")}
-        defaultValue={value}
-        autoFocus
-        required={isTitle}
-        disabled={saving}
-        multiline={!isTitle}
-        minRows={isTitle ? undefined : 3}
-        maxRows={isTitle ? undefined : 8}
-        size="small"
-        slotProps={{
-          htmlInput: isTitle
-            ? { maxLength: 255, pattern: ".*\\S.*" }
-            : undefined,
-        }}
-      />
-      <Stack
-        direction="row"
-        useFlexGap
-        sx={{ justifyContent: "flex-end", gap: 1, flexWrap: "wrap" }}
-      >
-        <Button size="small" disabled={saving} onClick={onClose}>
-          {t("common.cancel")}
-        </Button>
-        <Button size="small" type="submit" loading={saving} variant="contained">
-          {t("common.save")}
-        </Button>
-      </Stack>
+    <Stack spacing={0.5} sx={{ px: 2, mt: 2 }}>
+      <Box sx={{ position: "relative" }}>
+        <Typography component="label" htmlFor={inputId} variant="subtitle2">
+          {t("tasks.note")}
+        </Typography>
+        {indicator}
+      </Box>
+      {input}
     </Stack>
   );
 }

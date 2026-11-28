@@ -8,7 +8,8 @@
     "cancel": "إلغاء",
     "retry": "إعادة المحاولة",
     "create": "إنشاء",
-    "save": "حفظ"
+    "save": "حفظ",
+    "saved": "تم الحفظ"
   },
   "pwa": {
     "updateAvailable": "يتوفر إصدار جديد من Tusklet.",
@@ -172,8 +173,6 @@
     "createError": "تعذّر إنشاء المهمة. أعد المحاولة.",
     "complete": "إكمال «{{title}}»",
     "reopen": "إعادة فتح «{{title}}»",
-    "editTitle": "تعديل العنوان",
-    "editNote": "تعديل الملاحظة",
     "clearDueDate": "إزالة التاريخ",
     "calendar": {
       "previousMonth": "الشهر السابق",

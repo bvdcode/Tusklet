@@ -119,7 +119,8 @@ test("shows tasks across lists and lets users sort, group and select a list", as
   const scrollTo = vi.fn();
   Object.defineProperty(scroller, "scrollTo", { value: scrollTo });
   scroller.scrollTop = 75;
-  fireEvent.click(within(directDetails).getByRole("button", { name: "Close" }));
+  expect(within(directDetails).queryByLabelText("Close")).toBeNull();
+  fireEvent.click(await screen.findByRole("button", { name: "Zebra" }));
   await waitFor(() => expect(screen.queryByRole("complementary")).toBeNull());
   expect(screen.getByRole("region", { name: "Tasks" })).toBe(scroller);
   expect(scroller.scrollTop).toBe(75);
@@ -157,8 +158,8 @@ test("shows tasks across lists and lets users sort, group and select a list", as
   await waitFor(() => expect(screen.queryByRole("complementary")).toBeNull());
 
   fireEvent.click(zebra);
-  const reopened = await screen.findByRole("complementary", { name: "Zebra" });
-  fireEvent.click(within(reopened).getByRole("button", { name: "Close" }));
+  await screen.findByRole("complementary", { name: "Zebra" });
+  fireEvent.click(zebra);
   await waitFor(() => expect(screen.queryByRole("complementary")).toBeNull());
   expect(fetchTasks).toHaveBeenCalledTimes(listRequests);
 
@@ -190,7 +191,7 @@ test("shows tasks across lists and lets users sort, group and select a list", as
   fireEvent.click(await screen.findByRole("button", { name: "Undo" }));
   await within(card).findByRole("button", { name: "Complete Zebra" });
   expect(task.isCompleted).toBe(false);
-  fireEvent.click(within(card).getByRole("button", { name: "Close" }));
+  fireEvent.click(within(scroller).getByRole("button", { name: "Zebra" }));
   await waitFor(() => expect(screen.queryByRole("complementary")).toBeNull());
 
   fireEvent.click(filters);

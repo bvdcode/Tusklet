@@ -8,7 +8,8 @@
     "cancel": "Cancelar",
     "retry": "Reintentar",
     "create": "Crear",
-    "save": "Guardar"
+    "save": "Guardar",
+    "saved": "Guardado"
   },
   "pwa": {
     "updateAvailable": "Hay una nueva versión de Tusklet.",
@@ -166,8 +167,6 @@
     "createError": "No se pudo crear la tarea. Vuelve a intentarlo.",
     "complete": "Completar «{{title}}»",
     "reopen": "Reabrir «{{title}}»",
-    "editTitle": "Editar título",
-    "editNote": "Editar nota",
     "clearDueDate": "Quitar fecha",
     "calendar": {
       "previousMonth": "Mes anterior",

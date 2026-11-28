@@ -8,7 +8,8 @@
     "cancel": "منسوخ کریں",
     "retry": "دوبارہ کوشش کریں",
     "create": "بنائیں",
-    "save": "محفوظ کریں"
+    "save": "محفوظ کریں",
+    "saved": "محفوظ ہو گیا"
   },
   "pwa": {
     "updateAvailable": "Tusklet کا نیا ورژن دستیاب ہے۔",
@@ -164,8 +165,6 @@
     "createError": "کام نہیں بن سکا۔ دوبارہ کوشش کریں۔",
     "complete": "”{{title}}“ مکمل کریں",
     "reopen": "”{{title}}“ دوبارہ کھولیں",
-    "editTitle": "عنوان میں ترمیم کریں",
-    "editNote": "نوٹ میں ترمیم کریں",
     "clearDueDate": "تاریخ ہٹائیں",
     "calendar": {
       "previousMonth": "پچھلا مہینہ",
