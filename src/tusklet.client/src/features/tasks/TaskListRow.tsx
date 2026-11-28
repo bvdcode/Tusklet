@@ -91,7 +91,10 @@ export default memo(function TaskListRow({
         sx={{
           minWidth: 0,
           minHeight: 64,
-          gap: 1,
+          display: { xs: "grid", sm: "flex" },
+          gridTemplateColumns: "minmax(0, 1fr)",
+          alignContent: "center",
+          gap: { xs: 0, sm: 1 },
           pl: 0,
           pr: { xs: 1.5, sm: 2.5 },
           [`&.${listItemButtonClasses.focusVisible}`]: {
@@ -132,7 +135,10 @@ export default memo(function TaskListRow({
                 textDecoration: task.isCompleted ? "line-through" : undefined,
               },
             },
-            secondary: { noWrap: true },
+            secondary: {
+              noWrap: true,
+              sx: { display: { xs: "none", sm: "block" } },
+            },
           }}
         />
         {task.dueDate && (
@@ -143,9 +149,9 @@ export default memo(function TaskListRow({
             color={dueDateColor(task.dueDate, today, task.isCompleted)}
             noWrap
             sx={{
-              maxWidth: "60%",
+              maxWidth: { xs: "100%", sm: "60%" },
               flexShrink: 0,
-              textAlign: "end",
+              textAlign: { xs: "start", sm: "end" },
             }}
           >
             {date.format(new Date(task.dueDate))}
