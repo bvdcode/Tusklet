@@ -1,29 +1,15 @@
-import { useQueries, type UseQueryResult } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  readTaskItems,
-  taskItemsKey,
-  type TaskItem,
-  type TaskList,
-} from "./tasksApi";
+import { readTaskItems, taskItemsKey, type TaskList } from "./tasksApi";
 import {
   arrangeTasks,
   flattenTaskGroups,
   searchTasks,
   type TaskGrouping,
+  type TaskRow,
   type TaskSorting,
 } from "./taskView";
-
-function combineItems(results: UseQueryResult<TaskItem[]>[]) {
-  return {
-    data: results.map((result) => result.data),
-    pending: results.some((result) => result.isPending),
-    failed: results
-      .filter((result) => result.isError)
-      .map((result) => result.refetch),
-  };
-}
 
 export default function useTaskWorkspaceRows(
   ownerId: string,
@@ -35,33 +21,32 @@ export default function useTaskWorkspaceRows(
   listsPending: boolean,
 ) {
   const { t, i18n } = useTranslation();
-  const visibleLists = useMemo(
-    () => (active ? [active] : lists),
-    [active, lists],
-  );
-  const { data, pending, failed } = useQueries({
-    queries: visibleLists.map((list) => ({
-      queryKey: [...taskItemsKey, ownerId, list.id],
-      queryFn: ({ signal }: { signal: AbortSignal }) =>
-        readTaskItems(list.id, signal),
-      retry: false,
-    })),
-    combine: combineItems,
+  const items = useQuery({
+    queryKey: [...taskItemsKey, ownerId],
+    queryFn: ({ signal }) => readTaskItems(signal),
+    retry: false,
   });
-  const loading = listsPending || pending;
-  const rows = useMemo(
-    () =>
-      loading
-        ? []
-        : visibleLists.flatMap((list, index) =>
-            (data[index] ?? []).map((task) => ({
-              ...task,
-              listId: list.id,
-              listName: list.isInbox ? t("tasks.inbox") : list.name,
-            })),
-          ),
-    [data, loading, t, visibleLists],
-  );
+  const loading = listsPending || items.isPending;
+  const rows = useMemo(() => {
+    if (loading || !items.data) {
+      return [];
+    }
+    const visibleLists = active ? [active] : lists;
+    const names = new Map(
+      visibleLists.map((list) => [
+        list.id,
+        list.isInbox ? t("tasks.inbox") : list.name,
+      ]),
+    );
+    const visibleRows: TaskRow[] = [];
+    for (const item of items.data) {
+      const listName = names.get(item.listId);
+      if (listName !== undefined) {
+        visibleRows.push({ ...item, listName });
+      }
+    }
+    return visibleRows;
+  }, [active, items.data, lists, loading, t]);
   const language = i18n.resolvedLanguage;
   const groups = useMemo(
     () =>
@@ -93,5 +78,11 @@ export default function useTaskWorkspaceRows(
     [groups],
   );
 
-  return { rows, entries, headings, loading, failed };
+  return {
+    rows,
+    entries,
+    headings,
+    loading,
+    retryItems: items.isError ? items.refetch : undefined,
+  };
 }

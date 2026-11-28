@@ -19,6 +19,8 @@ namespace Tusklet.Tests
         {
             await using TuskletFactory factory = new();
             using HttpClient browser = factory.CreateBrowser();
+            using HttpResponseMessage anonymousTasks = await browser.GetAsync("/api/tasks");
+            Assert.That(anonymousTasks.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
             string initialToken = await GetRequestTokenAsync(browser);
             using HttpResponseMessage setup = await SendAsync(browser, HttpMethod.Post, "/api/auth/setup", initialToken,
                 new { username = "workspace-admin", password = "local-test-passphrase" });
@@ -111,6 +113,7 @@ namespace Tusklet.Tests
             Assert.That(cleared.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
             TaskItemSummaryDto[]? clearedItems = await browser.GetFromJsonAsync<TaskItemSummaryDto[]>($"/api/tasks/lists/{selected.Id}");
             TaskItemSummaryDto clearedTask = clearedItems!.Single(item => item.Id == task.Id);
+            TaskItemSummaryDto[]? allTasks = await browser.GetFromJsonAsync<TaskItemSummaryDto[]>("/api/tasks");
 
             using (Assert.EnterMultipleScope())
             {
@@ -120,6 +123,8 @@ namespace Tusklet.Tests
                 Assert.That(clearedTask.DueDate, Is.Null);
                 Assert.That(await db.TaskItems.AnyAsync(item => item.TaskListId == selected.Id && item.Title == "In the selected list"), Is.True);
                 Assert.That(await db.TaskItems.AnyAsync(item => item.Id == task.Id && item.CompletedAt == null), Is.True);
+                Assert.That(allTasks?.Select(item => item.ListId), Is.EqualTo(new[] { listId, selected.Id, selected.Id }));
+                Assert.That(allTasks?.Any(item => item.Id == otherTask.Id), Is.False);
             }
 
             db.TaskSteps.Add(new TaskStep { TaskItemId = task.Id, Title = "Proofread" });

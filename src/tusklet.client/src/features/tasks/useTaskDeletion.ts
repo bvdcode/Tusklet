@@ -13,7 +13,7 @@ export default function useTaskDeletion(
   const deletion = useMutation({
     mutationFn: (target: TaskRow) => deleteTask(target.id, requestToken),
     onSuccess: async (_, target) => {
-      const queryKey = [...taskItemsKey, ownerId, target.listId];
+      const queryKey = [...taskItemsKey, ownerId];
       await queryClient.cancelQueries({ queryKey });
       queryClient.setQueryData<TaskItem[]>(queryKey, (items) =>
         items?.filter(({ id }) => id !== target.id),

@@ -26,6 +26,7 @@ test("shows tasks across lists and lets users sort, group and select a list", as
   );
   const task: TaskItem = {
     id: "first",
+    listId: "inbox",
     title: "Zebra",
     note: "Reserve the meeting room",
     dueDate: null,
@@ -62,14 +63,13 @@ test("shows tasks across lists and lets users sort, group and select a list", as
       { id: "inbox", name: "Inbox", isInbox: true },
       { id: "personal", name: "Personal", isInbox: false },
     ],
-    "/api/tasks/lists/inbox": [
+    "/api/tasks": [
       task,
       { ...task, id: "third", title: "Yak", note: null, links: [] },
-    ],
-    "/api/tasks/lists/personal": [
       {
         ...task,
         id: "second",
+        listId: "personal",
         title: "Apple",
         note: null,
         links: [],
@@ -110,6 +110,9 @@ test("shows tasks across lists and lets users sort, group and select a list", as
     { name: "Zebra" },
     { timeout: 3000 },
   );
+  expect(
+    fetchTasks.mock.calls.filter(([url]) => url === "/api/tasks"),
+  ).toHaveLength(1);
   const scroller = screen.getByRole("region", { name: "Tasks" });
   const scrollTo = vi.fn();
   Object.defineProperty(scroller, "scrollTo", { value: scrollTo });
@@ -284,6 +287,9 @@ test("shows tasks across lists and lets users sort, group and select a list", as
   ).toBeTruthy();
   await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
 
+  const taskReads = fetchTasks.mock.calls.filter(
+    ([url]) => url === "/api/tasks",
+  ).length;
   fireEvent.click(filters);
   const selector = screen.getByRole("combobox", { name: "Task list" });
   fireEvent.change(selector, { target: { value: "personal" } });
@@ -294,4 +300,7 @@ test("shows tasks across lists and lets users sort, group and select a list", as
   expect(screen.queryByText("Zebra")).toBeNull();
   expect(within(header).queryByText("To do (2)")).toBeNull();
   expect(within(header).getByText("Completed (1)")).toBeTruthy();
+  expect(
+    fetchTasks.mock.calls.filter(([url]) => url === "/api/tasks"),
+  ).toHaveLength(taskReads);
 });

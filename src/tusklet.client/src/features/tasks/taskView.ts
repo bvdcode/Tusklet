@@ -11,7 +11,7 @@ export const sortingOptions = [
 export type TaskGrouping = (typeof groupingOptions)[number];
 export type TaskSorting = (typeof sortingOptions)[number];
 
-export type TaskRow = TaskItem & { listId: string; listName: string };
+export type TaskRow = TaskItem & { listName: string };
 
 export type TaskListEntry =
   | { kind: "heading"; groupId: string; title: string }

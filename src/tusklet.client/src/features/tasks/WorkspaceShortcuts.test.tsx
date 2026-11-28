@@ -25,6 +25,7 @@ test("uses workspace shortcuts, skips group headings and requires confirmation f
   );
   const openTask: TaskItem = {
     id: "open-task",
+    listId: "inbox",
     title: "Review schedule",
     note: null,
     dueDate: null,
@@ -64,7 +65,7 @@ test("uses workspace shortcuts, skips group headings and requires confirmation f
         },
       ],
       ["/api/tasks/lists", [{ id: "inbox", name: "Inbox", isInbox: true }]],
-      ["/api/tasks/lists/inbox", tasks],
+      ["/api/tasks", tasks],
     ]);
     return Promise.resolve(Response.json(responses.get(path)));
   });

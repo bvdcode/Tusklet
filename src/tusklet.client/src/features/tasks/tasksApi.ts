@@ -57,6 +57,7 @@ export type TaskLink = {
 
 export type TaskItem = {
   id: string;
+  listId: string;
   title: string;
   note: string | null;
   dueDate: string | null;
@@ -93,11 +94,8 @@ export async function readTaskLists(signal: AbortSignal): Promise<TaskList[]> {
   return response.json();
 }
 
-export async function readTaskItems(
-  listId: string,
-  signal: AbortSignal,
-): Promise<TaskItem[]> {
-  const response = await fetch(`/api/tasks/lists/${listId}`, { signal });
+export async function readTaskItems(signal: AbortSignal): Promise<TaskItem[]> {
+  const response = await fetch("/api/tasks", { signal });
   if (!response.ok) {
     throw new Error(String(response.status));
   }

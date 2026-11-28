@@ -35,6 +35,14 @@ namespace Tusklet.Server.Controllers
                 : Unauthorized();
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAllTasksAsync(CancellationToken ct)
+        {
+            return Session.GetUserId(User) is Guid ownerId
+                ? Ok(await mediator.Send(new ReadTaskItems(ownerId), ct))
+                : Unauthorized();
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateAsync(CreateTaskInput input, CancellationToken ct)
         {

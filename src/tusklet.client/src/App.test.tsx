@@ -33,6 +33,7 @@ test("creates the initial admin and shows the workspace", async () => {
         requestToken: "signed-in-csrf",
       }),
     )
+    .mockResolvedValueOnce(Response.json([]))
     .mockResolvedValueOnce(Response.json([]));
   vi.stubGlobal("fetch", fetchSession);
 
@@ -159,7 +160,9 @@ test("opens profile and administration from the account menu", async () => {
       Promise.resolve(
         url === "/api/admin/openid"
           ? new Response(null, { status: 204 })
-          : Response.json(url === "/api/tasks/lists" ? [] : session),
+          : Response.json(
+              url === "/api/tasks/lists" || url === "/api/tasks" ? [] : session,
+            ),
       ),
     ),
   );
