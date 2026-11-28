@@ -1,8 +1,6 @@
 {
   "appName": "Tusklet",
   "common": {
-    "renderError": "Halaman tidak dapat ditampilkan.",
-    "reload": "Muat ulang",
     "back": "Kembali",
     "backToTop": "Kembali ke atas",
     "loading": "Memuat",
