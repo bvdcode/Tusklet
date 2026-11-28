@@ -245,7 +245,7 @@ export default function Workspace(account: AccountPage) {
             aria-labelledby={titleId}
             aria-keyshortcuts="ArrowUp ArrowDown Delete"
             tabIndex={0}
-            sx={pageScrollSurface}
+            sx={[pageScrollSurface, { scrollbarGutter: "stable both-edges" }]}
           >
             {scroller && entries.length > 0 && (
               <TaskVirtualList
