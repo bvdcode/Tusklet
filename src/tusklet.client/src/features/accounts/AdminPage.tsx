@@ -8,6 +8,7 @@ import {
 } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { settingsPageSurface } from "../../shared/pageLayout";
 import ProviderForm from "./ProviderForm";
 import {
   changeAccount,
@@ -44,7 +45,7 @@ export default function AdminPage({ requestToken }: { requestToken: string }) {
       component="section"
       aria-labelledby="provider-title"
       variant="outlined"
-      sx={{ p: { xs: 2.5, sm: 3.5 } }}
+      sx={settingsPageSurface}
     >
       <Stack spacing={2.5}>
         <Typography component="h1" variant="h6" id="provider-title">

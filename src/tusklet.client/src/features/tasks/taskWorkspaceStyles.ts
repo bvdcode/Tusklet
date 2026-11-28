@@ -1,4 +1,5 @@
 import type { Theme } from "@mui/material/styles";
+import { pageContentWidth } from "../../shared/pageLayout";
 
 export const taskWorkspaceHeading = {
   position: "absolute",
@@ -10,7 +11,7 @@ export const taskWorkspaceHeading = {
 
 export function taskWorkspaceLayout(detailsOpen: boolean) {
   return (theme: Theme) => {
-    const maxListWidth = `calc(${theme.breakpoints.values.md}px - ${theme.spacing(6)})`;
+    const maxListWidth = pageContentWidth(theme);
     const detailsWidth = detailsOpen
       ? "min(50%, calc(448px + var(--tusklet-details-gap)))"
       : "0px";
@@ -46,30 +47,3 @@ export const taskListColumn = {
   minHeight: 0,
   position: "relative",
 } as const;
-
-export function taskListSurface(theme: Theme) {
-  const { text, background } = (theme.vars ?? theme).palette;
-  const thumb = `color-mix(in srgb, ${text.secondary} 75%, ${background.paper})`;
-  return {
-    minHeight: 0,
-    overflowY: "auto",
-    overscrollBehaviorY: "contain",
-    scrollbarWidth: "thin",
-    scrollbarColor: `${thumb} transparent`,
-    "@supports selector(::-webkit-scrollbar)": {
-      "@media (pointer: fine)": {
-        scrollbarWidth: "auto",
-        scrollbarColor: "auto",
-        "&::-webkit-scrollbar": { width: theme.spacing(1) },
-        "&::-webkit-scrollbar-thumb": {
-          bgcolor: thumb,
-          border: "2px solid transparent",
-          borderRadius: 1,
-          backgroundClip: "content-box",
-          "&:hover": { bgcolor: "text.secondary" },
-        },
-        "&::-webkit-scrollbar-button": { display: "none" },
-      },
-    },
-  };
-}

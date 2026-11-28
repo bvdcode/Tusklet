@@ -56,7 +56,7 @@ export default function TaskDetailsPanel({
             minHeight: 0,
             paddingInlineStart: "var(--tusklet-details-gap)",
             overflow: "hidden",
-            display: "flex",
+            display: { xs: "none", md: "flex" },
           },
         },
         paper: {
