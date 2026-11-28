@@ -1,8 +1,6 @@
 {
   "appName": "Tusklet",
   "common": {
-    "renderError": "无法显示此页面。",
-    "reload": "重新加载",
     "back": "返回",
     "backToTop": "返回顶部",
     "loading": "正在加载",

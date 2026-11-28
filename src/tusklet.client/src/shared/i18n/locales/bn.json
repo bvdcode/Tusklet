@@ -1,8 +1,6 @@
 {
   "appName": "Tusklet",
   "common": {
-    "renderError": "এই পৃষ্ঠাটি দেখানো যায়নি।",
-    "reload": "আবার লোড করুন",
     "back": "ফিরে যান",
     "backToTop": "উপরে ফিরে যান",
     "loading": "লোড হচ্ছে",

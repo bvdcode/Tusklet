@@ -1,8 +1,6 @@
 {
   "appName": "Tusklet",
   "common": {
-    "renderError": "تعذّر عرض الصفحة.",
-    "reload": "إعادة التحميل",
     "back": "رجوع",
     "backToTop": "العودة إلى الأعلى",
     "loading": "جارٍ التحميل",
