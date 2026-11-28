@@ -7,13 +7,8 @@ namespace Tusklet.Server.Database
 {
     internal static class PostgresSettings
     {
-        private const int DefaultMaxPoolSize = 10;
-
         public static string ReadConnectionString(IConfiguration configuration)
         {
-            int maxPoolSize = configuration.GetValue("TUSKLET_PG_MAX_POOL_SIZE", DefaultMaxPoolSize);
-            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxPoolSize, "TUSKLET_PG_MAX_POOL_SIZE");
-
             NpgsqlConnectionStringBuilder connection = new()
             {
                 Host = GetRequiredValue(configuration, "TUSKLET_PG_HOST"),
@@ -21,8 +16,6 @@ namespace Tusklet.Server.Database
                 Database = GetRequiredValue(configuration, "TUSKLET_PG_DATABASE"),
                 Username = GetRequiredValue(configuration, "TUSKLET_PG_USERNAME"),
                 Password = configuration["TUSKLET_PG_PASSWORD"],
-                MaxPoolSize = maxPoolSize,
-                ApplicationName = "Tusklet",
             };
             return connection.ConnectionString;
         }

@@ -26,8 +26,6 @@ docker run -d --name tusklet -p 127.0.0.1:8080:8080 \
 
 `TUSKLET_PG_PORT` defaults to `5432`. Open [localhost:8080](http://localhost:8080) and choose a username and password. The first account created on an empty database becomes the administrator.
 
-`TUSKLET_PG_MAX_POOL_SIZE` defaults to `10` PostgreSQL connections per Tusklet instance.
-
 PostgreSQL stores accounts, OpenID settings, and the keys that protect sessions and the OpenID client secret. Use HTTPS when publishing the application behind a reverse proxy.
 
 Install Tusklet from the browser’s app menu when served over HTTPS. The installed app connects to your server for sign-in and tasks. When an update is ready, Tusklet lets you choose when to reload.
