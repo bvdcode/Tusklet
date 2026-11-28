@@ -52,7 +52,7 @@ export default function DeleteTaskDialog({
         )}
       </DialogContent>
       <DialogActions>
-        <Button disabled={saving} onClick={onCancel}>
+        <Button color="inherit" disabled={saving} onClick={onCancel}>
           {t("common.cancel")}
         </Button>
         <Button
