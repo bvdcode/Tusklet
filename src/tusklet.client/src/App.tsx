@@ -1,6 +1,6 @@
 import { Alert, Button, Container, Stack } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Navigate,
@@ -12,14 +12,13 @@ import {
 import { readSession, sessionKey } from "./features/accounts/accountsApi";
 import AccountPageLayout from "./features/accounts/AccountPageLayout";
 import AccountLayout from "./features/accounts/AccountLayout";
+import AdminPage from "./features/accounts/AdminPage";
+import ProfilePage from "./features/accounts/ProfilePage";
 import SignInForm from "./features/accounts/SignInForm";
 import UserPreferencesProvider from "./features/accounts/UserPreferencesProvider";
 import { tasksPath } from "./features/tasks/taskRoutes";
+import Workspace from "./features/tasks/Workspace";
 import PageProgress from "./shared/PageProgress";
-
-const Workspace = lazy(() => import("./features/tasks/Workspace"));
-const ProfilePage = lazy(() => import("./features/accounts/ProfilePage"));
-const AdminPage = lazy(() => import("./features/accounts/AdminPage"));
 
 export default function App() {
   const { t } = useTranslation();
@@ -85,39 +84,35 @@ export default function App() {
     };
     return (
       <UserPreferencesProvider key={user.id} user={user}>
-        <Suspense fallback={<PageProgress />}>
-          <Routes>
-            <Route path="/" element={<Navigate to={tasksPath} replace />} />
+        <Routes>
+          <Route path="/" element={<Navigate to={tasksPath} replace />} />
+          <Route
+            path={`${tasksPath}/:taskId?`}
+            element={<Workspace {...account} />}
+          />
+          <Route
+            element={
+              <AccountPageLayout {...account}>
+                <Outlet />
+              </AccountPageLayout>
+            }
+          >
             <Route
-              path={`${tasksPath}/:taskId?`}
-              element={<Workspace {...account} />}
+              path="/profile"
+              element={<ProfilePage session={session.data} user={user} />}
             />
             <Route
+              path="/admin"
               element={
-                <AccountPageLayout {...account}>
-                  <Suspense fallback={<PageProgress />}>
-                    <Outlet />
-                  </Suspense>
-                </AccountPageLayout>
+                user.isAdmin ? (
+                  <AdminPage requestToken={requestToken} />
+                ) : (
+                  <Navigate to={tasksPath} replace />
+                )
               }
-            >
-              <Route
-                path="/profile"
-                element={<ProfilePage session={session.data} user={user} />}
-              />
-              <Route
-                path="/admin"
-                element={
-                  user.isAdmin ? (
-                    <AdminPage requestToken={requestToken} />
-                  ) : (
-                    <Navigate to={tasksPath} replace />
-                  )
-                }
-              />
-            </Route>
-          </Routes>
-        </Suspense>
+            />
+          </Route>
+        </Routes>
       </UserPreferencesProvider>
     );
   }

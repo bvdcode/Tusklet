@@ -86,7 +86,7 @@ namespace Tusklet.Tests
             TaskImportReport? repeatReport = await repeated.Content.ReadFromJsonAsync<TaskImportReport>();
             Assert.That(repeatReport, Is.EqualTo(new TaskImportReport(1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1)));
             TaskListSummaryDto[]? lists = await browser.GetFromJsonAsync<TaskListSummaryDto[]>("/api/tasks/lists");
-            TaskItemSummaryDto[]? tasks = await browser.GetFromJsonAsync<TaskItemSummaryDto[]>($"/api/tasks/lists/{list.Id}");
+            TaskItemSummaryDto[]? tasks = await browser.GetFromJsonAsync<TaskItemSummaryDto[]>($"/api/tasks?listId={list.Id}");
             TaskItemSummaryDto restoredTask = tasks!.Single();
             using (Assert.EnterMultipleScope())
             {

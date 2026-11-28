@@ -40,7 +40,7 @@ namespace Tusklet.Tests
             TaskListSummaryDto[]? lists = await browser.GetFromJsonAsync<TaskListSummaryDto[]>("/api/tasks/lists");
             Assert.That(lists?.Single().Name, Is.EqualTo("Inbox"));
             Assert.That(lists?.Single().IsInbox, Is.True);
-            TaskItemSummaryDto[]? items = await browser.GetFromJsonAsync<TaskItemSummaryDto[]>($"/api/tasks/lists/{listId}");
+            TaskItemSummaryDto[]? items = await browser.GetFromJsonAsync<TaskItemSummaryDto[]>($"/api/tasks?listId={listId}");
             TaskItemSummaryDto task = items!.Single(item => item.Title == "Read the draft");
             using (Assert.EnterMultipleScope())
             {
@@ -53,7 +53,7 @@ namespace Tusklet.Tests
             string completionPath = $"/api/tasks/{task.Id}/completion";
             using HttpResponseMessage completed = await SendAsync(browser, HttpMethod.Put, completionPath, token, new { isCompleted = true });
             Assert.That(completed.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
-            TaskItemSummaryDto[]? completedItems = await browser.GetFromJsonAsync<TaskItemSummaryDto[]>($"/api/tasks/lists/{listId}");
+            TaskItemSummaryDto[]? completedItems = await browser.GetFromJsonAsync<TaskItemSummaryDto[]>($"/api/tasks?listId={listId}");
             Assert.That(completedItems?.Single(item => item.Id == task.Id).IsCompleted, Is.True);
             using HttpResponseMessage reopened = await SendAsync(browser, HttpMethod.Put, completionPath, token, new { isCompleted = false });
             Assert.That(reopened.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
@@ -94,7 +94,7 @@ namespace Tusklet.Tests
                 new { listId = selected.Id, title = "  Review the draft  ", isImportant = false });
             Assert.That(renamed.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
 
-            TaskItemSummaryDto[]? movedItems = await browser.GetFromJsonAsync<TaskItemSummaryDto[]>($"/api/tasks/lists/{selected.Id}");
+            TaskItemSummaryDto[]? movedItems = await browser.GetFromJsonAsync<TaskItemSummaryDto[]>($"/api/tasks?listId={selected.Id}");
             TaskItemSummaryDto moved = movedItems!.Last();
             using (Assert.EnterMultipleScope())
             {
@@ -111,9 +111,12 @@ namespace Tusklet.Tests
             using HttpResponseMessage cleared = await SendAsync(browser, HttpMethod.Patch, taskPath, token,
                 new { note = (string?)null, dueDate = (DateOnly?)null });
             Assert.That(cleared.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
-            TaskItemSummaryDto[]? clearedItems = await browser.GetFromJsonAsync<TaskItemSummaryDto[]>($"/api/tasks/lists/{selected.Id}");
+            TaskItemSummaryDto[]? clearedItems = await browser.GetFromJsonAsync<TaskItemSummaryDto[]>($"/api/tasks?listId={selected.Id}");
             TaskItemSummaryDto clearedTask = clearedItems!.Single(item => item.Id == task.Id);
             TaskItemSummaryDto[]? allTasks = await browser.GetFromJsonAsync<TaskItemSummaryDto[]>("/api/tasks");
+            TaskItemSummaryDto[]? unfilteredTasks = await browser.GetFromJsonAsync<TaskItemSummaryDto[]>("/api/tasks?listId=");
+            TaskItemSummaryDto[]? otherTasks = await browser.GetFromJsonAsync<TaskItemSummaryDto[]>($"/api/tasks?listId={otherTask.TaskListId}");
+            using HttpResponseMessage invalidFilter = await browser.GetAsync("/api/tasks?listId=invalid");
 
             using (Assert.EnterMultipleScope())
             {
@@ -125,6 +128,9 @@ namespace Tusklet.Tests
                 Assert.That(await db.TaskItems.AnyAsync(item => item.Id == task.Id && item.CompletedAt == null), Is.True);
                 Assert.That(allTasks?.Select(item => item.ListId), Is.EqualTo(new[] { listId, selected.Id, selected.Id }));
                 Assert.That(allTasks?.Any(item => item.Id == otherTask.Id), Is.False);
+                Assert.That(unfilteredTasks?.Select(item => item.Id), Is.EqualTo(allTasks?.Select(item => item.Id)));
+                Assert.That(otherTasks, Is.Empty);
+                Assert.That(invalidFilter.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
             }
 
             db.TaskSteps.Add(new TaskStep { TaskItemId = task.Id, Title = "Proofread" });

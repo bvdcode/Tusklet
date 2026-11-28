@@ -15,7 +15,7 @@ export default function useTaskDeletion(
     onSuccess: async (_, target) => {
       const queryKey = [...taskItemsKey, ownerId];
       await queryClient.cancelQueries({ queryKey });
-      queryClient.setQueryData<TaskItem[]>(queryKey, (items) =>
+      queryClient.setQueriesData<TaskItem[]>({ queryKey }, (items) =>
         items?.filter(({ id }) => id !== target.id),
       );
       setTask(null);

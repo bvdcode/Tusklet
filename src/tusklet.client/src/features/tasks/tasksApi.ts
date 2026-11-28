@@ -94,8 +94,14 @@ export async function readTaskLists(signal: AbortSignal): Promise<TaskList[]> {
   return response.json();
 }
 
-export async function readTaskItems(signal: AbortSignal): Promise<TaskItem[]> {
-  const response = await fetch("/api/tasks", { signal });
+export async function readTaskItems(
+  signal: AbortSignal,
+  listId?: string,
+): Promise<TaskItem[]> {
+  const path = listId
+    ? `/api/tasks?${new URLSearchParams({ listId })}`
+    : "/api/tasks";
+  const response = await fetch(path, { signal });
   if (!response.ok) {
     throw new Error(String(response.status));
   }

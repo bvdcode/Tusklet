@@ -8,7 +8,7 @@ using Tusklet.Server.Models.Dto;
 
 namespace Tusklet.Server.Handlers.Tasks
 {
-    internal record ReadTaskItems(Guid OwnerId, Guid? ListId = null) : IRequest<List<TaskItemSummaryDto>>;
+    internal record ReadTaskItems(Guid OwnerId, Guid? ListId) : IRequest<List<TaskItemSummaryDto>>;
 
     internal class ReadTaskItemsHandler(TuskletDbContext db) : IRequestHandler<ReadTaskItems, List<TaskItemSummaryDto>>
     {

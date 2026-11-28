@@ -18,10 +18,10 @@ import {
   useTheme,
 } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
-import { lazy, Suspense, useId, useState } from "react";
+import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
-import PageProgress from "../../shared/PageProgress";
 import TaskDetailsHeader from "./TaskDetailsHeader";
+import TaskDueDateDialog from "./TaskDueDateDialog";
 import TaskMetadata from "./TaskMetadata";
 import TaskStatus from "./TaskStatus";
 import TaskTextEditDialog from "./TaskTextEditDialog";
@@ -31,7 +31,6 @@ import type { TaskRow } from "./taskView";
 import type { ChangeTaskCompletion } from "./useTaskCompletion";
 
 type EditField = "title" | "note" | "dueDate";
-const TaskDueDateDialog = lazy(() => import("./TaskDueDateDialog"));
 
 export default function TaskDetailsContent({
   task,
@@ -273,15 +272,13 @@ export default function TaskDetailsContent({
         ))}
       </Menu>
       {field === "dueDate" && (
-        <Suspense fallback={<PageProgress />}>
-          <TaskDueDateDialog
-            value={task.dueDate}
-            saving={edit.isPending}
-            failed={edit.isError}
-            onSave={(dueDate) => edit.mutate({ dueDate })}
-            onClose={() => editField(null)}
-          />
-        </Suspense>
+        <TaskDueDateDialog
+          value={task.dueDate}
+          saving={edit.isPending}
+          failed={edit.isError}
+          onSave={(dueDate) => edit.mutate({ dueDate })}
+          onClose={() => editField(null)}
+        />
       )}
       {(field === "title" || field === "note") && (
         <TaskTextEditDialog

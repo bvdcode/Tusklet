@@ -21,9 +21,10 @@ export default function useTaskWorkspaceRows(
   listsPending: boolean,
 ) {
   const { t, i18n } = useTranslation();
+  const listId = active?.id;
   const items = useQuery({
-    queryKey: [...taskItemsKey, ownerId],
-    queryFn: ({ signal }) => readTaskItems(signal),
+    queryKey: [...taskItemsKey, ownerId, listId ?? null],
+    queryFn: ({ signal }) => readTaskItems(signal, listId),
     retry: false,
   });
   const loading = listsPending || items.isPending;
@@ -31,9 +32,8 @@ export default function useTaskWorkspaceRows(
     if (loading || !items.data) {
       return [];
     }
-    const visibleLists = active ? [active] : lists;
     const names = new Map(
-      visibleLists.map((list) => [
+      lists.map((list) => [
         list.id,
         list.isInbox ? t("tasks.inbox") : list.name,
       ]),
@@ -46,7 +46,7 @@ export default function useTaskWorkspaceRows(
       }
     }
     return visibleRows;
-  }, [active, items.data, lists, loading, t]);
+  }, [items.data, lists, loading, t]);
   const language = i18n.resolvedLanguage;
   const groups = useMemo(
     () =>

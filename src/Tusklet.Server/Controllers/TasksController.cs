@@ -27,19 +27,11 @@ namespace Tusklet.Server.Controllers
                 : Unauthorized();
         }
 
-        [HttpGet("lists/{listId:guid}")]
-        public async Task<IActionResult> GetTasksAsync(Guid listId, CancellationToken ct)
+        [HttpGet]
+        public async Task<IActionResult> GetTasksAsync([FromQuery] Guid? listId, CancellationToken ct)
         {
             return Session.GetUserId(User) is Guid ownerId
                 ? Ok(await mediator.Send(new ReadTaskItems(ownerId, listId), ct))
-                : Unauthorized();
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetAllTasksAsync(CancellationToken ct)
-        {
-            return Session.GetUserId(User) is Guid ownerId
-                ? Ok(await mediator.Send(new ReadTaskItems(ownerId), ct))
                 : Unauthorized();
         }
 
