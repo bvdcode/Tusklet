@@ -23,11 +23,11 @@ export default function TaskDetailsHeader({
     <Stack
       direction="row"
       sx={{
+        position: "relative",
         alignItems: "flex-start",
-        pl: { xs: 1, sm: 3 },
-        pr: 3,
+        px: 3,
         py: { xs: 1, sm: 2 },
-        gap: { xs: 0.5, sm: 1 },
+        gap: 1,
         flexShrink: 0,
       }}
     >
@@ -38,8 +38,14 @@ export default function TaskDetailsHeader({
           sx={(theme) => ({
             flexShrink: 0,
             [theme.breakpoints.down("sm")]: {
+              position: "absolute",
+              insetInlineStart: theme.spacing(1),
+              insetBlockStart: 0,
+              zIndex: 1,
               width: theme.spacing(5),
               height: theme.spacing(5),
+              pt: 1.5,
+              pb: 0.5,
               "& svg": { fontSize: theme.typography.pxToRem(20) },
             },
           })}
@@ -52,7 +58,18 @@ export default function TaskDetailsHeader({
           />
         </IconButton>
       )}
-      <Box sx={{ minWidth: 0, flex: 1, alignSelf: "center" }}>
+      <Box
+        sx={(theme) => ({
+          minWidth: 0,
+          flex: 1,
+          alignSelf: "center",
+          ...(compact && {
+            [theme.breakpoints.down("sm")]: {
+              "& textarea": { textIndent: theme.spacing(3.5) },
+            },
+          }),
+        })}
+      >
         <Typography id={titleId} component="h2" sx={taskWorkspaceHeading}>
           {title}
         </Typography>
