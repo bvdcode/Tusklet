@@ -67,7 +67,7 @@ export default function Workspace(account: AccountPage) {
   });
   const taskLists = lists.data ?? [];
   const active = taskLists.find((list) => list.id === selectedId);
-  const { rows, entries, headings, loading, failed } = useTaskWorkspaceRows(
+  const { rows, entries, headings, loading, retryItems } = useTaskWorkspaceRows(
     ownerId,
     taskLists,
     active,
@@ -76,17 +76,17 @@ export default function Workspace(account: AccountPage) {
     searchOpen ? search : "",
     lists.isPending,
   );
-  const loadFailed = lists.isError || failed.length > 0;
+  const loadFailed = lists.isError || retryItems !== undefined;
   const currentTask = rows.find((task) => task.id === taskId);
   const detailsOpen = currentTask !== undefined;
 
   const create = useMutation({
     mutationFn: (input: CreateTaskInput) => createTask(input, requestToken),
-    onSuccess: async ({ listId }) => {
+    onSuccess: async () => {
       setCreating(false);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: listsKey }),
-        queryClient.invalidateQueries({ queryKey: [...itemsKey, listId] }),
+        queryClient.invalidateQueries({ queryKey: itemsKey }),
       ]);
     },
   });
@@ -136,9 +136,7 @@ export default function Workspace(account: AccountPage) {
     if (lists.isError) {
       void lists.refetch();
     }
-    for (const refetch of failed) {
-      void refetch();
-    }
+    void retryItems?.();
   }
 
   async function saveTask(id: string, input: UpdateTaskInput) {

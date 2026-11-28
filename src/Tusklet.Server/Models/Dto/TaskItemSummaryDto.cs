@@ -8,6 +8,7 @@ namespace Tusklet.Server.Models.Dto
 {
     public class TaskItemSummaryDto : BaseDto<Guid>
     {
+        public required Guid ListId { get; init; }
         public required string Title { get; init; }
         public string? Note { get; init; }
         public DateOnly? DueDate { get; init; }
