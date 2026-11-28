@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import Brand from "../../shared/Brand";
 import logo from "../../shared/assets/tusklet.svg";
+import { pageMaxWidth, pagePadding } from "../../shared/pageLayout";
 
 export default function AccountLayout({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
@@ -10,11 +11,12 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
   return (
     <Container
       component="main"
-      maxWidth="md"
+      maxWidth={pageMaxWidth}
       sx={{
         flex: 1,
         display: "flex",
         alignItems: "center",
+        px: pagePadding,
         py: { xs: 4, sm: 7 },
       }}
     >

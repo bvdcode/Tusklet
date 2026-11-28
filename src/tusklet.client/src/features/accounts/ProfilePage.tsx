@@ -11,6 +11,7 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { settingsPageSurface } from "../../shared/pageLayout";
 import LanguageSettings from "./LanguageSettings";
 import OpenIdButton from "./OpenIdButton";
 import TaskImportSettings from "./TaskImportSettings";
@@ -39,7 +40,7 @@ export default function ProfilePage({ session, user }: Props) {
   });
 
   return (
-    <Paper variant="outlined" sx={{ p: { xs: 2.5, sm: 3.5 } }}>
+    <Paper variant="outlined" sx={settingsPageSurface}>
       <Stack spacing={3}>
         <Stack
           direction="row"

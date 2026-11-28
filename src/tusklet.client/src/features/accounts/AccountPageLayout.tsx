@@ -1,6 +1,7 @@
 import { Alert, Button, Container, Stack } from "@mui/material";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { pageMaxWidth, pagePadding } from "../../shared/pageLayout";
 import AccountHeader from "./AccountHeader";
 import type { SessionStatus, SessionUser } from "./accountsApi";
 import { useUserPreferences } from "./userPreferences";
@@ -41,18 +42,14 @@ export default function AccountPageLayout({
       />
       <Container
         component="main"
-        maxWidth={expanded ? false : "md"}
+        maxWidth={expanded ? false : pageMaxWidth}
         sx={{
           flex: 1,
           minHeight: 0,
-          py: actions ? { xs: 1.5, sm: 3, md: 2 } : { xs: 3, md: 5 },
-          ...(expanded
-            ? { display: "flex", flexDirection: "column", overflow: "hidden" }
-            : {
-                overflowY: "auto",
-                scrollbarGutter: "stable both-edges",
-                scrollbarWidth: "thin",
-              }),
+          p: pagePadding,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
         }}
       >
         {notice}

@@ -24,6 +24,7 @@ import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import Brand from "../../shared/Brand";
+import { pageMaxWidth, pagePadding } from "../../shared/pageLayout";
 import { tasksPath } from "../tasks/taskRoutes";
 import { taskItemsKey, taskListsKey } from "../tasks/tasksApi";
 import {
@@ -85,7 +86,7 @@ export default function AccountHeader({
         borderColor: "divider",
       }}
     >
-      <Container maxWidth="md">
+      <Container maxWidth={pageMaxWidth} sx={{ px: pagePadding }}>
         <Toolbar
           disableGutters
           sx={{
