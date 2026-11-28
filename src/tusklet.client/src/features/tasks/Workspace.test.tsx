@@ -168,12 +168,12 @@ test("shows tasks across lists and lets users sort, group and select a list", as
   const completedEntries = screen
     .getByRole("list", { name: "Tasks" })
     .querySelectorAll('[data-task-group="completed"]');
-  vi.spyOn(header, "getBoundingClientRect").mockReturnValue(
-    new DOMRect(0, 0, 360, 61),
+  const scroller = screen.getByRole("region", { name: "Tasks" });
+  vi.spyOn(scroller, "getBoundingClientRect").mockReturnValue(
+    new DOMRect(0, 61, 360, 500),
   );
-  vi.spyOn(document.documentElement, "scrollHeight", "get").mockReturnValue(
-    2000,
-  );
+  vi.spyOn(scroller, "scrollHeight", "get").mockReturnValue(2000);
+  vi.spyOn(scroller, "clientHeight", "get").mockReturnValue(500);
   let completedTop = 500;
   vi.spyOn(completedEntries[0], "getBoundingClientRect").mockImplementation(
     () => new DOMRect(0, completedTop, 300, 24),
@@ -181,25 +181,26 @@ test("shows tasks across lists and lets users sort, group and select a list", as
   vi.spyOn(completedEntries[1], "getBoundingClientRect").mockImplementation(
     () => new DOMRect(0, completedTop + 24, 300, 65),
   );
-  fireEvent.scroll(window);
+  fireEvent.scroll(scroller);
   expect(
     await within(header).findByRole("button", { name: "To do (2)" }),
   ).toBeTruthy();
   completedTop = 60;
-  fireEvent.scroll(window);
+  fireEvent.scroll(scroller);
   expect(
     await within(header).findByRole("button", { name: "Completed (1)" }),
   ).toBeTruthy();
   completedTop = 200;
-  fireEvent.scroll(window);
+  fireEvent.scroll(scroller);
   const groupButton = await within(header).findByRole("button", {
     name: "To do (2)",
   });
 
-  const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => {
+  const scrollTo = vi.fn(() => {
     completedTop = 37;
-    fireEvent.scroll(window);
+    fireEvent.scroll(scroller);
   });
+  Object.defineProperty(scroller, "scrollTo", { value: scrollTo });
   fireEvent.click(groupButton);
   const groupMenu = await screen.findByRole("menu", { name: "To do (2)" });
   expect(

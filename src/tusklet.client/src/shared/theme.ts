@@ -68,6 +68,10 @@ const options: ThemeOptions = {
     MuiCssBaseline: {
       styleOverrides: (theme) => ({
         "html, body": { height: "100%" },
+        html: {
+          scrollbarColor: `${(theme.vars ?? theme).palette.text.secondary} transparent`,
+          scrollbarWidth: "thin",
+        },
         "#root": {
           "--tusklet-account-toolbar-height": "60px",
           [theme.breakpoints.up("sm")]: {
@@ -94,6 +98,16 @@ const options: ThemeOptions = {
     },
     MuiOutlinedInput: {
       styleOverrides: {
+        input: ({ theme }) => {
+          const { background, text } = (theme.vars ?? theme).palette;
+          return {
+            "&&:is(:autofill, :-webkit-autofill)": {
+              boxShadow: `inset 0 0 0 1000px ${background.paper}`,
+              WebkitTextFillColor: text.primary,
+              caretColor: text.primary,
+            },
+          };
+        },
         notchedOutline: ({ theme }) => ({
           borderColor: (theme.vars || theme).palette.brand.fieldBorder,
         }),
